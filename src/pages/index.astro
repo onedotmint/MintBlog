@@ -1,0 +1,51 @@
+---
+import { getCollection } from 'astro:content'
+import type { CollectionEntry } from 'astro:content'
+
+import Badge from '../components/Badge.astro'
+import ArticleList from '../components/ArticleList.astro'
+import Layout from '../layouts/Layout.astro'
+import ProjectList from '../components/ProjectList.astro'
+import SectionTitle from '../components/SectionTitle.astro'
+import { projectGroups } from '../data/projects'
+
+type BlogEntry = CollectionEntry<'blog'>
+
+const posts = ((await getCollection('blog')) as BlogEntry[]).sort(
+  (left: BlogEntry, right: BlogEntry) => right.data.date.getTime() - left.data.date.getTime(),
+)
+const featuredGroups = projectGroups.map((group) => ({
+  ...group,
+  items: group.items.slice(0, 1),
+}))
+---
+
+<Layout
+  title="Jeff Tim"
+  description="Jeff Tim writes about backend systems, small experiments, and the notes that keep both readable."
+>
+  <section class="section prose">
+    <p class="eyebrow">Personal blog</p>
+    <h1 class="hero-title">Jeff Tim</h1>
+    <p class="lead">
+      Notes on backend systems, small tools, and the habits that make them easier to ship.
+    </p>
+
+    <div class="badge-row">
+      <Badge label="Learning" />
+      <Badge label="Building" />
+      <Badge label="Systems" />
+      <Badge label="Writing" />
+    </div>
+  </section>
+
+  <section class="section">
+    <SectionTitle title="Recent articles" description="Short notes from the blog." />
+    <ArticleList entries={posts.slice(0, 3)} />
+  </section>
+
+  <section class="section">
+    <SectionTitle title="Recent projects" description="Small builds and current experiments." />
+    <ProjectList groups={featuredGroups} />
+  </section>
+</Layout>

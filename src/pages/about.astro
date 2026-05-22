@@ -1,0 +1,58 @@
+---
+import Badge from '../components/Badge.astro'
+import Layout from '../layouts/Layout.astro'
+import SectionTitle from '../components/SectionTitle.astro'
+---
+
+<Layout
+  title="About"
+  description="Jeff Tim's short introduction, learning route, technical interests, current focus, and contact links."
+>
+  <section class="section prose">
+    <p class="eyebrow">About</p>
+    <h1 class="hero-title">Jeff Tim</h1>
+    <p class="lead">
+      Computer science student. Backend and systems learner. I keep a public log of the small things I build and the notes that help me reason about them.
+    </p>
+  </section>
+
+  <section class="section prose">
+    <SectionTitle title="Learning route" />
+    <ul>
+      <li>Core CS courses and the habits that make them stick.</li>
+      <li>Linux, networking, and services that stay easy to inspect.</li>
+      <li>Static web delivery with Astro and simple build pipelines.</li>
+    </ul>
+  </section>
+
+  <section class="section prose">
+    <SectionTitle title="Technical interests" />
+    <div class="badge-row">
+      <Badge label="Go" />
+      <Badge label="Rust" />
+      <Badge label="Linux" />
+      <Badge label="Nginx" />
+      <Badge label="Astro" />
+      <Badge label="MDX" />
+    </div>
+  </section>
+
+  <section class="section prose">
+    <SectionTitle title="Current focus" />
+    <p>
+      I am keeping the site small, the content files simple, and the deploy path explicit so the code stays easy to hand off and extend.
+    </p>
+  </section>
+
+  <section class="section prose">
+    <SectionTitle title="Contact" />
+    <ul>
+      <li>
+        <a href="https://github.com/jefftim">GitHub</a>
+      </li>
+      <li>
+        <a href="mailto:jeff@example.com">Email</a>
+      </li>
+    </ul>
+  </section>
+</Layout>

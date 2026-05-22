@@ -1,0 +1,40 @@
+---
+interface Props {
+  label: string
+  href?: string
+}
+
+const { label, href } = Astro.props
+---
+
+{href ? (
+  <a class="badge" href={href}>
+    {label}
+  </a>
+) : (
+  <span class="badge">
+    {label}
+  </span>
+)}
+
+<style>
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.9rem;
+    padding: 0.28rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-muted);
+    font-size: 0.83rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  a.badge:hover {
+    border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--accent);
+  }
+</style>

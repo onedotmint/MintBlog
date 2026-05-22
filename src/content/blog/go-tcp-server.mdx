@@ -1,0 +1,38 @@
+---
+title: "Go TCP Server Sketch"
+date: "2026-05-19"
+description: "A tiny TCP server used to study connection handling, logging, and shutdown paths."
+tags: ["Go", "Networking", "Systems"]
+readingTime: "6 min"
+---
+
+![A simple server diagram](/images/projects/tcp-server.svg)
+
+This sketch stays small on purpose. The main goal is to understand where a connection starts, where it ends, and what gets logged between the two.
+
+### Shape of the loop
+
+```go
+ln, err := net.Listen("tcp", ":8080")
+if err != nil {
+    log.Fatal(err)
+}
+defer ln.Close()
+
+for {
+    conn, err := ln.Accept()
+    if err != nil {
+        continue
+    }
+    go handle(conn)
+}
+```
+
+The structure is boring in the best way. Boring makes it easier to check shutdown, retries, and error paths.
+
+### What I watch
+
+- accept errors
+- goroutine count
+- connection lifetime
+- log lines that explain failure, not just that failure happened

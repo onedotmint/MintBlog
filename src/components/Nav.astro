@@ -1,0 +1,70 @@
+---
+const pathname = Astro.url.pathname
+
+const links = [
+  { href: '/blog/', label: 'Blog' },
+  { href: '/projects/', label: 'Projects' },
+  { href: '/about/', label: 'About' },
+]
+
+const isActive = (href: string) => pathname.startsWith(href)
+---
+
+<nav class="site-nav" aria-label="Primary">
+  <a class="brand" href="/" aria-label="Jeff Tim home">
+    Jeff Tim
+  </a>
+
+  <div class="nav-links">
+    {links.map((link) => (
+      <a
+        href={link.href}
+        aria-current={isActive(link.href) ? 'page' : undefined}
+        class:list={{ active: isActive(link.href) }}
+      >
+        {link.label}
+      </a>
+    ))}
+  </div>
+</nav>
+
+<style>
+  .site-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: min(var(--content-width), calc(100vw - 2rem));
+    margin: 0 auto;
+    padding: 0.35rem 0 0.95rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand {
+    color: var(--accent);
+    font-size: 0.95rem;
+    letter-spacing: 0;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .nav-links a {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .nav-links a.active,
+  .nav-links a:hover {
+    color: var(--accent);
+  }
+
+  @media (max-width: 720px) {
+    .site-nav {
+      width: min(var(--content-width), calc(100vw - 1.25rem));
+    }
+  }
+</style>

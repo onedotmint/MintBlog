@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" fill="none">
+  <rect width="960" height="540" rx="28" fill="#0b0b0b" />
+  <rect x="98" y="120" width="280" height="300" rx="18" stroke="#2d2d2d" stroke-width="2" fill="#101010" />
+  <rect x="582" y="120" width="280" height="300" rx="18" stroke="#2d2d2d" stroke-width="2" fill="#101010" />
+  <rect x="154" y="176" width="168" height="56" rx="10" fill="#161616" stroke="#303030" />
+  <rect x="154" y="256" width="168" height="56" rx="10" fill="#161616" stroke="#303030" />
+  <rect x="638" y="176" width="168" height="56" rx="10" fill="#161616" stroke="#303030" />
+  <rect x="638" y="256" width="168" height="56" rx="10" fill="#161616" stroke="#303030" />
+  <path d="M380 222h188" stroke="#d0d0d0" stroke-width="2" />
+  <path d="M380 286h188" stroke="#5f5f5f" stroke-width="2" stroke-dasharray="6 8" />
+  <text x="150" y="150" fill="#d9d9d9" font-family="Inter, Arial, sans-serif" font-size="28">Client</text>
+  <text x="634" y="150" fill="#d9d9d9" font-family="Inter, Arial, sans-serif" font-size="28">Server</text>
+  <text x="172" y="211" fill="#a6a6a6" font-family="IBM Plex Mono, monospace" font-size="18">connect()</text>
+  <text x="654" y="211" fill="#a6a6a6" font-family="IBM Plex Mono, monospace" font-size="18">accept()</text>
+  <text x="166" y="291" fill="#a6a6a6" font-family="IBM Plex Mono, monospace" font-size="18">read / write</text>
+  <text x="648" y="291" fill="#a6a6a6" font-family="IBM Plex Mono, monospace" font-size="18">handle(conn)</text>
+</svg>

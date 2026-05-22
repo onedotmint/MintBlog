@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content'
+import type { CollectionEntry } from 'astro:content'
+
+import ArticleList from '../../components/ArticleList.astro'
+import Badge from '../../components/Badge.astro'
+import Layout from '../../layouts/Layout.astro'
+import SectionTitle from '../../components/SectionTitle.astro'
+
+type BlogEntry = CollectionEntry<'blog'>
+
+const posts = ((await getCollection('blog')) as BlogEntry[]).sort(
+  (left: BlogEntry, right: BlogEntry) => right.data.date.getTime() - left.data.date.getTime(),
+)
+const tags = ['Systems', 'Linux', 'Networking', 'Learning']
+---
+
+<Layout
+  title="Blog"
+  description="Field notes, build logs, and small technical writeups from Jeff Tim."
+>
+  <section class="section prose blog-index">
+    <div class="watermark" aria-hidden="true">2026</div>
+    <SectionTitle title="Blog" description="Field notes, build logs, and short writeups." />
+
+    <p class="lead">
+      A static index for the posts that matter most. Topics stay small, practical, and close to the work.
+    </p>
+
+    <div class="tag-row surface">
+      {tags.map((tag) => <Badge label={tag} />)}
+    </div>
+  </section>
+
+  <section class="section">
+    <ArticleList entries={posts} />
+  </section>
+</Layout>
+
+<style>
+  .blog-index {
+    position: relative;
+  }
+</style>

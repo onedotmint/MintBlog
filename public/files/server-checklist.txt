@@ -1,0 +1,4 @@
+Run sync before build.
+Build static assets to dist/.
+Copy dist/ over SSH or rsync.
+Serve the output with Nginx.

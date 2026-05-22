@@ -1,0 +1,25 @@
+---
+import Layout from '../layouts/Layout.astro'
+import ProjectList from '../components/ProjectList.astro'
+import SectionTitle from '../components/SectionTitle.astro'
+import { projectGroups } from '../data/projects'
+---
+
+<Layout
+  title="Projects"
+  description="Things I built while learning computer systems."
+>
+  <section class="section prose">
+    <SectionTitle
+      title="Projects"
+      description="Things I built while learning computer systems."
+    />
+    <p class="lead">
+      Small projects stay visible here. The focus is on habits, tools, and systems practice rather than product polish.
+    </p>
+  </section>
+
+  <section class="section">
+    <ProjectList groups={projectGroups} />
+  </section>
+</Layout>

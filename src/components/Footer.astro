@@ -1,0 +1,27 @@
+---
+const year = new Date().getFullYear()
+---
+
+<footer class="site-footer">
+  <p>© {year} Jeff Tim. Built with Astro and MDX.</p>
+</footer>
+
+<style>
+  .site-footer {
+    width: min(var(--content-width), calc(100vw - 2rem));
+    margin: 0 auto;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .site-footer p {
+    margin: 0;
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 720px) {
+    .site-footer {
+      width: min(var(--content-width), calc(100vw - 1.25rem));
+    }
+  }
+</style>

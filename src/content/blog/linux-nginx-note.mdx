@@ -1,0 +1,35 @@
+---
+title: "Linux and Nginx Deployment Note"
+date: "2026-05-15"
+description: "A short deployment note for serving a static Astro build over Nginx."
+tags: ["Linux", "Nginx", "Deploy"]
+readingTime: "4 min"
+---
+
+This note keeps the deployment path explicit. Build once, serve the generated files, and keep the web server out of the app logic.
+
+### Checklist
+
+1. Run the sync step before the build.
+2. Copy `dist/` to the server over SSH or rsync.
+3. Let Nginx serve the static files directly.
+
+The reusable checklist lives here:
+
+- [server-checklist.txt](/files/server-checklist.txt)
+
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+
+    root /var/www/blog/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+That setup keeps the runtime surface small and makes rebuilds predictable.

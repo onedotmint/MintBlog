@@ -1,0 +1,37 @@
+---
+import type { ProjectGroup } from '../data/projects'
+import SectionTitle from './SectionTitle.astro'
+import ProjectItem from './ProjectItem.astro'
+
+interface Props {
+  groups: ProjectGroup[]
+}
+
+const { groups } = Astro.props
+---
+
+<div class="project-groups">
+  {groups.map((group: ProjectGroup) => (
+    <section class="project-group">
+      <SectionTitle title={group.title} description={group.description} />
+
+      <div class="project-items">
+        {group.items.map((project) => <ProjectItem project={project} />)}
+      </div>
+    </section>
+  ))}
+</div>
+
+<style>
+  .project-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1.85rem;
+  }
+
+  .project-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+</style>
