@@ -1,17 +1,11 @@
 ---
-import { getCollection } from 'astro:content'
-import type { CollectionEntry } from 'astro:content'
-
 import ArticleList from '../../components/ArticleList.astro'
 import Badge from '../../components/Badge.astro'
 import Layout from '../../layouts/Layout.astro'
 import SectionTitle from '../../components/SectionTitle.astro'
+import { getArticles } from '../../utils/articles'
 
-type BlogEntry = CollectionEntry<'blog'>
-
-const posts = ((await getCollection('blog')) as BlogEntry[]).sort(
-  (left: BlogEntry, right: BlogEntry) => right.data.date.getTime() - left.data.date.getTime(),
-)
+const articles = await getArticles()
 const tags = ['Systems', 'Linux', 'Networking', 'Learning']
 ---
 
@@ -33,7 +27,7 @@ const tags = ['Systems', 'Linux', 'Networking', 'Learning']
   </section>
 
   <section class="section">
-    <ArticleList entries={posts} />
+    <ArticleList articles={articles} />
   </section>
 </Layout>
 

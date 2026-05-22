@@ -1,27 +1,28 @@
 ---
-import type { CollectionEntry } from 'astro:content'
-
 import Badge from './Badge.astro'
+import { getArticleUpdatedDate } from '../utils/articles'
+import type { Article } from '../utils/articles'
 import { formatDate } from '../utils/date'
 
 interface Props {
-  entries: CollectionEntry<'blog'>[]
+  articles: Article[]
 }
 
-const { entries } = Astro.props
+const { articles } = Astro.props
 
-const articles = entries.map((entry) => ({
-  ...entry,
-  slug: entry.slug.replace(/\.(md|mdx)$/, ''),
+const articleItems = articles.map((article) => ({
+  ...article,
+  updatedAt: getArticleUpdatedDate(article),
 }))
 ---
 
 <ul class="article-list list-reset">
-  {articles.map((entry) => (
+  {articleItems.map((entry) => (
     <li class="article-item">
-      <a class="article-link" href={`/blog/${entry.slug}/`}>
+      <a class="article-link" href={entry.href}>
         <div class="article-topline">
           <time datetime={entry.data.date.toISOString()}>{formatDate(entry.data.date)}</time>
+          {entry.updatedAt && <span>Updated {formatDate(entry.updatedAt)}</span>}
           <span>{entry.data.readingTime}</span>
         </div>
 
