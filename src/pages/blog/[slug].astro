@@ -4,7 +4,7 @@ import type { CollectionEntry } from 'astro:content'
 import Badge from '../../components/Badge.astro'
 import Layout from '../../layouts/Layout.astro'
 import { formatDate } from '../../utils/date'
-import { getArticles, getArticleUpdatedDate, toArticle } from '../../utils/articles'
+import { getArticles, getArticleSeriesHref, getArticleUpdatedDate, toArticle } from '../../utils/articles'
 
 export async function getStaticPaths() {
   const articles = await getArticles()
@@ -17,7 +17,9 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props as { entry: CollectionEntry<'blog'> }
 const { Content } = await entry.render()
-const updatedAt = getArticleUpdatedDate(toArticle(entry))
+const article = toArticle(entry)
+const updatedAt = getArticleUpdatedDate(article)
+const seriesHref = getArticleSeriesHref(article)
 ---
 
 <Layout title={entry.data.title} description={entry.data.description}>
@@ -33,10 +35,12 @@ const updatedAt = getArticleUpdatedDate(toArticle(entry))
       <div class="meta-row">
         <time datetime={entry.data.date.toISOString()}>{formatDate(entry.data.date)}</time>
         {updatedAt && <span>Updated {formatDate(updatedAt)}</span>}
+        {entry.data.series?.order && <span>Part {entry.data.series.order}</span>}
         <span>{entry.data.readingTime}</span>
       </div>
 
       <div class="tag-row">
+        {entry.data.series && seriesHref && <Badge label={entry.data.series.title} href={seriesHref} />}
         {entry.data.tags.map((tag: string) => <Badge label={tag} />)}
       </div>
     </header>

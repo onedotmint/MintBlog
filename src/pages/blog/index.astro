@@ -4,9 +4,10 @@ import Badge from '../../components/Badge.astro'
 import Layout from '../../layouts/Layout.astro'
 import SectionTitle from '../../components/SectionTitle.astro'
 import { siteIdentity } from '../../data/site'
-import { getArticles } from '../../utils/articles'
+import { getArticleSeries, getArticles } from '../../utils/articles'
 
 const articles = await getArticles()
+const articleSeries = getArticleSeries(articles)
 const tags = ['Systems', 'Linux', 'Networking', 'Learning']
 ---
 
@@ -26,6 +27,15 @@ const tags = ['Systems', 'Linux', 'Networking', 'Learning']
       {tags.map((tag) => <Badge label={tag} />)}
     </div>
   </section>
+
+  {articleSeries.length > 0 && (
+    <section class="section">
+      <SectionTitle title="Series" description="Long-running notes grouped by topic." />
+      <div class="tag-row">
+        {articleSeries.map((series) => <Badge label={`${series.title} (${series.articles.length})`} href={series.href} />)}
+      </div>
+    </section>
+  )}
 
   <section class="section">
     <ArticleList articles={articles} />

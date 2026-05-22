@@ -1,0 +1,52 @@
+---
+import ArticleList from '../../../components/ArticleList.astro'
+import Layout from '../../../layouts/Layout.astro'
+import SectionTitle from '../../../components/SectionTitle.astro'
+import { getArticleSeries, getArticles } from '../../../utils/articles'
+import type { ArticleSeries } from '../../../utils/articles'
+
+export async function getStaticPaths() {
+  const articles = await getArticles()
+  const articleSeries = getArticleSeries(articles)
+
+  return articleSeries.map((series) => ({
+    params: { series: series.slug },
+    props: { series },
+  }))
+}
+
+const { series } = Astro.props as { series: ArticleSeries }
+---
+
+<Layout
+  title={series.title}
+  description={`${series.title} articles from the blog.`}
+>
+  <section class="section prose">
+    <a class="back-link" href="/blog/series/">
+      Back to series
+    </a>
+
+    <SectionTitle
+      title={series.title}
+      description={`${series.articles.length} ${series.articles.length === 1 ? 'article' : 'articles'} in this series.`}
+    />
+  </section>
+
+  <section class="section">
+    <ArticleList articles={series.articles} />
+  </section>
+</Layout>
+
+<style>
+  .back-link {
+    display: inline-flex;
+    width: fit-content;
+    color: var(--text-faint);
+    font-size: 0.9rem;
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+  }
+</style>

@@ -1,6 +1,6 @@
 ---
 import Badge from './Badge.astro'
-import { getArticleUpdatedDate } from '../utils/articles'
+import { getArticleSeriesHref, getArticleUpdatedDate } from '../utils/articles'
 import type { Article } from '../utils/articles'
 import { formatDate } from '../utils/date'
 
@@ -12,6 +12,7 @@ const { articles } = Astro.props
 
 const articleItems = articles.map((article) => ({
   ...article,
+  seriesHref: getArticleSeriesHref(article),
   updatedAt: getArticleUpdatedDate(article),
 }))
 ---
@@ -23,6 +24,7 @@ const articleItems = articles.map((article) => ({
         <div class="article-topline">
           <time datetime={entry.data.date.toISOString()}>{formatDate(entry.data.date)}</time>
           {entry.updatedAt && <span>Updated {formatDate(entry.updatedAt)}</span>}
+          {entry.data.series?.order && <span>Part {entry.data.series.order}</span>}
           <span>{entry.data.readingTime}</span>
         </div>
 
@@ -31,6 +33,7 @@ const articleItems = articles.map((article) => ({
       </a>
 
       <div class="tag-row">
+        {entry.data.series && entry.seriesHref && <Badge label={entry.data.series.title} href={entry.seriesHref} />}
         {entry.data.tags.map((tag: string) => <Badge label={tag} />)}
       </div>
     </li>
