@@ -27,6 +27,10 @@ private-content/
     files/
 ```
 
+## Architecture decisions
+
+Long-lived technical tradeoffs are recorded in [docs/decisions/](docs/decisions/README.md).
+
 ## Deployment flow
 
 The repository includes a GitHub Actions workflow that can:
