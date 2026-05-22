@@ -3,6 +3,7 @@ import ArticleList from '../../components/ArticleList.astro'
 import Badge from '../../components/Badge.astro'
 import Layout from '../../layouts/Layout.astro'
 import SectionTitle from '../../components/SectionTitle.astro'
+import { siteIdentity } from '../../data/site'
 import { getArticles } from '../../utils/articles'
 
 const articles = await getArticles()
@@ -11,7 +12,7 @@ const tags = ['Systems', 'Linux', 'Networking', 'Learning']
 
 <Layout
   title="Blog"
-  description="Field notes, build logs, and small technical writeups from Jeff Tim."
+  description={`Field notes, build logs, and small technical writeups from ${siteIdentity.ownerName}.`}
 >
   <section class="section prose blog-index">
     <div class="watermark" aria-hidden="true">2026</div>

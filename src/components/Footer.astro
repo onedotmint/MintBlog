@@ -1,9 +1,11 @@
 ---
+import { siteIdentity } from '../data/site'
+
 const year = new Date().getFullYear()
 ---
 
 <footer class="site-footer">
-  <p>© {year} Jeff Tim. Built with Astro and MDX.</p>
+  <p>© {year} {siteIdentity.ownerName}. Built with Astro and MDX.</p>
 </footer>
 
 <style>

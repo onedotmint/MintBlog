@@ -2,17 +2,18 @@
 import Badge from '../components/Badge.astro'
 import Layout from '../layouts/Layout.astro'
 import SectionTitle from '../components/SectionTitle.astro'
+import { siteIdentity } from '../data/site'
 ---
 
 <Layout
   title="About"
-  description="Jeff Tim's short introduction, learning route, technical interests, current focus, and contact links."
+  description={`${siteIdentity.ownerName}'s short introduction, learning route, technical interests, current focus, and contact links.`}
 >
   <section class="section prose">
     <p class="eyebrow">About</p>
-    <h1 class="hero-title">Jeff Tim</h1>
+    <h1 class="hero-title">{siteIdentity.ownerName}</h1>
     <p class="lead">
-      Computer science student. Backend and systems learner. I keep a public log of the small things I build and the notes that help me reason about them.
+      {siteIdentity.aboutIntro}
     </p>
   </section>
 
@@ -48,10 +49,10 @@ import SectionTitle from '../components/SectionTitle.astro'
     <SectionTitle title="Contact" />
     <ul>
       <li>
-        <a href="https://github.com/jefftim">GitHub</a>
+        <a href={siteIdentity.githubUrl}>GitHub</a>
       </li>
       <li>
-        <a href="mailto:jeff@example.com">Email</a>
+        <a href={`mailto:${siteIdentity.emailAddress}`}>Email</a>
       </li>
     </ul>
   </section>

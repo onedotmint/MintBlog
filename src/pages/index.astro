@@ -5,6 +5,7 @@ import Layout from '../layouts/Layout.astro'
 import ProjectList from '../components/ProjectList.astro'
 import SectionTitle from '../components/SectionTitle.astro'
 import { projectGroups } from '../data/projects'
+import { siteIdentity } from '../data/site'
 import { getArticles, getFeaturedArticles } from '../utils/articles'
 
 const articles = await getArticles()
@@ -16,14 +17,14 @@ const featuredGroups = projectGroups.map((group) => ({
 ---
 
 <Layout
-  title="Jeff Tim"
-  description="Jeff Tim writes about backend systems, small experiments, and the notes that keep both readable."
+  title={siteIdentity.defaultTitle}
+  description={`${siteIdentity.ownerName} writes about backend systems, small experiments, and the notes that keep both readable.`}
 >
   <section class="section prose">
     <p class="eyebrow">Personal blog</p>
-    <h1 class="hero-title">Jeff Tim</h1>
+    <h1 class="hero-title">{siteIdentity.ownerName}</h1>
     <p class="lead">
-      Notes on backend systems, small tools, and the habits that make them easier to ship.
+      {siteIdentity.shortIntro}
     </p>
 
     <div class="badge-row">

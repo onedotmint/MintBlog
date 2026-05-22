@@ -2,15 +2,16 @@
 import '../styles/global.css'
 import Footer from '../components/Footer.astro'
 import Nav from '../components/Nav.astro'
+import { siteIdentity } from '../data/site'
 
 interface Props {
   title?: string
   description?: string
 }
 
-const { title = 'Jeff Tim', description = 'Quiet notes on backend systems, small tools, and the path from learning to shipping.' } = Astro.props
+const { title = siteIdentity.defaultTitle, description = siteIdentity.defaultDescription } = Astro.props
 
-const pageTitle = title === 'Jeff Tim' ? title : `${title} · Jeff Tim`
+const pageTitle = title === siteIdentity.defaultTitle ? title : `${title} · ${siteIdentity.siteName}`
 ---
 
 <html lang="en">

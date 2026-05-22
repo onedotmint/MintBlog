@@ -1,4 +1,6 @@
 ---
+import { siteIdentity } from '../data/site'
+
 const pathname = Astro.url.pathname
 
 const links = [
@@ -11,8 +13,8 @@ const isActive = (href: string) => pathname.startsWith(href)
 ---
 
 <nav class="site-nav" aria-label="Primary">
-  <a class="brand" href="/" aria-label="Jeff Tim home">
-    Jeff Tim
+  <a class="brand" href="/" aria-label={`${siteIdentity.ownerName} home`}>
+    {siteIdentity.ownerName}
   </a>
 
   <div class="nav-links">
