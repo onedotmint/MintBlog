@@ -11,9 +11,10 @@
     "postbuild": "npm run check:budget:dist",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "prepreview": "npm run sync:content",
-    "check": "ASTRO_TELEMETRY_DISABLED=1 astro check",
+    "check": "npm run check:content && ASTRO_TELEMETRY_DISABLED=1 astro check",
     "check:budget": "node scripts/check-budget.mjs",
     "check:budget:dist": "node scripts/check-budget.mjs --dist",
+    "check:content": "node scripts/check-content.mjs",
     "sync:content": "node scripts/sync-content.mjs"
   },
   "dependencies": {

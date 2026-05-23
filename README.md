@@ -7,6 +7,8 @@ Static personal blog built with Astro and MDX.
 ```bash
 npm install
 npm run dev
+npm run check
+npm run check:content
 npm run build
 npm run preview
 ```
