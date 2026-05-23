@@ -96,11 +96,13 @@ Long-lived technical tradeoffs are recorded in [docs/decisions/](docs/decisions/
 The repository includes a GitHub Actions workflow that can:
 
 1. checkout the public code repository
-2. checkout the private content repository from CI secrets
-3. sync content into Astro's expected paths
-4. install dependencies with `npm ci`
-5. run `npm run build:deploy`
-6. rsync `dist/` to the target server over SSH
+2. set up Node.js
+3. validate required deployment configuration with `npm run check:deploy-env`
+4. checkout the private content repository from CI secrets
+5. sync content into Astro's expected paths
+6. install dependencies with `npm ci`
+7. run `npm run build:deploy`
+8. rsync `dist/` to the target server over SSH
 
 Required secrets:
 
@@ -127,8 +129,8 @@ RSS links, sitemap URLs, and social metadata. Local builds fall back to
   origin, for example `https://example.com`. `npm run build:deploy` runs
   `npm run check:origin` before syncing content, and blank values are rejected.
 - Private content checkout fails: verify `PRIVATE_CONTENT_REPOSITORY` and
-  `PRIVATE_CONTENT_TOKEN` in repository secrets. The checkout step is skipped
-  when either value is blank, which later causes strict sync to fail.
+  `PRIVATE_CONTENT_TOKEN` in repository secrets. The deployment configuration
+  check fails early when either value is blank.
 - SSH setup fails: verify `DEPLOY_HOST` and `DEPLOY_KEY`. The workflow writes
   `DEPLOY_KEY` to `~/.ssh/id_ed25519` and runs `ssh-keyscan -H "$DEPLOY_HOST"`,
   so an invalid host or malformed private key fails before upload.

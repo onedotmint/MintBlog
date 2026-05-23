@@ -20,19 +20,21 @@ jobs:
       - name: Checkout public repository
         uses: actions/checkout@v4
 
-      - name: Checkout private content repository
-        if: ${{ env.PRIVATE_CONTENT_REPOSITORY != '' && env.PRIVATE_CONTENT_TOKEN != '' }}
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.PRIVATE_CONTENT_REPOSITORY }}
-          token: ${{ env.PRIVATE_CONTENT_TOKEN }}
-          path: private-content
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+
+      - name: Check deployment configuration
+        run: npm run check:deploy-env
+
+      - name: Checkout private content repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.PRIVATE_CONTENT_REPOSITORY }}
+          token: ${{ env.PRIVATE_CONTENT_TOKEN }}
+          path: private-content
 
       - name: Install dependencies
         run: npm ci

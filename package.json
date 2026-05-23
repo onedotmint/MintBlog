@@ -18,6 +18,7 @@
     "check:budget": "node scripts/check-budget.mjs",
     "check:budget:dist": "node scripts/check-budget.mjs --dist",
     "check:content": "node scripts/check-content.mjs",
+    "check:deploy-env": "node scripts/check-deploy-env.mjs",
     "check:origin": "node scripts/check-origin.mjs",
     "build:deploy": "npm run check:origin && PRIVATE_CONTENT_STRICT=1 npm run build",
     "sync:content": "node scripts/sync-content.mjs",
