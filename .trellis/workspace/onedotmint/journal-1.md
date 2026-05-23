@@ -586,3 +586,38 @@ Added pure RSS and sitemap XML builders, covered feed and sitemap output with no
 ### Next Steps
 
 - None - task complete
+
+
+## Session 18: Improve article reading experience
+
+**Date**: 2026-05-23
+**Task**: Improve article reading experience
+**Branch**: `main`
+
+### Summary
+
+Improved static article prose, table-of-contents, adjacent navigation, code/table overflow handling, refreshed visual baselines, and documented the reading-page contract.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `cbb5a3e` | (see git log) |
+| `5c10dda` | (see git log) |
+| `aca80d5` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
