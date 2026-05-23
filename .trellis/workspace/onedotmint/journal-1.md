@@ -518,3 +518,37 @@ Added GitHub Actions quality workflow for push and pull_request, running npm ci,
 ### Next Steps
 
 - None - task complete
+
+
+## Session 16: Strengthen content validation
+
+**Date**: 2026-05-23
+**Task**: Strengthen content validation
+**Branch**: `main`
+
+### Summary
+
+Strengthened build-time MDX content validation for blog, reading, and project metadata, added regression tests, and documented the validation contract.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `76a5bf5` | (see git log) |
+| `08c817a` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

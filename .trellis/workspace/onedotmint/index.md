@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 15
+- **Total Sessions**: 16
 - **Last Active**: 2026-05-23
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~520 | Active |
+| `journal-1.md` | ~554 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 16 | 2026-05-23 | Strengthen content validation | `76a5bf5`, `08c817a` | `main` |
 | 15 | 2026-05-23 | Add CI quality workflow | `3037049` | `main` |
 | 14 | 2026-05-23 | Move project data to content collection | `3702d7d`, `893b831` | `main` |
 | 13 | 2026-05-23 | Harden content validation parser | `5b5447f` | `main` |
