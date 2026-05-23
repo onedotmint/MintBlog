@@ -655,3 +655,36 @@ Changed deployment install to npm ci, added a production PUBLIC_SITE_ORIGIN guar
 ### Next Steps
 
 - None - task complete
+
+
+## Session 20: Document deployment troubleshooting
+
+**Date**: 2026-05-23
+**Task**: Document deployment troubleshooting
+**Branch**: `main`
+
+### Summary
+
+Added concise README troubleshooting guidance for common GitHub Actions deployment failures, covering strict content sync, production origin, private content checkout, SSH setup, and rsync target checks. Verified with npm run check, npm test, and npm run build.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c29cee2` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
