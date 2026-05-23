@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 const defaultRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const requiredFrontmatter = ['title', 'date', 'description', 'tags', 'readingTime']
+const minuteReadingTimePattern = /^[1-9]\d*\s+min$/
 
 function createContext(options = {}) {
   const root = options.root ?? defaultRoot
@@ -79,6 +80,10 @@ function cleanScalarValue(value) {
   }
 
   return trimmed
+}
+
+function isBlankValue(value) {
+  return value === undefined || value.trim() === ''
 }
 
 function splitTopLevelCommaValues(value) {
@@ -312,6 +317,52 @@ function parseIndentedObject(lines, keyIndex) {
   return fields
 }
 
+function parseBlockObjectList(frontmatter, key) {
+  const field = getTopLevelField(frontmatter, key)
+
+  if (!field || field.rawValue !== '') {
+    return []
+  }
+
+  const values = []
+  let current
+
+  for (const line of frontmatter.split('\n').slice(field.index + 1)) {
+    if (line.trim() === '') {
+      continue
+    }
+
+    if (!line.startsWith(' ')) {
+      break
+    }
+
+    const item = line.match(/^\s*-\s*(.*)$/)
+
+    if (item) {
+      current = new Map()
+      values.push(current)
+
+      if (item[1].trim() !== '') {
+        const parts = splitKeyValue(item[1])
+
+        if (parts) {
+          current.set(cleanScalarValue(parts[0]), cleanScalarValue(parts[1]))
+        }
+      }
+
+      continue
+    }
+
+    const match = line.match(/^\s+([A-Za-z][A-Za-z0-9]*):\s*(.*)$/)
+
+    if (match && current) {
+      current.set(match[1], cleanScalarValue(match[2]))
+    }
+  }
+
+  return values
+}
+
 function normalizeSlug(value) {
   return value
     .trim()
@@ -333,6 +384,43 @@ function parseSeriesSlug(frontmatter) {
   const slugSource = seriesFields.get('slug') || seriesFields.get('title')
 
   return slugSource ? normalizeSlug(slugSource) : undefined
+}
+
+function parsePositiveInteger(value) {
+  if (!/^[1-9]\d*$/.test(value)) {
+    return undefined
+  }
+
+  return Number(value)
+}
+
+function parseDateValue(value) {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+
+  if (!match) {
+    return undefined
+  }
+
+  const [, year, month, day] = match
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
+
+  if (
+    date.getUTCFullYear() !== Number(year) ||
+    date.getUTCMonth() !== Number(month) - 1 ||
+    date.getUTCDate() !== Number(day)
+  ) {
+    return undefined
+  }
+
+  return date
+}
+
+function hasBodyContent(body) {
+  return body.trim() !== ''
+}
+
+function isExternalHttpUrl(value) {
+  return value.startsWith('https://') || value.startsWith('http://')
 }
 
 function getKnownRoutes(context, blogFiles, readingFiles, projectFiles) {
@@ -381,7 +469,7 @@ function checkFrontmatter(context, file, frontmatter) {
       continue
     }
 
-    if (!fields.has(key) || fields.get(key) === '') {
+    if (isBlankValue(fields.get(key))) {
       report(context, file, `missing required frontmatter: ${key}`)
     }
   }
@@ -410,14 +498,46 @@ function checkFrontmatter(context, file, frontmatter) {
 
     seenTags.add(normalized)
   }
+
+  const date = fields.get('date')
+  const parsedDate = date ? parseDateValue(date) : undefined
+
+  if (date && !parsedDate) {
+    report(context, file, 'date must use YYYY-MM-DD')
+  }
+
+  const updatedAt = fields.get('updatedAt')
+  const parsedUpdatedAt = updatedAt ? parseDateValue(updatedAt) : undefined
+
+  if (updatedAt && !parsedUpdatedAt) {
+    report(context, file, 'updatedAt must use YYYY-MM-DD')
+  }
+
+  if (parsedDate && parsedUpdatedAt && parsedUpdatedAt < parsedDate) {
+    report(context, file, 'updatedAt must not be earlier than date')
+  }
+
+  const readingTime = fields.get('readingTime')
+
+  if (readingTime && !minuteReadingTimePattern.test(readingTime)) {
+    report(context, file, 'readingTime must use minutes format like "4 min"')
+  }
+
+  const series = getTopLevelField(frontmatter, 'series')
+  const seriesFields = series ? parseInlineObject(series.rawValue) ?? parseIndentedObject(frontmatter.split('\n'), series.index) : new Map()
+  const seriesOrder = seriesFields.get('order')
+
+  if (seriesOrder && parsePositiveInteger(seriesOrder) === undefined) {
+    report(context, file, 'series.order must be a positive integer')
+  }
 }
 
-function checkReadingFrontmatter(context, file, frontmatter, knownRoutes) {
+function checkReadingFrontmatter(context, file, frontmatter, body, knownRoutes) {
   const fields = parseFrontmatter(frontmatter)
   const requiredKeys = ['title', 'type', 'note']
 
   for (const key of requiredKeys) {
-    if (!fields.has(key) || fields.get(key) === '') {
+    if (isBlankValue(fields.get(key))) {
       report(context, file, `missing required frontmatter: ${key}`)
     }
   }
@@ -454,6 +574,27 @@ function checkReadingFrontmatter(context, file, frontmatter, knownRoutes) {
   if (image) {
     checkRootRelativeTarget(context, file, image, knownRoutes)
   }
+
+  const url = fields.get('url')
+
+  if (!url && !hasBodyContent(body)) {
+    report(context, file, 'reading resources require url or body content')
+  }
+
+  if (!url) {
+    return
+  }
+
+  if (isExternalHttpUrl(url)) {
+    return
+  }
+
+  if (!url.startsWith('/')) {
+    report(context, file, 'url must be http(s) or a root-relative internal target')
+    return
+  }
+
+  checkRootRelativeTarget(context, file, url, knownRoutes)
 }
 
 function checkProjectFrontmatter(context, file, frontmatter, body, knownRoutes) {
@@ -461,7 +602,7 @@ function checkProjectFrontmatter(context, file, frontmatter, body, knownRoutes) 
   const requiredKeys = ['name', 'description', 'order']
 
   for (const key of requiredKeys) {
-    if (!fields.has(key) || fields.get(key) === '') {
+    if (isBlankValue(fields.get(key))) {
       report(context, file, `missing required frontmatter: ${key}`)
     }
   }
@@ -470,7 +611,7 @@ function checkProjectFrontmatter(context, file, frontmatter, body, knownRoutes) 
   const groupFields = group ? parseInlineObject(group.rawValue) ?? parseIndentedObject(frontmatter.split('\n'), group.index) : new Map()
 
   for (const key of ['title', 'description', 'order']) {
-    if (!groupFields.get(key)) {
+    if (isBlankValue(groupFields.get(key))) {
       report(context, file, `missing required frontmatter: group.${key}`)
     }
   }
@@ -495,13 +636,26 @@ function checkProjectFrontmatter(context, file, frontmatter, body, knownRoutes) 
   }
 
   const detail = fields.get('detail') === 'true'
+  const link = fields.get('link')
+
+  if (link?.startsWith('/')) {
+    checkRootRelativeTarget(context, file, link, knownRoutes)
+  }
+
+  for (const projectLink of parseBlockObjectList(frontmatter, 'links')) {
+    const href = projectLink.get('href')
+
+    if (href?.startsWith('/')) {
+      checkRootRelativeTarget(context, file, href, knownRoutes)
+    }
+  }
 
   if (!detail) {
     return
   }
 
   for (const key of ['summary', 'retrospective']) {
-    if (!fields.has(key) || fields.get(key) === '') {
+    if (isBlankValue(fields.get(key))) {
       report(context, file, `missing required frontmatter: ${key}`)
     }
   }
@@ -582,7 +736,7 @@ export function validateContent(options = {}) {
       continue
     }
 
-    checkReadingFrontmatter(context, file, parts.frontmatter, knownRoutes)
+    checkReadingFrontmatter(context, file, parts.frontmatter, parts.body, knownRoutes)
     checkRootRelativeTargets(context, file, parts.body, knownRoutes)
   }
 

@@ -122,6 +122,7 @@ test('handles realistic blog frontmatter values without false positives', () => 
       "    - 'Astro'",
       'image: "/images/reading/resource.svg"',
     ].join('\n'),
+    'Notes kept directly in the reading entry.',
   )
   writeProject(
     root,
@@ -187,6 +188,51 @@ test('reports empty required arrays and empty block array items predictably', ()
   assert(errors.some((error) => error.includes('src/content/projects/empty-project-tag.mdx: tags cannot contain empty values')))
 })
 
+test('reports blank required scalar values after trimming', () => {
+  const root = createFixtureRoot()
+
+  writeBlog(
+    root,
+    'blank-description.mdx',
+    [
+      'title: "Blank Description"',
+      'date: "2026-05-23"',
+      'description: "   "',
+      'tags: ["Validation"]',
+      'readingTime: "4 min"',
+    ].join('\n'),
+  )
+  writeReading(
+    root,
+    'blank-note.mdx',
+    [
+      'title: "Blank Note"',
+      'type: "Reference"',
+      'note: "   "',
+      'url: "https://example.com/resource"',
+    ].join('\n'),
+  )
+  writeProject(
+    root,
+    'blank-group-title.mdx',
+    [
+      'name: "Blank Group Title"',
+      'description: "Project group fields should be meaningful."',
+      'group:',
+      '  title: "   "',
+      '  description: "Project tools."',
+      '  order: 0',
+      'order: 0',
+    ].join('\n'),
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/blog/blank-description.mdx: missing required frontmatter: description')))
+  assert(errors.some((error) => error.includes('src/content/reading/blank-note.mdx: missing required frontmatter: note')))
+  assert(errors.some((error) => error.includes('src/content/projects/blank-group-title.mdx: missing required frontmatter: group.title')))
+})
+
 test('reports failing content with file-specific errors', () => {
   const root = createFixtureRoot()
 
@@ -250,4 +296,140 @@ test('reports failing content with file-specific errors', () => {
   assert(errors.some((error) => error.includes('src/content/projects/bad-project.mdx: missing required frontmatter: designNotes')))
   assert(errors.some((error) => error.includes('src/content/projects/bad-project.mdx: missing required frontmatter: retrospective')))
   assert(errors.some((error) => error.includes('src/content/projects/bad-project.mdx: missing internal route or public file: /missing-project-route/')))
+})
+
+test('reports missing root-relative project frontmatter links', () => {
+  const root = createFixtureRoot()
+
+  writeProject(
+    root,
+    'bad-frontmatter-links.mdx',
+    [
+      'name: "Bad Frontmatter Links"',
+      'description: "Project frontmatter links should resolve."',
+      'group:',
+      '  title: "Tools"',
+      '  description: "Project tools."',
+      '  order: 0',
+      'order: 0',
+      'tags: ["Validation"]',
+      'link: "/missing-project-link/"',
+      'links:',
+      '  - label: "Missing Asset"',
+      '    href: "/images/projects/missing.svg"',
+    ].join('\n'),
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/projects/bad-frontmatter-links.mdx: missing internal route or public file: /missing-project-link/')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-frontmatter-links.mdx: missing internal route or public file: /images/projects/missing.svg')))
+})
+
+test('reports invalid blog dates and updatedAt order', () => {
+  const root = createFixtureRoot()
+
+  writeBlog(
+    root,
+    'bad-dates.mdx',
+    [
+      'title: "Bad Dates"',
+      'date: "2026-02-30"',
+      'updatedAt: "2026-02-01"',
+      'description: "Date values should be real calendar dates."',
+      'tags: ["Validation"]',
+      'readingTime: "4 min"',
+    ].join('\n'),
+  )
+  writeBlog(
+    root,
+    'bad-updated-order.mdx',
+    [
+      'title: "Bad Updated Order"',
+      'date: "2026-05-23"',
+      'updatedAt: "2026-05-22"',
+      'description: "updatedAt cannot move backward."',
+      'tags: ["Validation"]',
+      'readingTime: "4 min"',
+    ].join('\n'),
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/blog/bad-dates.mdx: date must use YYYY-MM-DD')))
+  assert(errors.some((error) => error.includes('src/content/blog/bad-updated-order.mdx: updatedAt must not be earlier than date')))
+})
+
+test('reports invalid blog reading time and series order', () => {
+  const root = createFixtureRoot()
+
+  writeBlog(
+    root,
+    'bad-reading-time.mdx',
+    [
+      'title: "Bad Reading Time"',
+      'date: "2026-05-23"',
+      'description: "Reading time should use minutes."',
+      'tags: ["Validation"]',
+      'readingTime: "about four minutes"',
+      'series:',
+      '  title: "Validation Notes"',
+      '  slug: "validation-notes"',
+      '  order: 0',
+    ].join('\n'),
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/blog/bad-reading-time.mdx: readingTime must use minutes format like "4 min"')))
+  assert(errors.some((error) => error.includes('src/content/blog/bad-reading-time.mdx: series.order must be a positive integer')))
+})
+
+test('reports reading resources without url or body content', () => {
+  const root = createFixtureRoot()
+
+  writeReading(
+    root,
+    'empty-resource.mdx',
+    [
+      'title: "Empty Resource"',
+      'type: "Reference"',
+      'note: "A reading item needs somewhere to send the reader."',
+      'tags: ["Validation"]',
+    ].join('\n'),
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/reading/empty-resource.mdx: reading resources require url or body content')))
+})
+
+test('validates reading url values', () => {
+  const root = createFixtureRoot()
+
+  writeReading(
+    root,
+    'internal-resource.mdx',
+    [
+      'title: "Internal Resource"',
+      'type: "Reference"',
+      'note: "Root-relative links should resolve like body links."',
+      'url: "/blog/missing-post/"',
+    ].join('\n'),
+  )
+  writeReading(
+    root,
+    'invalid-url.mdx',
+    [
+      'title: "Invalid URL"',
+      'type: "Reference"',
+      'note: "Only http(s) and internal targets are supported."',
+      'url: "ftp://example.com/resource"',
+    ].join('\n'),
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/reading/internal-resource.mdx: missing internal route or public file: /blog/missing-post/')))
+  assert(errors.some((error) => error.includes('src/content/reading/invalid-url.mdx: url must be http(s) or a root-relative internal target')))
 })
