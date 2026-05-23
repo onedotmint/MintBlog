@@ -19,4 +19,16 @@ const blog = defineCollection({
   }),
 })
 
-export const collections = { blog }
+const reading = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    type: z.string(),
+    note: z.string(),
+    tags: z.array(z.string()).default([]),
+    url: z.string().optional(),
+    image: z.string().optional(),
+  }),
+})
+
+export const collections = { blog, reading }

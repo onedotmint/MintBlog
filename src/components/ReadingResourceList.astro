@@ -1,0 +1,128 @@
+---
+import Badge from './Badge.astro'
+import SectionTitle from './SectionTitle.astro'
+import type { ReadingResourceGroup } from '../utils/reading'
+import { getReadingResourceExternalHref } from '../utils/reading'
+
+interface Props {
+  groups: readonly ReadingResourceGroup[]
+}
+
+const { groups } = Astro.props
+
+const groupItems = groups.map((group) => ({
+  ...group,
+  resources: group.resources.map((resource) => ({
+    ...resource,
+    externalHref: getReadingResourceExternalHref(resource),
+  })),
+}))
+---
+
+<div class="reading-groups">
+  {groupItems.map((group) => (
+    <section class="reading-group">
+      <SectionTitle title={group.type} description={`${group.resources.length} resource${group.resources.length === 1 ? '' : 's'}`} />
+
+      <div class="reading-items">
+        {group.resources.map((resource) => (
+          <article class="reading-item">
+            <a class="reading-card" href={resource.href}>
+              {resource.data.image && (
+                <img
+                  class="reading-thumb"
+                  src={resource.data.image}
+                  alt={resource.data.title}
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+
+              <div class="reading-copy">
+                <div class="reading-headline">
+                  <h3>{resource.data.title}</h3>
+                  <span aria-hidden="true">-&gt;</span>
+                </div>
+                <p>{resource.data.note}</p>
+              </div>
+            </a>
+
+            <div class="tag-row">
+              {resource.data.tags.map((tag: string) => <Badge label={tag} />)}
+              {resource.externalHref && <Badge label="Source" href={resource.externalHref} />}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  ))}
+</div>
+
+<style>
+  .reading-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1.9rem;
+  }
+
+  .reading-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .reading-item {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .reading-card {
+    display: grid;
+    grid-template-columns: minmax(0, 8rem) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .reading-thumb {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    object-fit: cover;
+    background: var(--bg-soft);
+  }
+
+  .reading-copy {
+    min-width: 0;
+  }
+
+  .reading-headline {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .reading-headline h3 {
+    margin-bottom: 0.25rem;
+  }
+
+  .reading-headline span {
+    color: var(--text-faint);
+    font-size: 0.95rem;
+  }
+
+  .reading-copy p {
+    margin-bottom: 0.7rem;
+  }
+
+  @media (max-width: 720px) {
+    .reading-card {
+      grid-template-columns: 1fr;
+    }
+
+    .reading-thumb {
+      max-width: 16rem;
+    }
+  }
+</style>

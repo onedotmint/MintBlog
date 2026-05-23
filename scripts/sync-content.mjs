@@ -21,9 +21,21 @@ const targets = [
     requiredInStrict: true,
   },
   {
+    sourcePath: 'reading',
+    target: join(root, 'src/content/reading'),
+    label: 'reading resources',
+    requiredInStrict: true,
+  },
+  {
     sourcePath: 'assets/images/blog',
     target: join(root, 'public/images/blog'),
     label: 'blog images',
+    requiredInStrict: false,
+  },
+  {
+    sourcePath: 'assets/images/reading',
+    target: join(root, 'public/images/reading'),
+    label: 'reading images',
     requiredInStrict: false,
   },
   {

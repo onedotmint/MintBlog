@@ -136,9 +136,9 @@ export const projectGroups: readonly ProjectGroup[] = [
     items: [
       {
         name: 'Reading Index',
-        description: 'A compact collection of blog indexes, notes, and file links.',
+        description: 'A public index for courses, books, documentation, and technical references.',
         tags: ['Astro', 'MDX', 'Content'],
-        link: '#',
+        link: '/reading/',
       },
       {
         name: 'Project Log',

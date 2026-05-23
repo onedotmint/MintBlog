@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const blogDir = join(root, 'src/content/blog')
+const readingDir = join(root, 'src/content/reading')
 const publicDir = join(root, 'public')
 const requiredFrontmatter = ['title', 'date', 'description', 'tags', 'readingTime']
 const errors = []
@@ -22,10 +23,30 @@ function getBlogFiles() {
     .map((name) => join(blogDir, name))
 }
 
+function getReadingFiles() {
+  if (!existsSync(readingDir)) {
+    return []
+  }
+
+  return readdirSync(readingDir)
+    .filter((name) => name.endsWith('.mdx'))
+    .map((name) => join(readingDir, name))
+}
+
 function normalizeBlogSlug(file) {
   return file
     .slice(blogDir.length + 1)
     .replace(/\.(md|mdx)$/, '')
+}
+
+function normalizeReadingSlug(file) {
+  return file
+    .slice(readingDir.length + 1)
+    .replace(/\.(md|mdx)$/, '')
+}
+
+function cleanScalarValue(value) {
+  return value.replace(/^['"]|['"]$/g, '')
 }
 
 function splitFrontmatter(file, source) {
@@ -60,7 +81,7 @@ function parseFrontmatter(frontmatter) {
     }
 
     const [, key, rawValue] = match
-    fields.set(key, rawValue.trim())
+    fields.set(key, cleanScalarValue(rawValue.trim()))
   }
 
   return fields
@@ -142,7 +163,7 @@ function parseSeriesSlug(frontmatter) {
   return slugSource ? normalizeSlug(slugSource) : undefined
 }
 
-function getKnownRoutes(blogFiles) {
+function getKnownRoutes(blogFiles, readingFiles) {
   const seriesRoutes = blogFiles
     .map((file) => {
       const source = readFileSync(file, 'utf8')
@@ -153,14 +174,20 @@ function getKnownRoutes(blogFiles) {
     })
     .filter(Boolean)
 
+  const readingRoutes = readingFiles.map((file) => `/reading/${normalizeReadingSlug(file)}/`)
+
   return new Set([
     '/',
     '/about/',
     '/blog/',
     '/blog/series/',
+    '/blog/tags/',
     '/projects/',
+    '/now/',
+    '/reading/',
     ...blogFiles.map((file) => `/blog/${normalizeBlogSlug(file)}/`),
     ...seriesRoutes,
+    ...readingRoutes,
   ])
 }
 
@@ -203,6 +230,50 @@ function checkFrontmatter(file, frontmatter) {
   }
 }
 
+function checkReadingFrontmatter(file, frontmatter, knownRoutes) {
+  const fields = parseFrontmatter(frontmatter)
+  const requiredKeys = ['title', 'type', 'note']
+
+  for (const key of requiredKeys) {
+    if (!fields.has(key) || fields.get(key) === '') {
+      report(file, `missing required frontmatter: ${key}`)
+    }
+  }
+
+  const tags = parseListValue(frontmatter, 'tags')
+
+  if (tags.length > 0) {
+    const seenTags = new Set()
+
+    for (const tag of tags) {
+      if (!tag) {
+        report(file, 'tags cannot contain empty values')
+        continue
+      }
+
+      const normalized = tag.toLowerCase()
+
+      if (seenTags.has(normalized)) {
+        report(file, `duplicate tag: ${tag}`)
+        continue
+      }
+
+      seenTags.add(normalized)
+    }
+  }
+
+  const image = fields.get('image')
+
+  if (image && !image.startsWith('/')) {
+    report(file, 'image must use a root-relative public path')
+    return
+  }
+
+  if (image) {
+    checkRootRelativeTarget(file, image, knownRoutes)
+  }
+}
+
 function stripCodeFences(source) {
   return source.replace(/```[\s\S]*?```/g, '')
 }
@@ -227,18 +298,23 @@ function findRootRelativeTargets(source) {
 
 function checkRootRelativeTargets(file, body, knownRoutes) {
   for (const target of findRootRelativeTargets(body)) {
-    const publicPath = join(publicDir, decodeURIComponent(target))
-
-    if (knownRoutes.has(target) || (existsSync(publicPath) && statSync(publicPath).isFile())) {
-      continue
-    }
-
-    report(file, `missing internal route or public file: ${target}`)
+    checkRootRelativeTarget(file, target, knownRoutes)
   }
 }
 
+function checkRootRelativeTarget(file, target, knownRoutes) {
+  const publicPath = join(publicDir, decodeURIComponent(target))
+
+  if (knownRoutes.has(target) || (existsSync(publicPath) && statSync(publicPath).isFile())) {
+    return
+  }
+
+  report(file, `missing internal route or public file: ${target}`)
+}
+
 const blogFiles = getBlogFiles()
-const knownRoutes = getKnownRoutes(blogFiles)
+const readingFiles = getReadingFiles()
+const knownRoutes = getKnownRoutes(blogFiles, readingFiles)
 
 for (const file of blogFiles) {
   const source = readFileSync(file, 'utf8')
@@ -249,6 +325,18 @@ for (const file of blogFiles) {
   }
 
   checkFrontmatter(file, parts.frontmatter)
+  checkRootRelativeTargets(file, parts.body, knownRoutes)
+}
+
+for (const file of readingFiles) {
+  const source = readFileSync(file, 'utf8')
+  const parts = splitFrontmatter(file, source)
+
+  if (!parts) {
+    continue
+  }
+
+  checkReadingFrontmatter(file, parts.frontmatter, knownRoutes)
   checkRootRelativeTargets(file, parts.body, knownRoutes)
 }
 
@@ -263,3 +351,4 @@ if (errors.length > 0) {
 }
 
 console.log(`[content] ok: ${blogFiles.length} blog post(s) checked`)
+console.log(`[content] ok: ${readingFiles.length} reading resource(s) checked`)

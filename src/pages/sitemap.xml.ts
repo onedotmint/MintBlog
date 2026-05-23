@@ -1,6 +1,7 @@
 import { toAbsoluteUrl } from '../data/site'
 import { getProjectsWithDetails } from '../data/projects'
 import { getArticleSeries, getArticleTags, getArticles, getArticleUpdatedDate } from '../utils/articles'
+import { getReadingResources } from '../utils/reading'
 
 function sitemapUrl(path: string, lastmod?: Date) {
   const lastmodTag = lastmod ? `<lastmod>${lastmod.toISOString().slice(0, 10)}</lastmod>` : ''
@@ -10,14 +11,16 @@ function sitemapUrl(path: string, lastmod?: Date) {
 
 export async function GET() {
   const articles = await getArticles()
+  const readingResources = await getReadingResources()
   const articleSeries = getArticleSeries(articles)
   const articleTags = getArticleTags(articles)
   const projectDetails = getProjectsWithDetails()
-  const staticPages = ['/', '/blog/', '/blog/series/', '/blog/tags/', '/projects/', '/now/', '/about/']
+  const staticPages = ['/', '/blog/', '/blog/series/', '/blog/tags/', '/reading/', '/projects/', '/now/', '/about/']
   const urls = [
     ...staticPages.map((path) => sitemapUrl(path)),
     ...articleSeries.map((series) => sitemapUrl(series.href)),
     ...articleTags.map((tag) => sitemapUrl(tag.href)),
+    ...readingResources.map((resource) => sitemapUrl(resource.href)),
     ...projectDetails.map((project) => sitemapUrl(`/projects/${project.detail.slug}/`)),
     ...articles.map((article) => sitemapUrl(article.href, getArticleUpdatedDate(article) ?? article.data.date)),
   ]

@@ -16,8 +16,14 @@ pnpm-debug.log*
 src/content/blog/*
 !src/content/blog/.gitkeep
 
+src/content/reading/*
+!src/content/reading/.gitkeep
+
 public/images/blog/*
 !public/images/blog/.gitkeep
+
+public/images/reading/*
+!public/images/reading/.gitkeep
 
 public/images/projects/*
 !public/images/projects/.gitkeep

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" fill="none">
+  <rect width="960" height="540" rx="28" fill="#0b0b0b" />
+  <rect x="76" y="82" width="808" height="376" rx="22" stroke="#292929" stroke-width="2" />
+  <rect x="126" y="132" width="320" height="70" rx="12" fill="#101010" stroke="#313131" />
+  <rect x="126" y="228" width="612" height="54" rx="11" fill="#101010" stroke="#2b2b2b" />
+  <rect x="126" y="300" width="492" height="54" rx="11" fill="#101010" stroke="#2b2b2b" />
+  <rect x="126" y="372" width="364" height="54" rx="11" fill="#101010" stroke="#2b2b2b" />
+  <path d="M470 168h222" stroke="#5a5a5a" stroke-dasharray="8 8" />
+  <path d="M470 255h274" stroke="#3e3e3e" />
+  <path d="M470 327h196" stroke="#3e3e3e" />
+  <path d="M470 399h128" stroke="#3e3e3e" />
+  <text x="126" y="114" fill="#dcdcdc" font-family="Inter, Arial, sans-serif" font-size="28">Reading workbench</text>
+  <text x="150" y="177" fill="#a7a7a7" font-family="IBM Plex Mono, monospace" font-size="18">one file per resource</text>
+  <text x="150" y="264" fill="#a7a7a7" font-family="IBM Plex Mono, monospace" font-size="18">frontmatter on the index</text>
+  <text x="150" y="336" fill="#a7a7a7" font-family="IBM Plex Mono, monospace" font-size="18">MDX body on detail pages</text>
+  <text x="150" y="408" fill="#a7a7a7" font-family="IBM Plex Mono, monospace" font-size="18">synced assets stay root-relative</text>
+</svg>

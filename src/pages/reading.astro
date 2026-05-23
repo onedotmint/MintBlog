@@ -1,0 +1,35 @@
+---
+import Layout from '../layouts/Layout.astro'
+import ReadingResourceList from '../components/ReadingResourceList.astro'
+import SectionTitle from '../components/SectionTitle.astro'
+import { getReadingResourceGroups, getReadingResources } from '../utils/reading'
+
+const resources = await getReadingResources()
+const groups = getReadingResourceGroups(resources)
+---
+
+<Layout
+  title="Reading"
+  description="Courses, books, documentation, and technical references used while learning."
+>
+  <section class="section prose reading-index">
+    <SectionTitle
+      title="Reading"
+      description="Courses, books, documentation, and technical references used while learning."
+    />
+
+    <p class="lead">
+      A static index for the resources worth keeping close. Each entry opens a detail page with the full notes.
+    </p>
+  </section>
+
+  <section class="section">
+    <ReadingResourceList groups={groups} />
+  </section>
+</Layout>
+
+<style>
+  .reading-index {
+    position: relative;
+  }
+</style>
