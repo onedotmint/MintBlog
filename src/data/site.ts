@@ -15,7 +15,9 @@ export interface SiteIdentity {
 const developmentCanonicalOrigin = 'http://localhost:4321'
 
 export function getSiteOrigin() {
-  return (import.meta.env.PUBLIC_SITE_ORIGIN || siteIdentity.canonicalOrigin || developmentCanonicalOrigin).replace(/\/+$/, '')
+  const env = import.meta.env as ImportMeta['env'] | undefined
+
+  return (env?.PUBLIC_SITE_ORIGIN || siteIdentity.canonicalOrigin || developmentCanonicalOrigin).replace(/\/+$/, '')
 }
 
 export function toAbsoluteUrl(path: string) {
