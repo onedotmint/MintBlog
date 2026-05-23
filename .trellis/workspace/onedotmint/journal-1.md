@@ -308,3 +308,36 @@ Added a static /reading index plus per-resource detail pages, wired reading cont
 ### Next Steps
 
 - None - task complete
+
+
+## Session 10: Article reading navigation
+
+**Date**: 2026-05-23
+**Task**: Article reading navigation
+**Branch**: `main`
+
+### Summary
+
+Archived the Docker Compose docs task after validation, then added static article table-of-contents and adjacent article navigation.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ca8da31` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
