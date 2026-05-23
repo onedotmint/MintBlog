@@ -1,4 +1,5 @@
 import { toAbsoluteUrl } from '../data/site'
+import { getProjectsWithDetails } from '../data/projects'
 import { getArticleSeries, getArticles, getArticleUpdatedDate } from '../utils/articles'
 
 function sitemapUrl(path: string, lastmod?: Date) {
@@ -10,10 +11,12 @@ function sitemapUrl(path: string, lastmod?: Date) {
 export async function GET() {
   const articles = await getArticles()
   const articleSeries = getArticleSeries(articles)
+  const projectDetails = getProjectsWithDetails()
   const staticPages = ['/', '/blog/', '/blog/series/', '/projects/', '/about/']
   const urls = [
     ...staticPages.map((path) => sitemapUrl(path)),
     ...articleSeries.map((series) => sitemapUrl(series.href)),
+    ...projectDetails.map((project) => sitemapUrl(`/projects/${project.detail.slug}/`)),
     ...articles.map((article) => sitemapUrl(article.href, getArticleUpdatedDate(article) ?? article.data.date)),
   ]
 

@@ -1,0 +1,129 @@
+---
+import Badge from '../../components/Badge.astro'
+import Layout from '../../layouts/Layout.astro'
+import { getProjectsWithDetails } from '../../data/projects'
+import type { ProjectLink, ProjectWithDetail } from '../../data/projects'
+
+interface Props {
+  project: ProjectWithDetail
+}
+
+export function getStaticPaths() {
+  return getProjectsWithDetails().map((project) => ({
+    params: {
+      slug: project.detail.slug,
+    },
+    props: {
+      project,
+    },
+  }))
+}
+
+const { project } = Astro.props
+const detail = project.detail
+---
+
+<Layout
+  title={project.name}
+  description={detail.summary}
+  canonicalPath={`/projects/${detail.slug}/`}
+>
+  <article class="project-detail">
+    <header class="section prose project-hero">
+      <a class="back-link" href="/projects/">Projects</a>
+      <p class="eyebrow">Project</p>
+      <h1>{project.name}</h1>
+      <p class="lead">{detail.summary}</p>
+      <div class="tag-row">
+        {project.tags.map((tag: string) => <Badge label={tag} />)}
+      </div>
+    </header>
+
+    <section class="section project-section">
+      <h2>Background</h2>
+      <p>{detail.background}</p>
+    </section>
+
+    <section class="section project-section">
+      <h2>Design Notes</h2>
+      <ul>
+        {detail.designNotes.map((note: string) => <li>{note}</li>)}
+      </ul>
+    </section>
+
+    <section class="section project-section">
+      <h2>Related Links</h2>
+      <ul class="list-reset project-links">
+        {detail.links.map((link: ProjectLink) => (
+          <li>
+            <a href={link.href}>
+              <span>{link.label}</span>
+              <span aria-hidden="true">-&gt;</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="section project-section">
+      <h2>Retrospective</h2>
+      <p>{detail.retrospective}</p>
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .project-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .project-hero {
+    gap: 0.7rem;
+  }
+
+  .back-link {
+    width: fit-content;
+    color: var(--text-faint);
+    font-size: 0.9rem;
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+  }
+
+  .project-section {
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .project-section p,
+  .project-section li {
+    color: var(--text-muted);
+  }
+
+  .project-section ul {
+    margin-bottom: 0;
+  }
+
+  .project-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .project-links a {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .project-links a:hover {
+    color: var(--accent);
+    border-color: var(--border-strong);
+  }
+</style>

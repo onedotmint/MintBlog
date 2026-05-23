@@ -4,7 +4,7 @@ import SectionTitle from './SectionTitle.astro'
 import ProjectItem from './ProjectItem.astro'
 
 interface Props {
-  groups: ProjectGroup[]
+  groups: readonly ProjectGroup[]
 }
 
 const { groups } = Astro.props

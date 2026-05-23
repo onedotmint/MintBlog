@@ -7,11 +7,12 @@ interface Props {
 }
 
 const { project } = Astro.props
+const projectHref = project.link || (project.detail ? `/projects/${project.detail.slug}/` : undefined)
 ---
 
 <article class="project-item">
-  {project.link ? (
-    <a class="project-link" href={project.link}>
+  {projectHref ? (
+    <a class="project-link" href={projectHref}>
       <div class="project-headline">
         <h3>{project.name}</h3>
         <span class="arrow" aria-hidden="true">-></span>
