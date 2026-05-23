@@ -3,6 +3,13 @@ import '../styles/global.css'
 import Footer from '../components/Footer.astro'
 import Nav from '../components/Nav.astro'
 import { siteIdentity, toAbsoluteUrl } from '../data/site'
+import { buildArticleSeoMetadata, serializeJsonLd } from '../utils/seo'
+
+interface ArticleMetadata {
+  publishedAt: Date
+  updatedAt?: Date
+  tags?: readonly string[]
+}
 
 interface Props {
   title?: string
@@ -10,6 +17,7 @@ interface Props {
   canonicalPath?: string
   imagePath?: string
   type?: 'website' | 'article'
+  articleMetadata?: ArticleMetadata
 }
 
 const {
@@ -18,11 +26,26 @@ const {
   canonicalPath = Astro.url.pathname,
   imagePath = siteIdentity.socialImagePath,
   type = 'website',
+  articleMetadata,
 } = Astro.props
 
 const pageTitle = title === siteIdentity.defaultTitle ? title : `${title} · ${siteIdentity.siteName}`
 const canonicalUrl = toAbsoluteUrl(canonicalPath)
 const imageUrl = toAbsoluteUrl(imagePath)
+const articleSeo = articleMetadata
+  ? buildArticleSeoMetadata({
+      title,
+      description,
+      canonicalUrl,
+      imageUrl,
+      publishedAt: articleMetadata.publishedAt,
+      modifiedAt: articleMetadata.updatedAt,
+      tags: articleMetadata.tags,
+      authorName: siteIdentity.ownerName,
+      siteName: siteIdentity.siteName,
+      siteUrl: toAbsoluteUrl('/'),
+    })
+  : undefined
 ---
 
 <html lang="en">
@@ -39,11 +62,17 @@ const imageUrl = toAbsoluteUrl(imagePath)
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:image" content={imageUrl} />
     <meta property="og:image:alt" content={siteIdentity.socialImageAlt} />
+    {articleSeo?.keywords && <meta name="keywords" content={articleSeo.keywords} />}
+    {articleSeo && <meta property="article:published_time" content={articleSeo.publishedTime} />}
+    {articleSeo?.modifiedTime && <meta property="article:modified_time" content={articleSeo.modifiedTime} />}
+    {articleSeo && <meta property="article:author" content={siteIdentity.ownerName} />}
+    {articleSeo?.tags.map((tag) => <meta property="article:tag" content={tag} />)}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageUrl} />
     <meta name="twitter:image:alt" content={siteIdentity.socialImageAlt} />
+    {articleSeo && <script type="application/ld+json" is:inline set:html={serializeJsonLd(articleSeo.jsonLd)} />}
     <title>{pageTitle}</title>
   </head>
   <body>
