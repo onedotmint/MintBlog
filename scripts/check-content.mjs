@@ -394,6 +394,14 @@ function parsePositiveInteger(value) {
   return Number(value)
 }
 
+function parseNonnegativeInteger(value) {
+  if (!/^(0|[1-9]\d*)$/.test(value)) {
+    return undefined
+  }
+
+  return Number(value)
+}
+
 function parseDateValue(value) {
   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
 
@@ -421,6 +429,19 @@ function hasBodyContent(body) {
 
 function isExternalHttpUrl(value) {
   return value.startsWith('https://') || value.startsWith('http://')
+}
+
+function checkHttpOrRootRelativeTarget(context, file, field, value, knownRoutes) {
+  if (isExternalHttpUrl(value)) {
+    return
+  }
+
+  if (!value.startsWith('/')) {
+    report(context, file, `${field} must be http(s) or a root-relative internal target`)
+    return
+  }
+
+  checkRootRelativeTarget(context, file, value, knownRoutes)
 }
 
 function getKnownRoutes(context, blogFiles, readingFiles, projectFiles) {
@@ -527,6 +548,10 @@ function checkFrontmatter(context, file, frontmatter) {
   const seriesFields = series ? parseInlineObject(series.rawValue) ?? parseIndentedObject(frontmatter.split('\n'), series.index) : new Map()
   const seriesOrder = seriesFields.get('order')
 
+  if (series && isBlankValue(seriesFields.get('title'))) {
+    report(context, file, 'missing required frontmatter: series.title')
+  }
+
   if (seriesOrder && parsePositiveInteger(seriesOrder) === undefined) {
     report(context, file, 'series.order must be a positive integer')
   }
@@ -568,10 +593,9 @@ function checkReadingFrontmatter(context, file, frontmatter, body, knownRoutes) 
 
   if (image && !image.startsWith('/')) {
     report(context, file, 'image must use a root-relative public path')
-    return
   }
 
-  if (image) {
+  if (image?.startsWith('/')) {
     checkRootRelativeTarget(context, file, image, knownRoutes)
   }
 
@@ -585,16 +609,7 @@ function checkReadingFrontmatter(context, file, frontmatter, body, knownRoutes) 
     return
   }
 
-  if (isExternalHttpUrl(url)) {
-    return
-  }
-
-  if (!url.startsWith('/')) {
-    report(context, file, 'url must be http(s) or a root-relative internal target')
-    return
-  }
-
-  checkRootRelativeTarget(context, file, url, knownRoutes)
+  checkHttpOrRootRelativeTarget(context, file, 'url', url, knownRoutes)
 }
 
 function checkProjectFrontmatter(context, file, frontmatter, body, knownRoutes) {
@@ -607,6 +622,12 @@ function checkProjectFrontmatter(context, file, frontmatter, body, knownRoutes) 
     }
   }
 
+  const order = fields.get('order')
+
+  if (order && parseNonnegativeInteger(order) === undefined) {
+    report(context, file, 'order must be a nonnegative integer')
+  }
+
   const group = getTopLevelField(frontmatter, 'group')
   const groupFields = group ? parseInlineObject(group.rawValue) ?? parseIndentedObject(frontmatter.split('\n'), group.index) : new Map()
 
@@ -614,6 +635,12 @@ function checkProjectFrontmatter(context, file, frontmatter, body, knownRoutes) 
     if (isBlankValue(groupFields.get(key))) {
       report(context, file, `missing required frontmatter: group.${key}`)
     }
+  }
+
+  const groupOrder = groupFields.get('order')
+
+  if (groupOrder && parseNonnegativeInteger(groupOrder) === undefined) {
+    report(context, file, 'group.order must be a nonnegative integer')
   }
 
   const tags = parseListValue(frontmatter, 'tags')
@@ -638,16 +665,25 @@ function checkProjectFrontmatter(context, file, frontmatter, body, knownRoutes) 
   const detail = fields.get('detail') === 'true'
   const link = fields.get('link')
 
-  if (link?.startsWith('/')) {
-    checkRootRelativeTarget(context, file, link, knownRoutes)
+  if (link) {
+    checkHttpOrRootRelativeTarget(context, file, 'link', link, knownRoutes)
   }
 
-  for (const projectLink of parseBlockObjectList(frontmatter, 'links')) {
+  const projectLinks = parseBlockObjectList(frontmatter, 'links')
+
+  for (const projectLink of projectLinks) {
+    if (isBlankValue(projectLink.get('label'))) {
+      report(context, file, 'missing required frontmatter: links.label')
+    }
+
     const href = projectLink.get('href')
 
-    if (href?.startsWith('/')) {
-      checkRootRelativeTarget(context, file, href, knownRoutes)
+    if (isBlankValue(href)) {
+      report(context, file, 'missing required frontmatter: links.href')
+      continue
     }
+
+    checkHttpOrRootRelativeTarget(context, file, 'links.href', href, knownRoutes)
   }
 
   if (!detail) {
@@ -662,6 +698,10 @@ function checkProjectFrontmatter(context, file, frontmatter, body, knownRoutes) 
 
   if (parseListValue(frontmatter, 'designNotes').length === 0) {
     report(context, file, 'missing required frontmatter: designNotes')
+  }
+
+  if (projectLinks.length === 0) {
+    report(context, file, 'missing required frontmatter: links')
   }
 
   if (body.trim() === '') {

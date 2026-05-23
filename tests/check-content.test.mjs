@@ -385,6 +385,29 @@ test('reports invalid blog reading time and series order', () => {
   assert(errors.some((error) => error.includes('src/content/blog/bad-reading-time.mdx: series.order must be a positive integer')))
 })
 
+test('reports missing blog series title', () => {
+  const root = createFixtureRoot()
+
+  writeBlog(
+    root,
+    'bad-series-title.mdx',
+    [
+      'title: "Bad Series Title"',
+      'date: "2026-05-23"',
+      'description: "Series metadata needs a display title."',
+      'tags: ["Validation"]',
+      'readingTime: "4 min"',
+      'series:',
+      '  slug: "validation-notes"',
+      '  order: 1',
+    ].join('\n'),
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/blog/bad-series-title.mdx: missing required frontmatter: series.title')))
+})
+
 test('reports reading resources without url or body content', () => {
   const root = createFixtureRoot()
 
@@ -432,4 +455,87 @@ test('validates reading url values', () => {
 
   assert(errors.some((error) => error.includes('src/content/reading/internal-resource.mdx: missing internal route or public file: /blog/missing-post/')))
   assert(errors.some((error) => error.includes('src/content/reading/invalid-url.mdx: url must be http(s) or a root-relative internal target')))
+})
+
+test('continues reading validation after invalid image path', () => {
+  const root = createFixtureRoot()
+
+  writeReading(
+    root,
+    'bad-image-and-url.mdx',
+    [
+      'title: "Bad Image And URL"',
+      'type: "Reference"',
+      'note: "Validation should aggregate independent reading errors."',
+      'image: "images/reading/resource.svg"',
+      'url: "ftp://example.com/resource"',
+    ].join('\n'),
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/reading/bad-image-and-url.mdx: image must use a root-relative public path')))
+  assert(errors.some((error) => error.includes('src/content/reading/bad-image-and-url.mdx: url must be http(s) or a root-relative internal target')))
+})
+
+test('reports invalid project ordering and link shapes', () => {
+  const root = createFixtureRoot()
+
+  writeProject(
+    root,
+    'bad-project-shapes.mdx',
+    [
+      'name: "Bad Project Shapes"',
+      'description: "Project numeric and link values should match the schema."',
+      'group:',
+      '  title: "Tools"',
+      '  description: "Project tools."',
+      '  order: -1',
+      'order: -2',
+      'tags: ["Validation"]',
+      'link: "reading/"',
+      'links:',
+      '  - label: ""',
+      '    href: "files/project.txt"',
+      '  - label: "Missing href"',
+    ].join('\n'),
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project-shapes.mdx: order must be a nonnegative integer')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project-shapes.mdx: group.order must be a nonnegative integer')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project-shapes.mdx: link must be http(s) or a root-relative internal target')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project-shapes.mdx: missing required frontmatter: links.label')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project-shapes.mdx: links.href must be http(s) or a root-relative internal target')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project-shapes.mdx: missing required frontmatter: links.href')))
+})
+
+test('reports detail projects without frontmatter links', () => {
+  const root = createFixtureRoot()
+
+  writeProject(
+    root,
+    'detail-without-links.mdx',
+    [
+      'name: "Detail Without Links"',
+      'description: "Detail pages should expose related links."',
+      'group:',
+      '  title: "Tools"',
+      '  description: "Project tools."',
+      '  order: 0',
+      'order: 0',
+      'tags: ["Validation"]',
+      'detail: true',
+      'summary: "A detail page without links."',
+      'designNotes:',
+      '  - "Keep metadata complete."',
+      'retrospective: "Links were missing."',
+    ].join('\n'),
+    'Project body.',
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/projects/detail-without-links.mdx: missing required frontmatter: links')))
 })
