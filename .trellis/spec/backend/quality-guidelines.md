@@ -153,6 +153,78 @@ CMD ["npm", "run", "preview"]
 COPY --from=build /app/dist /usr/share/nginx/html
 ```
 
+## Scenario: GitHub Actions Production Deployment Guard
+
+### 1. Scope / Trigger
+
+- Trigger: changes to `.github/workflows/deploy.yml`, production build scripts, or deployment environment wiring.
+- Scope: GitHub Actions deployment must install from the lockfile, require a production site origin, build static output, then upload only `dist/`.
+
+### 2. Signatures
+
+- Workflow: `.github/workflows/deploy.yml`
+- Install command: `npm ci`
+- Origin guard command: `npm run check:origin`
+- Deploy build command: `npm run build:deploy`
+- Guard entry point: `scripts/check-origin.mjs`
+- Test file: `tests/check-origin.test.mjs`
+
+### 3. Contracts
+
+- `PUBLIC_SITE_ORIGIN` is required for GitHub Actions production deployment builds.
+- Blank or whitespace-only `PUBLIC_SITE_ORIGIN` is invalid.
+- Local `npm run build` must keep the development fallback origin and sample content fallback.
+- `npm run build:deploy` must run the origin guard before `PRIVATE_CONTENT_STRICT=1 npm run build`.
+- The deployment workflow must not use `npm install`, because deploys must resolve dependencies from `package-lock.json`.
+- RSS, sitemap, canonical, Open Graph, and Twitter URLs must keep deriving from `src/data/site.ts`.
+
+### 4. Validation & Error Matrix
+
+- Missing `PUBLIC_SITE_ORIGIN` in deploy build -> `[origin] PUBLIC_SITE_ORIGIN is required for production deployment builds.`
+- Blank `PUBLIC_SITE_ORIGIN` in deploy build -> same error as missing.
+- Configured `PUBLIC_SITE_ORIGIN` -> guard prints `[origin] ok: <origin>` and returns `0`.
+- Missing private content in strict deploy build -> content sync fails before publishing.
+- Missing `package-lock.json` compatibility -> `npm ci` fails before build.
+
+### 5. Good/Base/Bad Cases
+
+- Good: `PUBLIC_SITE_ORIGIN=https://example.com npm run build:deploy`
+- Base: `npm run build` without `PUBLIC_SITE_ORIGIN` succeeds locally with sample content and `http://localhost:4321`.
+- Bad: relying on `src/data/site.ts` localhost fallback for production deployment.
+- Bad: changing the deployment workflow back to `npm install`.
+
+### 6. Tests Required
+
+- Add or update `node:test` coverage for missing, blank, and configured `PUBLIC_SITE_ORIGIN`.
+- Run `npm test`.
+- Run `npm run check`.
+- Run `npm run build`.
+- Verify `npm run build:deploy` fails at `check:origin` when `PUBLIC_SITE_ORIGIN` is unset.
+- Verify a build with `PUBLIC_SITE_ORIGIN` emits that origin in RSS, sitemap, canonical, and social metadata.
+- Run a workflow linter such as `actionlint` when available.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```yaml
+- name: Install dependencies
+  run: npm install
+
+- name: Build site
+  run: PRIVATE_CONTENT_STRICT=1 npm run build
+```
+
+#### Correct
+
+```yaml
+- name: Install dependencies
+  run: npm ci
+
+- name: Build site
+  run: npm run build:deploy
+```
+
 ---
 
 ## Testing Requirements
