@@ -36,5 +36,6 @@ public/files/*
 
 .agents
 .codex
+.github
 .trellis
 AGENTS.md

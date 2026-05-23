@@ -1,8 +1,0 @@
-{"file":".trellis/spec/frontend/directory-structure.md","reason":"Covers Astro route layout, content mount points, public asset sync targets, and where the new reading page should live."}
-{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Covers Astro component structure, semantic markup, and CSS patterns for the new index page and navigation updates."}
-{"file":".trellis/spec/frontend/state-management.md","reason":"Confirms this feature stays static at build time with no client state or runtime fetching."}
-{"file":".trellis/spec/frontend/type-safety.md","reason":"Covers content collection schema patterns, route typing, and any helper types for the new reading content."}
-{"file":".trellis/spec/frontend/hook-guidelines.md","reason":"Reinforces that the page and data flow stay build-time only without frontend hooks or client data fetching."}
-{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Covers static-site quality rules, sitemap expectations, validation requirements, and the overall page quality bar."}
-{"file":".trellis/spec/guides/simplicity-guardrails.md","reason":"Covers the static-first constraints, private content sync pattern, and route/data ownership rules for this feature."}
-{"file":".trellis/spec/guides/dependency-runtime-budget.md","reason":"Confirms the feature must stay within the existing dependency and static output budget."}
