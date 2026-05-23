@@ -47,7 +47,12 @@ Use Astro static generation for blog pages and local files for content/data.
 - Reading frontmatter requires `title`, `type`, and `note`; `tags` is optional.
 - `tags` must support quoted inline arrays, block arrays, empty arrays, and quoted values containing commas.
 - Optional blog `series` may be a block object or inline object. Series routes derive from `series.slug`, then `series.title`.
+- When blog `series` is present, `series.title` is required.
 - Internal root-relative links and public asset paths must remain file-specific checks.
+- Reading `image` must be root-relative, but an invalid image path must not stop validation of `url` or body content.
+- Project `order` and `group.order` must be nonnegative integers.
+- Project `link` and `links.href` must be either `http(s)` or root-relative. Root-relative targets must resolve to a known route or public file.
+- Detail projects require at least one `links` item with nonblank `label` and `href`.
 
 ### 4. Validation & Error Matrix
 
@@ -60,15 +65,25 @@ Use Astro static generation for blog pages and local files for content/data.
 - Invalid blog `updatedAt` -> `updatedAt must use YYYY-MM-DD`
 - Blog `updatedAt` before `date` -> `updatedAt must not be earlier than date`
 - Invalid blog `readingTime` -> `readingTime must use minutes format like "4 min"`
+- Blog `series` without title -> `missing required frontmatter: series.title`
 - Invalid blog `series.order` -> `series.order must be a positive integer`
 - Reading entry without `url` and without body content -> `reading resources require url or body content`
 - Reading `url` that is neither `http(s)` nor root-relative -> `url must be http(s) or a root-relative internal target`
+- Reading `image` that is not root-relative -> `image must use a root-relative public path`
+- Invalid project `order` -> `order must be a nonnegative integer`
+- Invalid project `group.order` -> `group.order must be a nonnegative integer`
+- Project `link` that is neither `http(s)` nor root-relative -> `link must be http(s) or a root-relative internal target`
+- Project `links.href` that is neither `http(s)` nor root-relative -> `links.href must be http(s) or a root-relative internal target`
+- Project link item without label -> `missing required frontmatter: links.label`
+- Project link item without href -> `missing required frontmatter: links.href`
+- Detail project without links -> `missing required frontmatter: links`
 
 ### 5. Good/Base/Bad Cases
 
 - Good: `tags: ["Go, Systems", "Astro"]`
 - Good: `readingTime: "4 min"`
 - Good: reading resource with `url: "https://example.com"` or body notes
+- Good: project `link: "/reading/"` or `links.href: "https://example.com"`
 - Base:
   ```yaml
   tags:
@@ -79,11 +94,15 @@ Use Astro static generation for blog pages and local files for content/data.
 - Bad: `date: "2026-02-30"` or `updatedAt` earlier than `date`.
 - Bad: `readingTime: "about four minutes"`; keep the short minutes format.
 - Bad: reading resource with only metadata and no `url` or body.
+- Bad: `image: "images/reading/file.svg"` must report image path errors and still validate the same file's `url`.
+- Bad: detail project with `detail: true` and no `links` item.
+- Bad: project `link: "reading/"` or `links.href: "files/demo.txt"`; project links must be external `http(s)` or root-relative.
 
 ### 6. Tests Required
 
 - Add `node:test` coverage for any parser behavior change.
 - Include at least one valid-content case and one actionable error case when changing validation semantics.
+- Regression tests must prove independent field errors in one file are aggregated instead of hidden by early returns.
 - Run `npm test` and `npm run check`.
 
 ### 7. Wrong vs Correct
