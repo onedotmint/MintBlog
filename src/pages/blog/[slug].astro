@@ -2,9 +2,10 @@
 import type { CollectionEntry } from 'astro:content'
 
 import Badge from '../../components/Badge.astro'
+import ArticleList from '../../components/ArticleList.astro'
 import Layout from '../../layouts/Layout.astro'
 import { formatDate } from '../../utils/date'
-import { getArticles, getArticleSeriesHref, getArticleUpdatedDate, toArticle } from '../../utils/articles'
+import { getArticles, getArticleSeriesHref, getArticleTagHref, getArticleUpdatedDate, getRelatedArticles, toArticle } from '../../utils/articles'
 
 export async function getStaticPaths() {
   const articles = await getArticles()
@@ -20,6 +21,7 @@ const { Content } = await entry.render()
 const article = toArticle(entry)
 const updatedAt = getArticleUpdatedDate(article)
 const seriesHref = getArticleSeriesHref(article)
+const relatedArticles = getRelatedArticles(article, await getArticles())
 ---
 
 <Layout title={entry.data.title} description={entry.data.description} canonicalPath={article.href} type="article">
@@ -41,13 +43,20 @@ const seriesHref = getArticleSeriesHref(article)
 
       <div class="tag-row">
         {entry.data.series && seriesHref && <Badge label={entry.data.series.title} href={seriesHref} />}
-        {entry.data.tags.map((tag: string) => <Badge label={tag} />)}
+        {entry.data.tags.map((tag: string) => <Badge label={tag} href={getArticleTagHref(tag)} />)}
       </div>
     </header>
 
     <div class="post-body">
       <Content />
     </div>
+
+    {relatedArticles.length > 0 && (
+      <section class="related-section">
+        <h2>Related articles</h2>
+        <ArticleList articles={relatedArticles} />
+      </section>
+    )}
   </article>
 </Layout>
 
@@ -73,6 +82,14 @@ const seriesHref = getArticleSeriesHref(article)
 
   .post-body {
     max-width: 760px;
+  }
+
+  .related-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
   }
 
   .post-body :global(h2) {

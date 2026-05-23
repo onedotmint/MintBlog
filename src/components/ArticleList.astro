@@ -1,6 +1,6 @@
 ---
 import Badge from './Badge.astro'
-import { getArticleSeriesHref, getArticleUpdatedDate } from '../utils/articles'
+import { getArticleSeriesHref, getArticleTagHref, getArticleUpdatedDate } from '../utils/articles'
 import type { Article } from '../utils/articles'
 import { formatDate } from '../utils/date'
 
@@ -34,7 +34,7 @@ const articleItems = articles.map((article) => ({
 
       <div class="tag-row">
         {entry.data.series && entry.seriesHref && <Badge label={entry.data.series.title} href={entry.seriesHref} />}
-        {entry.data.tags.map((tag: string) => <Badge label={tag} />)}
+        {entry.data.tags.map((tag: string) => <Badge label={tag} href={getArticleTagHref(tag)} />)}
       </div>
     </li>
   ))}

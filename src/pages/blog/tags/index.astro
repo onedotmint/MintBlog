@@ -1,0 +1,70 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import SectionTitle from '../../../components/SectionTitle.astro'
+import { getArticles, getArticleTags } from '../../../utils/articles'
+
+const articles = await getArticles()
+const articleTags = getArticleTags(articles)
+---
+
+<Layout
+  title="Article Tags"
+  description="Blog notes grouped by technical topic."
+>
+  <section class="section prose">
+    <a class="back-link" href="/blog/">
+      Back to blog
+    </a>
+
+    <SectionTitle title="Article Tags" description="Blog notes grouped by technical topic." />
+  </section>
+
+  <section class="section">
+    <ul class="tag-index list-reset">
+      {articleTags.map((tag) => (
+        <li>
+          <a class="tag-index-link" href={tag.href}>
+            <span>{tag.label}</span>
+            <span>{tag.articles.length} {tag.articles.length === 1 ? 'article' : 'articles'}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Layout>
+
+<style>
+  .back-link {
+    display: inline-flex;
+    width: fit-content;
+    color: var(--text-faint);
+    font-size: 0.9rem;
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+  }
+
+  .tag-index {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tag-index-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .tag-index-link span:first-child {
+    color: var(--accent);
+  }
+
+  .tag-index-link span:last-child {
+    color: var(--text-faint);
+    font-size: 0.9rem;
+  }
+</style>

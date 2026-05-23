@@ -17,16 +17,31 @@ export interface ArticleSeries {
   articles: Article[]
 }
 
+export interface ArticleTag {
+  label: string
+  slug: string
+  href: string
+  articles: Article[]
+}
+
 export function normalizeArticleSlug(slug: string) {
   return slug.replace(/\.(md|mdx)$/, '')
 }
 
-export function normalizeSeriesSlug(value: string) {
+export function normalizeTaxonomySlug(value: string) {
   return value
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
+}
+
+export function normalizeSeriesSlug(value: string) {
+  return normalizeTaxonomySlug(value)
+}
+
+export function normalizeTagSlug(value: string) {
+  return normalizeTaxonomySlug(value)
 }
 
 export function toArticle(entry: BlogEntry): Article {
@@ -66,6 +81,12 @@ export function getArticleSeriesHref(article: Article) {
   const slug = getArticleSeriesSlug(article)
 
   return slug ? `/blog/series/${slug}/` : undefined
+}
+
+export function getArticleTagHref(tag: string) {
+  const slug = normalizeTagSlug(tag)
+
+  return slug ? `/blog/tags/${slug}/` : undefined
 }
 
 export function sortArticlesByDateDesc(entries: BlogEntry[]) {
@@ -149,4 +170,68 @@ export function getArticleSeries(articles: Article[]) {
       articles: sortArticlesBySeriesOrder(series.articles),
     }))
     .sort((left, right) => left.title.localeCompare(right.title))
+}
+
+export function getArticleTags(articles: Article[]) {
+  const tagsBySlug = new Map<string, ArticleTag>()
+
+  for (const article of articles) {
+    for (const tag of article.data.tags) {
+      const slug = normalizeTagSlug(tag)
+
+      if (!slug) {
+        continue
+      }
+
+      const existing = tagsBySlug.get(slug)
+
+      if (existing) {
+        existing.articles.push(article)
+        continue
+      }
+
+      tagsBySlug.set(slug, {
+        label: tag,
+        slug,
+        href: `/blog/tags/${slug}/`,
+        articles: [article],
+      })
+    }
+  }
+
+  return [...tagsBySlug.values()]
+    .map((tag) => ({
+      ...tag,
+      articles: [...tag.articles].sort((left, right) => right.data.date.getTime() - left.data.date.getTime()),
+    }))
+    .sort((left, right) => left.label.localeCompare(right.label))
+}
+
+export function getRelatedArticles(article: Article, articles: Article[], limit = 3) {
+  const tagSlugs = new Set(article.data.tags.map(normalizeTagSlug).filter(Boolean))
+
+  if (tagSlugs.size === 0) {
+    return []
+  }
+
+  return articles
+    .filter((candidate) => candidate.slug !== article.slug)
+    .map((candidate) => {
+      const sharedTagCount = candidate.data.tags.filter((tag) => tagSlugs.has(normalizeTagSlug(tag))).length
+
+      return {
+        article: candidate,
+        sharedTagCount,
+      }
+    })
+    .filter((candidate) => candidate.sharedTagCount > 0)
+    .sort((left, right) => {
+      if (left.sharedTagCount !== right.sharedTagCount) {
+        return right.sharedTagCount - left.sharedTagCount
+      }
+
+      return right.article.data.date.getTime() - left.article.data.date.getTime()
+    })
+    .slice(0, limit)
+    .map((candidate) => candidate.article)
 }

@@ -4,11 +4,11 @@ import Badge from '../../components/Badge.astro'
 import Layout from '../../layouts/Layout.astro'
 import SectionTitle from '../../components/SectionTitle.astro'
 import { siteIdentity } from '../../data/site'
-import { getArticleSeries, getArticles } from '../../utils/articles'
+import { getArticleSeries, getArticleTags, getArticles } from '../../utils/articles'
 
 const articles = await getArticles()
 const articleSeries = getArticleSeries(articles)
-const tags = ['Systems', 'Linux', 'Networking', 'Learning']
+const articleTags = getArticleTags(articles)
 ---
 
 <Layout
@@ -24,7 +24,7 @@ const tags = ['Systems', 'Linux', 'Networking', 'Learning']
     </p>
 
     <div class="tag-row surface">
-      {tags.map((tag) => <Badge label={tag} />)}
+      {articleTags.map((tag) => <Badge label={`${tag.label} (${tag.articles.length})`} href={tag.href} />)}
     </div>
   </section>
 
