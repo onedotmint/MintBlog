@@ -24,11 +24,13 @@ html {
   background: var(--bg);
   color: var(--text);
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
+  overflow-x: hidden;
   background:
     linear-gradient(rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0.015)),
     repeating-linear-gradient(
@@ -146,7 +148,9 @@ code {
 }
 
 pre {
+  max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 1rem 1.1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -155,6 +159,8 @@ pre {
 
 pre code {
   color: var(--text);
+  white-space: pre;
+  overflow-wrap: normal;
 }
 
 code:not(pre code) {
@@ -167,10 +173,14 @@ code:not(pre code) {
 
 blockquote {
   margin: 1.25rem 0;
-  padding: 0.85rem 1rem;
+  padding: 0.9rem 1rem;
   border-left: 2px solid var(--border-strong);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-muted);
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
 }
 
 hr {

@@ -27,7 +27,7 @@ const { items } = Astro.props
     max-width: 760px;
     flex-direction: column;
     gap: 0.55rem;
-    padding: 0.85rem 0;
+    padding: 0.9rem 0;
     border-block: 1px solid var(--border);
   }
 
@@ -49,11 +49,32 @@ const { items } = Astro.props
   }
 
   .article-toc a {
+    display: inline-flex;
     color: var(--text-muted);
     font-size: 0.9rem;
+    line-height: 1.45;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.2em;
   }
 
-  .article-toc a:hover {
+  .article-toc a:hover,
+  .article-toc a:focus-visible {
     color: var(--accent);
+    text-decoration-color: var(--border-strong);
+  }
+
+  @media (max-width: 720px) {
+    .article-toc {
+      gap: 0.65rem;
+    }
+
+    .article-toc ol {
+      gap: 0.4rem;
+    }
+
+    .article-toc a {
+      font-size: 0.92rem;
+    }
   }
 </style>

@@ -12,7 +12,7 @@ const { newer, older } = Astro.props
 {(newer || older) && (
   <nav class="article-reading-nav" aria-label="Adjacent articles">
     {newer ? (
-      <a class="article-reading-link" href={newer.href}>
+      <a class="article-reading-link" href={newer.href} aria-label={`Read newer article: ${newer.data.title}`}>
         <span>Newer article</span>
         <strong>{newer.data.title}</strong>
       </a>
@@ -21,7 +21,7 @@ const { newer, older } = Astro.props
     )}
 
     {older ? (
-      <a class="article-reading-link article-reading-link-next" href={older.href}>
+      <a class="article-reading-link article-reading-link-next" href={older.href} aria-label={`Read older article: ${older.data.title}`}>
         <span>Older article</span>
         <strong>{older.data.title}</strong>
       </a>
@@ -36,7 +36,7 @@ const { newer, older } = Astro.props
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 0.75rem;
-    padding-top: 1rem;
+    padding-top: 1.1rem;
     border-top: 1px solid var(--border);
   }
 
@@ -50,9 +50,11 @@ const { newer, older } = Astro.props
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: rgba(255, 255, 255, 0.018);
+    overflow-wrap: anywhere;
   }
 
-  .article-reading-link:hover {
+  .article-reading-link:hover,
+  .article-reading-link:focus-visible {
     border-color: var(--border-strong);
     background: rgba(255, 255, 255, 0.035);
   }
