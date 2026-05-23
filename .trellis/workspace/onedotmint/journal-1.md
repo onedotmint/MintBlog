@@ -19,7 +19,11 @@ Added dependency/runtime budget checks, centralized article data helpers, and ex
 
 ### Main Changes
 
-(Add details)
+- Removed the fake `#` project link and omitted placeholder email contact data.
+- Split article and reading utility logic into Astro-free core modules for focused unit tests.
+- Made `scripts/check-content.mjs` export `validateContent()` while preserving CLI behavior.
+- Added Node test coverage for article utilities, reading utilities, and content validation fixtures.
+- Documented the lightweight `npm test` convention in frontend quality guidelines.
 
 ### Git Commits
 
@@ -30,7 +34,10 @@ Added dependency/runtime budget checks, centralized article data helpers, and ex
 
 ### Testing
 
-- [OK] (Add test results)
+- [OK] `npm test`
+- [OK] `npm run check`
+- [OK] `npm run check:budget`
+- [OK] `npm run build`
 
 ### Status
 
@@ -364,6 +371,41 @@ Added static blog archive pages, default social preview metadata, and updated fr
 | `fc3ddc5` | (see git log) |
 | `ea8232e` | (see git log) |
 | `a682ec4` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+
+## Session 12: Placeholder cleanup and utility tests
+
+**Date**: 2026-05-23
+**Task**: Placeholder cleanup and utility tests
+**Branch**: `main`
+
+### Summary
+
+Removed fake public project/contact data, added Node-based utility and content validation tests, and documented the lightweight test convention.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5da660a` | (see git log) |
+| `8bc69b5` | (see git log) |
+| `3c02519` | (see git log) |
 
 ### Testing
 
