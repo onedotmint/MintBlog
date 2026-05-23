@@ -621,3 +621,37 @@ Improved static article prose, table-of-contents, adjacent navigation, code/tabl
 ### Next Steps
 
 - None - task complete
+
+
+## Session 19: Harden deployment origin checks
+
+**Date**: 2026-05-23
+**Task**: Harden deployment origin checks
+**Branch**: `main`
+
+### Summary
+
+Changed deployment install to npm ci, added a production PUBLIC_SITE_ORIGIN guard with tests, wired deploy builds through the guard, and documented the deployment guard contract.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7f52104` | (see git log) |
+| `e0c713b` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
