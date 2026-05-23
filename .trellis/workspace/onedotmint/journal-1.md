@@ -485,3 +485,36 @@ Moved project metadata into the Astro projects content collection, updated sync/
 ### Next Steps
 
 - None - task complete
+
+
+## Session 15: Add CI quality workflow
+
+**Date**: 2026-05-23
+**Task**: Add CI quality workflow
+**Branch**: `main`
+
+### Summary
+
+Added GitHub Actions quality workflow for push and pull_request, running npm ci, check, tests, and build; documented the CI quality contract in frontend specs.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3037049` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
