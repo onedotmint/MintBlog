@@ -56,10 +56,19 @@ Use Astro static generation for blog pages and local files for content/data.
 - Empty tag value -> `tags cannot contain empty values`
 - Duplicate tag ignoring case -> `duplicate tag: <tag>`
 - Unknown root-relative route or public file -> `missing internal route or public file: <path>`
+- Invalid blog `date` -> `date must use YYYY-MM-DD`
+- Invalid blog `updatedAt` -> `updatedAt must use YYYY-MM-DD`
+- Blog `updatedAt` before `date` -> `updatedAt must not be earlier than date`
+- Invalid blog `readingTime` -> `readingTime must use minutes format like "4 min"`
+- Invalid blog `series.order` -> `series.order must be a positive integer`
+- Reading entry without `url` and without body content -> `reading resources require url or body content`
+- Reading `url` that is neither `http(s)` nor root-relative -> `url must be http(s) or a root-relative internal target`
 
 ### 5. Good/Base/Bad Cases
 
 - Good: `tags: ["Go, Systems", "Astro"]`
+- Good: `readingTime: "4 min"`
+- Good: reading resource with `url: "https://example.com"` or body notes
 - Base:
   ```yaml
   tags:
@@ -67,6 +76,9 @@ Use Astro static generation for blog pages and local files for content/data.
     - "Content"
   ```
 - Bad: parsing inline arrays with `value.split(',')`, because quoted commas become false tag values.
+- Bad: `date: "2026-02-30"` or `updatedAt` earlier than `date`.
+- Bad: `readingTime: "about four minutes"`; keep the short minutes format.
+- Bad: reading resource with only metadata and no `url` or body.
 
 ### 6. Tests Required
 
