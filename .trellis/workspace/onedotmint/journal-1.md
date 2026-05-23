@@ -722,3 +722,43 @@ Added a deployment environment preflight script and tests, wired it into the Git
 ### Next Steps
 
 - None - task complete
+
+
+## Session 22: Improve content format checks
+
+**Date**: 2026-05-23
+**Task**: Improve content format checks
+**Branch**: `main`
+
+### Summary
+
+Tightened build-time content validation for blog series metadata, reading resource error aggregation, and project ordering/link contracts; updated tests and backend quality spec.
+
+### Main Changes
+
+- Added checks for missing blog `series.title` when `series` is present.
+- Kept reading validation aggregated after invalid `image` paths.
+- Added project `order`, `group.order`, `link`, `links.href`, and detail `links` validation.
+- Added regression tests for the new content validation behavior.
+- Updated backend quality spec with the content validation contract.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `198dd56` | fix: tighten content format validation |
+| `b94758f` | docs: document content validation contracts |
+
+### Testing
+
+- [OK] `npm test`
+- [OK] `npm run check`
+- [OK] `npm run build`
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

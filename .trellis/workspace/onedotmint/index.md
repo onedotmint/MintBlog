@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 21
+- **Total Sessions**: 22
 - **Last Active**: 2026-05-23
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~724 | Active |
+| `journal-1.md` | ~758 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 22 | 2026-05-23 | Improve content format checks | `198dd56`, `b94758f` | `main` |
 | 21 | 2026-05-23 | Add deploy configuration preflight | `c231ca7`, `3970b53` | `main` |
 | 20 | 2026-05-23 | Document deployment troubleshooting | `c29cee2` | `main` |
 | 19 | 2026-05-23 | Harden deployment origin checks | `7f52104`, `e0c713b` | `main` |
