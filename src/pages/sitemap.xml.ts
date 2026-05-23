@@ -1,6 +1,6 @@
 import { toAbsoluteUrl } from '../data/site'
 import { getProjectsWithDetails } from '../data/projects'
-import { getArticleSeries, getArticleTags, getArticles, getArticleUpdatedDate } from '../utils/articles'
+import { getArticleArchives, getArticleSeries, getArticleTags, getArticles, getArticleUpdatedDate } from '../utils/articles'
 import { getReadingResources } from '../utils/reading'
 
 function sitemapUrl(path: string, lastmod?: Date) {
@@ -12,12 +12,14 @@ function sitemapUrl(path: string, lastmod?: Date) {
 export async function GET() {
   const articles = await getArticles()
   const readingResources = await getReadingResources()
+  const articleArchives = getArticleArchives(articles)
   const articleSeries = getArticleSeries(articles)
   const articleTags = getArticleTags(articles)
   const projectDetails = getProjectsWithDetails()
-  const staticPages = ['/', '/blog/', '/blog/series/', '/blog/tags/', '/reading/', '/projects/', '/now/', '/about/']
+  const staticPages = ['/', '/blog/', '/blog/archive/', '/blog/series/', '/blog/tags/', '/reading/', '/projects/', '/now/', '/about/']
   const urls = [
     ...staticPages.map((path) => sitemapUrl(path)),
+    ...articleArchives.map((archive) => sitemapUrl(archive.href)),
     ...articleSeries.map((series) => sitemapUrl(series.href)),
     ...articleTags.map((tag) => sitemapUrl(tag.href)),
     ...readingResources.map((resource) => sitemapUrl(resource.href)),

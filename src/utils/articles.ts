@@ -25,6 +25,12 @@ export interface ArticleTag {
   articles: Article[]
 }
 
+export interface ArticleArchive {
+  year: string
+  href: string
+  articles: Article[]
+}
+
 export interface AdjacentArticles {
   newer?: Article
   older?: Article
@@ -242,6 +248,33 @@ export function getArticleTags(articles: Article[]) {
       articles: [...tag.articles].sort((left, right) => right.data.date.getTime() - left.data.date.getTime()),
     }))
     .sort((left, right) => left.label.localeCompare(right.label))
+}
+
+export function getArticleArchives(articles: Article[]) {
+  const archivesByYear = new Map<string, ArticleArchive>()
+
+  for (const article of articles) {
+    const year = String(article.data.date.getFullYear())
+    const existing = archivesByYear.get(year)
+
+    if (existing) {
+      existing.articles.push(article)
+      continue
+    }
+
+    archivesByYear.set(year, {
+      year,
+      href: `/blog/archive/${year}/`,
+      articles: [article],
+    })
+  }
+
+  return [...archivesByYear.values()]
+    .map((archive) => ({
+      ...archive,
+      articles: [...archive.articles].sort((left, right) => right.data.date.getTime() - left.data.date.getTime()),
+    }))
+    .sort((left, right) => Number(right.year) - Number(left.year))
 }
 
 export function getRelatedArticles(article: Article, articles: Article[], limit = 3) {

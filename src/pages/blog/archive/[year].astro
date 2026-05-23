@@ -1,0 +1,52 @@
+---
+import ArticleList from '../../../components/ArticleList.astro'
+import Layout from '../../../layouts/Layout.astro'
+import SectionTitle from '../../../components/SectionTitle.astro'
+import { getArticleArchives, getArticles } from '../../../utils/articles'
+import type { ArticleArchive } from '../../../utils/articles'
+
+export async function getStaticPaths() {
+  const articles = await getArticles()
+  const articleArchives = getArticleArchives(articles)
+
+  return articleArchives.map((archive) => ({
+    params: { year: archive.year },
+    props: { archive },
+  }))
+}
+
+const { archive } = Astro.props as { archive: ArticleArchive }
+---
+
+<Layout
+  title={`${archive.year} Articles`}
+  description={`${archive.year} articles from the blog.`}
+>
+  <section class="section prose">
+    <a class="back-link" href="/blog/archive/">
+      Back to archive
+    </a>
+
+    <SectionTitle
+      title={`${archive.year} Articles`}
+      description={`${archive.articles.length} ${archive.articles.length === 1 ? 'article' : 'articles'} published in ${archive.year}.`}
+    />
+  </section>
+
+  <section class="section">
+    <ArticleList articles={archive.articles} />
+  </section>
+</Layout>
+
+<style>
+  .back-link {
+    display: inline-flex;
+    width: fit-content;
+    color: var(--text-faint);
+    font-size: 0.9rem;
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+  }
+</style>

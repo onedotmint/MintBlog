@@ -1,0 +1,72 @@
+---
+import ArticleList from '../../../components/ArticleList.astro'
+import Layout from '../../../layouts/Layout.astro'
+import SectionTitle from '../../../components/SectionTitle.astro'
+import { getArticleArchives, getArticles } from '../../../utils/articles'
+
+const articles = await getArticles()
+const articleArchives = getArticleArchives(articles)
+---
+
+<Layout
+  title="Article Archive"
+  description="Blog posts grouped by publication year."
+>
+  <section class="section prose">
+    <a class="back-link" href="/blog/">
+      Back to blog
+    </a>
+
+    <SectionTitle title="Article Archive" description="Blog posts grouped by publication year." />
+  </section>
+
+  <section class="section">
+    <ul class="archive-list list-reset">
+      {articleArchives.map((archive) => (
+        <li class="archive-item">
+          <a class="archive-heading" href={archive.href}>
+            <h3>{archive.year}</h3>
+            <p>{archive.articles.length} {archive.articles.length === 1 ? 'article' : 'articles'}</p>
+          </a>
+
+          <ArticleList articles={archive.articles} />
+        </li>
+      ))}
+    </ul>
+  </section>
+</Layout>
+
+<style>
+  .back-link {
+    display: inline-flex;
+    width: fit-content;
+    color: var(--text-faint);
+    font-size: 0.9rem;
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+  }
+
+  .archive-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .archive-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .archive-heading h3 {
+    margin-bottom: 0.25rem;
+  }
+
+  .archive-heading p {
+    margin-bottom: 0;
+    color: var(--text-faint);
+    font-size: 0.9rem;
+  }
+</style>

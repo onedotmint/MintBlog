@@ -4,9 +4,10 @@ import Badge from '../../components/Badge.astro'
 import Layout from '../../layouts/Layout.astro'
 import SectionTitle from '../../components/SectionTitle.astro'
 import { siteIdentity } from '../../data/site'
-import { getArticleSeries, getArticleTags, getArticles } from '../../utils/articles'
+import { getArticleArchives, getArticleSeries, getArticleTags, getArticles } from '../../utils/articles'
 
 const articles = await getArticles()
+const articleArchives = getArticleArchives(articles)
 const articleSeries = getArticleSeries(articles)
 const articleTags = getArticleTags(articles)
 ---
@@ -24,9 +25,24 @@ const articleTags = getArticleTags(articles)
     </p>
 
     <div class="tag-row surface">
+      <Badge label="Archive" href="/blog/archive/" />
       {articleTags.map((tag) => <Badge label={`${tag.label} (${tag.articles.length})`} href={tag.href} />)}
     </div>
   </section>
+
+  {articleArchives.length > 0 && (
+    <section class="section">
+      <SectionTitle title="Archive" description="Posts grouped by publication year." />
+      <div class="tag-row">
+        {articleArchives.map((archive) => (
+          <Badge
+            label={`${archive.year} (${archive.articles.length})`}
+            href={archive.href}
+          />
+        ))}
+      </div>
+    </section>
+  )}
 
   {articleSeries.length > 0 && (
     <section class="section">
