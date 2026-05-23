@@ -10,6 +10,16 @@ export interface SiteIdentity {
   canonicalOrigin?: string
 }
 
+const developmentCanonicalOrigin = 'http://localhost:4321'
+
+export function getSiteOrigin() {
+  return (import.meta.env.PUBLIC_SITE_ORIGIN || siteIdentity.canonicalOrigin || developmentCanonicalOrigin).replace(/\/+$/, '')
+}
+
+export function toAbsoluteUrl(path: string) {
+  return new URL(path, `${getSiteOrigin()}/`).toString()
+}
+
 export const siteIdentity = {
   siteName: 'Jeff Tim',
   ownerName: 'Jeff Tim',

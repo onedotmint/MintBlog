@@ -45,7 +45,12 @@ Required secrets:
 
 - `PRIVATE_CONTENT_REPOSITORY`
 - `PRIVATE_CONTENT_TOKEN`
+- `PUBLIC_SITE_ORIGIN`
 - `DEPLOY_HOST`
 - `DEPLOY_USER`
 - `DEPLOY_PATH`
 - `DEPLOY_KEY`
+
+`PUBLIC_SITE_ORIGIN` should be the production origin used for canonical URLs,
+RSS links, sitemap URLs, and social metadata. Local builds fall back to
+`http://localhost:4321`.

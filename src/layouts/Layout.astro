@@ -2,16 +2,24 @@
 import '../styles/global.css'
 import Footer from '../components/Footer.astro'
 import Nav from '../components/Nav.astro'
-import { siteIdentity } from '../data/site'
+import { siteIdentity, toAbsoluteUrl } from '../data/site'
 
 interface Props {
   title?: string
   description?: string
+  canonicalPath?: string
+  type?: 'website' | 'article'
 }
 
-const { title = siteIdentity.defaultTitle, description = siteIdentity.defaultDescription } = Astro.props
+const {
+  title = siteIdentity.defaultTitle,
+  description = siteIdentity.defaultDescription,
+  canonicalPath = Astro.url.pathname,
+  type = 'website',
+} = Astro.props
 
 const pageTitle = title === siteIdentity.defaultTitle ? title : `${title} · ${siteIdentity.siteName}`
+const canonicalUrl = toAbsoluteUrl(canonicalPath)
 ---
 
 <html lang="en">
@@ -19,6 +27,16 @@ const pageTitle = title === siteIdentity.defaultTitle ? title : `${title} · ${s
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" type="application/rss+xml" title={`${siteIdentity.siteName} RSS`} href={toAbsoluteUrl('/rss.xml')} />
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={siteIdentity.siteName} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
     <title>{pageTitle}</title>
   </head>
   <body>

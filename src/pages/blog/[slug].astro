@@ -22,7 +22,7 @@ const updatedAt = getArticleUpdatedDate(article)
 const seriesHref = getArticleSeriesHref(article)
 ---
 
-<Layout title={entry.data.title} description={entry.data.description}>
+<Layout title={entry.data.title} description={entry.data.description} canonicalPath={article.href} type="article">
   <article class="section prose">
     <a class="back-link" href="/blog/">
       Back to blog

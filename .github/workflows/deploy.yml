@@ -15,6 +15,7 @@ jobs:
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
       DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
       DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+      PUBLIC_SITE_ORIGIN: ${{ secrets.PUBLIC_SITE_ORIGIN }}
     steps:
       - name: Checkout public repository
         uses: actions/checkout@v4
