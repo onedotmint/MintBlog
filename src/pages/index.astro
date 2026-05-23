@@ -15,6 +15,12 @@ const featuredGroups = projectGroups.map((group) => ({
   ...group,
   items: group.items.slice(0, 1),
 }))
+
+const entryActions = [
+  { href: '/blog/', label: 'Blog', note: 'Articles and notes' },
+  { href: '/projects/', label: 'Projects', note: 'Builds and experiments' },
+  { href: '/about/', label: 'About', note: 'Background and focus' },
+]
 ---
 
 <Layout
@@ -27,6 +33,15 @@ const featuredGroups = projectGroups.map((group) => ({
     <p class="lead">
       {siteIdentity.shortIntro}
     </p>
+
+    <nav class="entry-actions" aria-label="Homepage entry points">
+      {entryActions.map((action) => (
+        <a class="entry-action" href={action.href}>
+          <span>{action.label}</span>
+          <small>{action.note}</small>
+        </a>
+      ))}
+    </nav>
 
     <div class="badge-row">
       <Badge label="Learning" />
@@ -46,3 +61,52 @@ const featuredGroups = projectGroups.map((group) => ({
     <ProjectList groups={featuredGroups} />
   </section>
 </Layout>
+
+<style>
+  .entry-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    max-width: 34rem;
+  }
+
+  .entry-action {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.72rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .entry-action:hover {
+    border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .entry-action span,
+  .entry-action small {
+    overflow-wrap: anywhere;
+  }
+
+  .entry-action span {
+    color: var(--accent);
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+
+  .entry-action small {
+    color: var(--text-faint);
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  @media (max-width: 720px) {
+    .entry-actions {
+      grid-template-columns: 1fr;
+      max-width: 100%;
+    }
+  }
+</style>
