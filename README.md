@@ -98,8 +98,9 @@ The repository includes a GitHub Actions workflow that can:
 1. checkout the public code repository
 2. checkout the private content repository from CI secrets
 3. sync content into Astro's expected paths
-4. run install and build
-5. rsync `dist/` to the target server over SSH
+4. install dependencies with `npm ci`
+5. run `npm run build:deploy`
+6. rsync `dist/` to the target server over SSH
 
 Required secrets:
 
