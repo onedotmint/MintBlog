@@ -552,3 +552,37 @@ Strengthened build-time MDX content validation for blog, reading, and project me
 ### Next Steps
 
 - None - task complete
+
+
+## Session 17: Add RSS and sitemap tests
+
+**Date**: 2026-05-23
+**Task**: Add RSS and sitemap tests
+**Branch**: `main`
+
+### Summary
+
+Added pure RSS and sitemap XML builders, covered feed and sitemap output with node:test, and documented the XML output test contract.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c70aa14` | (see git log) |
+| `3ca60f5` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
