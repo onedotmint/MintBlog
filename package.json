@@ -9,6 +9,7 @@
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
     "prebuild": "npm run sync:content",
     "postbuild": "npm run check:budget:dist",
+    "design:baseline": "npm run build && node scripts/capture-design-baseline.mjs",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "prepreview": "npm run sync:content",
     "check": "npm run check:content && ASTRO_TELEMETRY_DISABLED=1 astro check",
