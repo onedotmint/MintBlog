@@ -140,6 +140,76 @@ If additional Astro check or lint scripts are configured, run them before finish
 }
 ```
 
+## Scenario: CI Quality Workflow
+
+### 1. Scope / Trigger
+
+- Trigger: adding or changing the GitHub Actions workflow that validates the
+  Astro site before merge.
+- Scope: quality checks only; deployment stays in the deploy workflow.
+
+### 2. Signatures
+
+- Workflow file: `.github/workflows/quality.yml`
+- Events: `push`, `pull_request`
+- Runner: `ubuntu-latest`
+- Node version: `20`
+- Install command: `npm ci`
+- Quality commands, in order:
+  1. `npm run check`
+  2. `npm test`
+  3. `npm run build`
+
+### 3. Contracts
+
+- The workflow must use `actions/checkout@v4`.
+- The workflow must use `actions/setup-node@v4`.
+- The setup step must enable `cache: npm`.
+- The workflow must not require private content or deployment secrets.
+- The workflow must validate using public sample content when no private source
+  exists.
+- The workflow must not deploy, upload artifacts, or mutate production state.
+
+### 4. Validation & Error Matrix
+
+- Missing `package-lock.json` compatibility -> `npm ci` fails.
+- Content schema or route issue -> `npm run check` fails.
+- Utility or script regression -> `npm test` fails.
+- Static output or budget issue -> `npm run build` fails through `postbuild`.
+- Secret-dependent build path -> pull request workflow becomes unusable and
+  must be rejected.
+
+### 5. Good/Base/Bad Cases
+
+- Good: separate `quality.yml` runs `npm ci`, `npm run check`, `npm test`, and
+  `npm run build` on push and pull request.
+- Base: workflow uses Node 20 and npm cache, matching deploy.
+- Bad: quality workflow reads deploy secrets, runs `rsync`, or deploys from pull
+  requests.
+
+### 6. Tests Required
+
+- Run `npm run check`.
+- Run `npm test`.
+- Run `npm run build`.
+- Run a workflow linter such as `actionlint` when available.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```yaml
+- name: Build and deploy
+  run: rsync -az --delete dist/ "$DEPLOY_TARGET"
+```
+
+#### Correct
+
+```yaml
+- name: Build site
+  run: npm run build
+```
+
 Manual verification should cover:
 
 * home page
