@@ -96,6 +96,8 @@ If additional Astro check or lint scripts are configured, run them before finish
 - Tests may use Node's built-in `node:test` and the existing `typescript` dev dependency.
 - Tests for Astro-free utility logic should import pure utility modules, not `astro:content` entry modules.
 - Build-time scripts that need tests should expose pure functions while keeping CLI output and exit behavior stable.
+- RSS and sitemap route output should be built by pure utility functions, then consumed by thin Astro route adapters.
+- XML builders should receive already-filtered public content lists from shared helpers such as `getArticles()`.
 
 ### 4. Validation & Error Matrix
 
@@ -103,12 +105,17 @@ If additional Astro check or lint scripts are configured, run them before finish
 - New utility behavior without focused assertions -> add a unit test.
 - Script behavior only reachable through `process.exit` -> expose a pure function and test that function.
 - Test helper adds an unexpected dependency -> reject it and use existing tooling.
+- RSS XML with unescaped title or description -> test fails on escaped entity assertions.
+- Sitemap article URL without `updatedAt`/`date` lastmod -> test fails on exact `<lastmod>` assertion.
+- Draft article passed through public article helper -> test fails because draft slug appears in RSS or sitemap output.
 
 ### 5. Good/Base/Bad Cases
 
 - Good: test `src/utils/article-core.ts` sorting with fake article objects.
+- Good: test `src/utils/rss.ts` and `src/utils/sitemap.ts` with fake article objects and exact XML substrings.
 - Base: test a script through exported `validateContent()` using a temporary fixture directory.
 - Bad: add Vitest, Playwright, or browser tooling only for small pure helper tests.
+- Bad: test `rss.xml.ts` or `sitemap.xml.ts` by mocking `astro:content` when the XML assembly can be tested as a pure helper.
 
 ### 6. Tests Required
 
@@ -116,6 +123,7 @@ If additional Astro check or lint scripts are configured, run them before finish
 - Reading utility tests cover slug normalization, grouping, ordering, and external URL safety.
 - Project utility tests cover slug normalization, group/order sorting, detail filtering, and project href construction.
 - Content validation tests cover at least one passing fixture and one failing fixture with file-specific errors.
+- RSS and sitemap tests cover absolute URLs, XML escaping, draft filtering through public article helpers, and sitemap article lastmod dates.
 - Finish by running `npm test`, `npm run check`, and `npm run check:budget`.
 
 ### 7. Wrong vs Correct
