@@ -1,0 +1,52 @@
+---
+import Layout from '../layouts/Layout.astro'
+import ProjectList from '../components/ProjectList.astro'
+import SectionTitle from '../components/SectionTitle.astro'
+import { nowPageData } from '../data/now'
+import { projectGroups } from '../data/projects'
+import { formatDate } from '../utils/date'
+
+const currentFocusGroups = projectGroups.filter((group) => group.title === 'Current Focus')
+const updatedAt = new Date(`${nowPageData.lastUpdated}T00:00:00Z`)
+---
+
+<Layout
+  title="Now"
+  description="Current learning focus, active projects, and short-term direction."
+>
+  <section class="section prose now-hero">
+    <p class="eyebrow">Now</p>
+    <h1 class="hero-title">Current focus</h1>
+    <p class="lead">
+      A small snapshot of what is active right now. This changes faster than the about page.
+    </p>
+    <p class="meta">Last updated {formatDate(updatedAt)}</p>
+  </section>
+
+  <section class="section prose">
+    <SectionTitle title="Learning focus" />
+    <ul>
+      {nowPageData.learningFocus.map((item) => <li>{item}</li>)}
+    </ul>
+  </section>
+
+  {currentFocusGroups.length > 0 && (
+    <section class="section">
+      <SectionTitle title="Active projects" description="The project data is shared with the projects page." />
+      <ProjectList groups={currentFocusGroups} />
+    </section>
+  )}
+
+  <section class="section prose">
+    <SectionTitle title="Short-term direction" />
+    <ul>
+      {nowPageData.shortTermDirection.map((item) => <li>{item}</li>)}
+    </ul>
+  </section>
+</Layout>
+
+<style>
+  .now-hero {
+    position: relative;
+  }
+</style>

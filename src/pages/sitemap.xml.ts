@@ -13,7 +13,7 @@ export async function GET() {
   const articleSeries = getArticleSeries(articles)
   const articleTags = getArticleTags(articles)
   const projectDetails = getProjectsWithDetails()
-  const staticPages = ['/', '/blog/', '/blog/series/', '/blog/tags/', '/projects/', '/about/']
+  const staticPages = ['/', '/blog/', '/blog/series/', '/blog/tags/', '/projects/', '/now/', '/about/']
   const urls = [
     ...staticPages.map((path) => sitemapUrl(path)),
     ...articleSeries.map((series) => sitemapUrl(series.href)),
