@@ -688,3 +688,37 @@ Added concise README troubleshooting guidance for common GitHub Actions deployme
 ### Next Steps
 
 - None - task complete
+
+
+## Session 21: Add deploy configuration preflight
+
+**Date**: 2026-05-23
+**Task**: Add deploy configuration preflight
+**Branch**: `main`
+
+### Summary
+
+Added a deployment environment preflight script and tests, wired it into the GitHub Actions deploy workflow before private content checkout, updated README deployment flow, and recorded the deploy preflight contract in the backend quality spec. Verified missing and configured deploy env paths plus npm test, npm run check, npm run build, and npm run check:budget.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c231ca7` | (see git log) |
+| `3970b53` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
