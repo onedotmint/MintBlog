@@ -17,6 +17,32 @@ npm run preview
 If `private-content/` exists, it is copied into `src/content/blog/` and `public/`
 before Astro starts.
 
+## Docker Compose
+
+Build and serve the static site with Nginx:
+
+```bash
+docker compose up --build
+```
+
+The site is available at `http://localhost:8080` by default.
+
+Optional environment variables:
+
+```bash
+BLOG_PORT=3000 PUBLIC_SITE_ORIGIN=https://example.com docker compose up --build
+```
+
+`BLOG_PORT` changes the host port. `PUBLIC_SITE_ORIGIN` is passed at build time
+and is used for canonical URLs, RSS links, sitemap URLs, and social metadata.
+If you change `BLOG_PORT`, set `PUBLIC_SITE_ORIGIN` to the matching public URL.
+
+The final container serves only generated static files from `dist/`. It does not
+run Node. If `private-content/` exists during the Docker build, the normal
+content sync step can include it in the generated output. Use a trusted local
+Docker builder when building with private content, because Docker sends the build
+context to the builder before the final runtime image is created.
+
 ## Private content layout
 
 ```text
