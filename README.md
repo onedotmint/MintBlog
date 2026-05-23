@@ -115,3 +115,24 @@ Required secrets:
 `PUBLIC_SITE_ORIGIN` should be the production origin used for canonical URLs,
 RSS links, sitemap URLs, and social metadata. Local builds fall back to
 `http://localhost:4321`.
+
+## Deployment troubleshooting
+
+- Strict content sync fails: check that the private checkout created
+  non-empty `private-content/blog/`, `private-content/reading/`, and
+  `private-content/projects/`. The failing command is `npm run build:deploy`,
+  which runs `PRIVATE_CONTENT_STRICT=1 npm run build`; see
+  `scripts/sync-content.mjs` for the required private source layout.
+- Origin check fails: set the `PUBLIC_SITE_ORIGIN` secret to the production
+  origin, for example `https://example.com`. `npm run build:deploy` runs
+  `npm run check:origin` before syncing content, and blank values are rejected.
+- Private content checkout fails: verify `PRIVATE_CONTENT_REPOSITORY` and
+  `PRIVATE_CONTENT_TOKEN` in repository secrets. The checkout step is skipped
+  when either value is blank, which later causes strict sync to fail.
+- SSH setup fails: verify `DEPLOY_HOST` and `DEPLOY_KEY`. The workflow writes
+  `DEPLOY_KEY` to `~/.ssh/id_ed25519` and runs `ssh-keyscan -H "$DEPLOY_HOST"`,
+  so an invalid host or malformed private key fails before upload.
+- `rsync` fails with a permission or path error: verify `DEPLOY_USER`,
+  `DEPLOY_HOST`, and `DEPLOY_PATH`. The deploy step uploads only `dist/` to
+  `${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/`, so the target user must be
+  able to create, update, and delete files in that directory.
