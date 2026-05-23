@@ -148,6 +148,68 @@ If additional Astro check or lint scripts are configured, run them before finish
 }
 ```
 
+## Scenario: Static Article Reading Experience
+
+### 1. Scope / Trigger
+
+- Trigger: changes to article detail layout, prose CSS, table of contents, adjacent article navigation, or code/table overflow behavior.
+- Scope: static Astro article reading experience only; no client JavaScript.
+
+### 2. Signatures
+
+- Route: `src/pages/blog/[slug].astro`
+- Components: `src/components/ArticleTableOfContents.astro`, `src/components/ArticleReadingNav.astro`
+- Shared styles: `src/styles/global.css`
+- Visual baseline command: `npm run design:baseline`
+
+### 3. Contracts
+
+- Article pages render semantic `<article>` content with an accessible title target.
+- Long body content has a focus-visible skip link before the article body.
+- Table of contents uses `entry.render()` headings and remains static.
+- Adjacent navigation uses semantic `nav` and descriptive accessible labels.
+- Body links are visibly underlined; hover cannot be the only affordance.
+- Code blocks and tables must scroll horizontally inside the content column instead of widening the viewport.
+
+### 4. Validation & Error Matrix
+
+- Added client JavaScript for TOC, reading progress, or copy buttons -> reject for V1 static reading work.
+- Long code/table content widens mobile viewport -> fix CSS overflow.
+- Body links rely only on color or hover -> add persistent underline.
+- Visual article-page change without refreshed baseline -> run `npm run design:baseline` or document why unavailable.
+
+### 5. Good/Base/Bad Cases
+
+- Good: CSS-only prose improvements with code block overflow and focus-visible skip link.
+- Base: route loads article data, renders `Content`, TOC, adjacent nav, and related articles.
+- Bad: adding a client island to highlight the current TOC section for a readability-only task.
+
+### 6. Tests Required
+
+- Run `npm test`.
+- Run `npm run check`.
+- Run `npm run build`.
+- Run `npm run design:baseline` for visual article-page changes.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```astro
+<script>
+  // scroll spy for static article reading
+</script>
+```
+
+#### Correct
+
+```css
+.post-body :global(pre) {
+  max-width: 100%;
+  overflow-x: auto;
+}
+```
+
 ## Scenario: CI Quality Workflow
 
 ### 1. Scope / Trigger
