@@ -1,0 +1,91 @@
+---
+import type { Article } from '../utils/articles'
+
+interface Props {
+  newer?: Article
+  older?: Article
+}
+
+const { newer, older } = Astro.props
+---
+
+{(newer || older) && (
+  <nav class="article-reading-nav" aria-label="Adjacent articles">
+    {newer ? (
+      <a class="article-reading-link" href={newer.href}>
+        <span>Newer article</span>
+        <strong>{newer.data.title}</strong>
+      </a>
+    ) : (
+      <span class="article-reading-placeholder" aria-hidden="true"></span>
+    )}
+
+    {older ? (
+      <a class="article-reading-link article-reading-link-next" href={older.href}>
+        <span>Older article</span>
+        <strong>{older.data.title}</strong>
+      </a>
+    ) : (
+      <span class="article-reading-placeholder" aria-hidden="true"></span>
+    )}
+  </nav>
+)}
+
+<style>
+  .article-reading-nav {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .article-reading-link {
+    display: flex;
+    min-height: 5.5rem;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.018);
+  }
+
+  .article-reading-link:hover {
+    border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .article-reading-link span {
+    color: var(--text-faint);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+
+  .article-reading-link strong {
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .article-reading-link-next {
+    text-align: right;
+  }
+
+  @media (max-width: 640px) {
+    .article-reading-nav {
+      grid-template-columns: 1fr;
+    }
+
+    .article-reading-link-next {
+      text-align: left;
+    }
+
+    .article-reading-placeholder {
+      display: none;
+    }
+  }
+</style>

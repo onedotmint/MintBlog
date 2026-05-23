@@ -3,9 +3,20 @@ import type { CollectionEntry } from 'astro:content'
 
 import Badge from '../../components/Badge.astro'
 import ArticleList from '../../components/ArticleList.astro'
+import ArticleReadingNav from '../../components/ArticleReadingNav.astro'
+import ArticleTableOfContents from '../../components/ArticleTableOfContents.astro'
 import Layout from '../../layouts/Layout.astro'
 import { formatDate } from '../../utils/date'
-import { getArticles, getArticleSeriesHref, getArticleTagHref, getArticleUpdatedDate, getRelatedArticles, toArticle } from '../../utils/articles'
+import {
+  getAdjacentArticles,
+  getArticles,
+  getArticleSeriesHref,
+  getArticleTableOfContents,
+  getArticleTagHref,
+  getArticleUpdatedDate,
+  getRelatedArticles,
+  toArticle,
+} from '../../utils/articles'
 
 export async function getStaticPaths() {
   const articles = await getArticles()
@@ -17,11 +28,14 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props as { entry: CollectionEntry<'blog'> }
-const { Content } = await entry.render()
+const { Content, headings } = await entry.render()
 const article = toArticle(entry)
+const articles = await getArticles()
 const updatedAt = getArticleUpdatedDate(article)
 const seriesHref = getArticleSeriesHref(article)
-const relatedArticles = getRelatedArticles(article, await getArticles())
+const relatedArticles = getRelatedArticles(article, articles)
+const adjacentArticles = getAdjacentArticles(article, articles)
+const tableOfContents = getArticleTableOfContents(headings)
 ---
 
 <Layout title={entry.data.title} description={entry.data.description} canonicalPath={article.href} type="article">
@@ -47,9 +61,13 @@ const relatedArticles = getRelatedArticles(article, await getArticles())
       </div>
     </header>
 
+    <ArticleTableOfContents items={tableOfContents} />
+
     <div class="post-body">
       <Content />
     </div>
+
+    <ArticleReadingNav newer={adjacentArticles.newer} older={adjacentArticles.older} />
 
     {relatedArticles.length > 0 && (
       <section class="related-section">

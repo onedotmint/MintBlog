@@ -1,0 +1,59 @@
+---
+import type { ArticleTableOfContentsItem } from '../utils/articles'
+
+interface Props {
+  items: ArticleTableOfContentsItem[]
+}
+
+const { items } = Astro.props
+---
+
+{items.length > 0 && (
+  <nav class="article-toc" aria-labelledby="article-toc-title">
+    <h2 id="article-toc-title">On this page</h2>
+    <ol class="list-reset">
+      {items.map((item) => (
+        <li data-depth={item.depth}>
+          <a href={`#${item.slug}`}>{item.text}</a>
+        </li>
+      ))}
+    </ol>
+  </nav>
+)}
+
+<style>
+  .article-toc {
+    display: flex;
+    max-width: 760px;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.85rem 0;
+    border-block: 1px solid var(--border);
+  }
+
+  .article-toc h2 {
+    margin: 0;
+    color: var(--text-faint);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+
+  .article-toc ol {
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .article-toc li[data-depth='3'] {
+    padding-left: 0.9rem;
+  }
+
+  .article-toc a {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .article-toc a:hover {
+    color: var(--accent);
+  }
+</style>

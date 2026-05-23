@@ -1,4 +1,5 @@
 import { getCollection } from 'astro:content'
+import type { MarkdownHeading } from 'astro'
 import type { CollectionEntry } from 'astro:content'
 
 export type BlogEntry = CollectionEntry<'blog'>
@@ -22,6 +23,17 @@ export interface ArticleTag {
   slug: string
   href: string
   articles: Article[]
+}
+
+export interface AdjacentArticles {
+  newer?: Article
+  older?: Article
+}
+
+export interface ArticleTableOfContentsItem {
+  depth: number
+  slug: string
+  text: string
 }
 
 export function normalizeArticleSlug(slug: string) {
@@ -131,6 +143,31 @@ export function getFeaturedArticles(articles: Article[], limit: number) {
   const fallback = articles.filter((article) => !featuredSlugs.has(article.slug)).slice(0, limit - featured.length)
 
   return [...featured, ...fallback]
+}
+
+export function getAdjacentArticles(article: Article, articles: Article[]): AdjacentArticles {
+  const currentIndex = articles.findIndex((candidate) => candidate.slug === article.slug)
+
+  if (currentIndex === -1) {
+    return {}
+  }
+
+  return {
+    newer: currentIndex > 0 ? articles[currentIndex - 1] : undefined,
+    older: currentIndex < articles.length - 1 ? articles[currentIndex + 1] : undefined,
+  }
+}
+
+export function getArticleTableOfContents(headings: MarkdownHeading[], minimumItems = 2): ArticleTableOfContentsItem[] {
+  const items = headings
+    .filter((heading) => heading.depth >= 2 && heading.depth <= 3 && heading.slug && heading.text)
+    .map((heading) => ({
+      depth: heading.depth,
+      slug: heading.slug,
+      text: heading.text,
+    }))
+
+  return items.length >= minimumItems ? items : []
 }
 
 export function getArticleSeries(articles: Article[]) {
