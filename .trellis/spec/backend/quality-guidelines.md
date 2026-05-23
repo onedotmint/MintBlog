@@ -164,14 +164,26 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 - Workflow: `.github/workflows/deploy.yml`
 - Install command: `npm ci`
+- Deploy configuration guard command: `npm run check:deploy-env`
 - Origin guard command: `npm run check:origin`
 - Deploy build command: `npm run build:deploy`
+- Deploy configuration guard entry point: `scripts/check-deploy-env.mjs`
 - Guard entry point: `scripts/check-origin.mjs`
+- Deploy configuration test file: `tests/check-deploy-env.test.mjs`
 - Test file: `tests/check-origin.test.mjs`
 
 ### 3. Contracts
 
+- GitHub Actions deploys must run `npm run check:deploy-env` after Node setup
+  and before private content checkout, build, SSH setup, or rsync.
+- `PRIVATE_CONTENT_REPOSITORY` is required for GitHub Actions deploys.
+- `PRIVATE_CONTENT_TOKEN` is required for GitHub Actions deploys.
 - `PUBLIC_SITE_ORIGIN` is required for GitHub Actions production deployment builds.
+- `DEPLOY_HOST` is required for GitHub Actions deploys.
+- `DEPLOY_USER` is required for GitHub Actions deploys.
+- `DEPLOY_PATH` is required for GitHub Actions deploys.
+- `DEPLOY_KEY` is required for GitHub Actions deploys.
+- Blank or whitespace-only deploy configuration values are invalid.
 - Blank or whitespace-only `PUBLIC_SITE_ORIGIN` is invalid.
 - Local `npm run build` must keep the development fallback origin and sample content fallback.
 - `npm run build:deploy` must run the origin guard before `PRIVATE_CONTENT_STRICT=1 npm run build`.
@@ -183,22 +195,30 @@ COPY --from=build /app/dist /usr/share/nginx/html
 - Missing `PUBLIC_SITE_ORIGIN` in deploy build -> `[origin] PUBLIC_SITE_ORIGIN is required for production deployment builds.`
 - Blank `PUBLIC_SITE_ORIGIN` in deploy build -> same error as missing.
 - Configured `PUBLIC_SITE_ORIGIN` -> guard prints `[origin] ok: <origin>` and returns `0`.
+- Missing deploy configuration in workflow preflight -> `[deploy-env] Missing required deployment values: <names>`
+- Blank deploy configuration value in workflow preflight -> same missing-value error with that key name.
+- Configured deploy environment -> guard prints `[deploy-env] Deployment configuration check complete, checked: 7` and returns `0`.
 - Missing private content in strict deploy build -> content sync fails before publishing.
 - Missing `package-lock.json` compatibility -> `npm ci` fails before build.
 
 ### 5. Good/Base/Bad Cases
 
 - Good: `PUBLIC_SITE_ORIGIN=https://example.com npm run build:deploy`
+- Good: `PRIVATE_CONTENT_REPOSITORY=owner/private-content PRIVATE_CONTENT_TOKEN=token PUBLIC_SITE_ORIGIN=https://example.com DEPLOY_HOST=example.com DEPLOY_USER=deploy DEPLOY_PATH=/var/www/blog DEPLOY_KEY=key npm run check:deploy-env`
 - Base: `npm run build` without `PUBLIC_SITE_ORIGIN` succeeds locally with sample content and `http://localhost:4321`.
 - Bad: relying on `src/data/site.ts` localhost fallback for production deployment.
 - Bad: changing the deployment workflow back to `npm install`.
+- Bad: conditionally skipping private content checkout when content secrets are blank; the preflight must fail first.
 
 ### 6. Tests Required
 
+- Add or update `node:test` coverage for missing, blank, and configured deploy environment values.
 - Add or update `node:test` coverage for missing, blank, and configured `PUBLIC_SITE_ORIGIN`.
 - Run `npm test`.
 - Run `npm run check`.
 - Run `npm run build`.
+- Verify `npm run check:deploy-env` fails when deploy environment values are unset.
+- Verify `npm run check:deploy-env` passes when all deploy environment values are configured.
 - Verify `npm run build:deploy` fails at `check:origin` when `PUBLIC_SITE_ORIGIN` is unset.
 - Verify a build with `PUBLIC_SITE_ORIGIN` emits that origin in RSS, sitemap, canonical, and social metadata.
 - Run a workflow linter such as `actionlint` when available.
@@ -220,6 +240,9 @@ COPY --from=build /app/dist /usr/share/nginx/html
 ```yaml
 - name: Install dependencies
   run: npm ci
+
+- name: Check deployment configuration
+  run: npm run check:deploy-env
 
 - name: Build site
   run: npm run build:deploy
