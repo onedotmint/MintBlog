@@ -64,6 +64,71 @@ test('passes valid blog and reading content', () => {
   assert.deepEqual(validateContent({ root }).errors, [])
 })
 
+test('handles realistic blog frontmatter values without false positives', () => {
+  const root = createFixtureRoot()
+
+  writeBlog(
+    root,
+    'quoted-values.mdx',
+    [
+      'title: "Quoted Values"',
+      'date: "2026-05-23"',
+      'description: "Covers quoted arrays, commas, and inline series data."',
+      'tags: ["Go, Systems", "Astro", "Notes"]',
+      'readingTime: "7 min"',
+      'series: { title: "Build, Notes", slug: "build-notes", order: 2 }',
+    ].join('\n'),
+    '[Series](/blog/series/build-notes/)',
+  )
+  writeReading(
+    root,
+    'block-tags.mdx',
+    [
+      'title: "Block Tags"',
+      'type: "Documentation"',
+      'note: "Block arrays accept common indentation and quoted commas."',
+      'tags:',
+      '    - "Content, Collections"',
+      "    - 'Astro'",
+      'image: "/images/reading/resource.svg"',
+    ].join('\n'),
+  )
+
+  assert.deepEqual(validateContent({ root }).errors, [])
+})
+
+test('reports empty required arrays and empty block array items predictably', () => {
+  const root = createFixtureRoot()
+
+  writeBlog(
+    root,
+    'empty-tags.mdx',
+    [
+      'title: "Empty Tags"',
+      'date: "2026-05-23"',
+      'description: "Tags are required for blog content."',
+      'tags: []',
+      'readingTime: "4 min"',
+    ].join('\n'),
+  )
+  writeReading(
+    root,
+    'empty-reading-tag.mdx',
+    [
+      'title: "Empty Reading Tag"',
+      'type: "Reference"',
+      'note: "Reading tags are optional, but present values cannot be empty."',
+      'tags:',
+      '  - ""',
+    ].join('\n'),
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/blog/empty-tags.mdx: missing required frontmatter: tags')))
+  assert(errors.some((error) => error.includes('src/content/reading/empty-reading-tag.mdx: tags cannot contain empty values')))
+})
+
 test('reports failing content with file-specific errors', () => {
   const root = createFixtureRoot()
 

@@ -54,7 +54,85 @@ function normalizeReadingSlug(context, file) {
 }
 
 function cleanScalarValue(value) {
-  return value.replace(/^['"]|['"]$/g, '')
+  const trimmed = value.trim()
+  const quote = trimmed[0]
+
+  if ((quote === '"' || quote === "'") && trimmed.at(-1) === quote) {
+    return trimmed.slice(1, -1).replace(new RegExp(`\\\\${quote}`, 'g'), quote)
+  }
+
+  return trimmed
+}
+
+function splitTopLevelCommaValues(value) {
+  const values = []
+  let current = ''
+  let quote = ''
+  let escaped = false
+
+  for (const char of value) {
+    if (escaped) {
+      current += char
+      escaped = false
+      continue
+    }
+
+    if (quote && char === '\\') {
+      current += char
+      escaped = true
+      continue
+    }
+
+    if ((char === '"' || char === "'") && (!quote || quote === char)) {
+      quote = quote ? '' : char
+      current += char
+      continue
+    }
+
+    if (char === ',' && !quote) {
+      values.push(current.trim())
+      current = ''
+      continue
+    }
+
+    current += char
+  }
+
+  if (current.trim() || value.endsWith(',')) {
+    values.push(current.trim())
+  }
+
+  return values
+}
+
+function splitKeyValue(value) {
+  let quote = ''
+  let escaped = false
+
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index]
+
+    if (escaped) {
+      escaped = false
+      continue
+    }
+
+    if (quote && char === '\\') {
+      escaped = true
+      continue
+    }
+
+    if ((char === '"' || char === "'") && (!quote || quote === char)) {
+      quote = quote ? '' : char
+      continue
+    }
+
+    if (char === ':' && !quote) {
+      return [value.slice(0, index).trim(), value.slice(index + 1).trim()]
+    }
+  }
+
+  return undefined
 }
 
 function splitFrontmatter(context, file, source) {
@@ -89,51 +167,132 @@ function parseFrontmatter(frontmatter) {
     }
 
     const [, key, rawValue] = match
-    fields.set(key, cleanScalarValue(rawValue.trim()))
+    fields.set(key, cleanScalarValue(rawValue))
   }
 
   return fields
 }
 
-function parseListValue(frontmatter, key) {
-  const fields = parseFrontmatter(frontmatter)
-  const rawValue = fields.get(key)
+function getTopLevelField(frontmatter, key) {
+  const lines = frontmatter.split('\n')
+  const fieldPattern = new RegExp(`^${key}:\\s*(.*)$`)
 
-  if (!rawValue) {
-    const lines = frontmatter.split('\n')
-    const keyIndex = lines.findIndex((line) => line.match(new RegExp(`^${key}:\\s*$`)))
+  for (let index = 0; index < lines.length; index += 1) {
+    const match = lines[index].match(fieldPattern)
 
-    if (keyIndex === -1) {
-      return []
-    }
-
-    const values = []
-
-    for (const line of lines.slice(keyIndex + 1)) {
-      if (line.startsWith('  - ')) {
-        values.push(line.slice(4).trim().replace(/^['"]|['"]$/g, ''))
-        continue
+    if (match) {
+      return {
+        index,
+        rawValue: match[1].trim(),
       }
-
-      if (line.trim() === '') {
-        continue
-      }
-
-      break
     }
-
-    return values
   }
 
-  const inlineArray = rawValue.match(/^\[(.*)\]$/)
+  return undefined
+}
 
-  if (!inlineArray) {
+function parseInlineArray(rawValue) {
+  const match = rawValue.match(/^\[(.*)\]$/)
+
+  if (!match) {
+    return undefined
+  }
+
+  const inner = match[1].trim()
+
+  if (!inner) {
     return []
   }
 
-  return inlineArray[1]
-    .split(',')
-    .map((tag) => tag.trim().replace(/^['"]|['"]$/g, ''))
+  return splitTopLevelCommaValues(inner).map(cleanScalarValue)
+}
+
+function parseBlockArray(lines, keyIndex) {
+  const values = []
+
+  for (const line of lines.slice(keyIndex + 1)) {
+    if (line.trim() === '') {
+      continue
+    }
+
+    if (!line.startsWith(' ')) {
+      break
+    }
+
+    const item = line.match(/^\s*-\s*(.*)$/)
+
+    if (!item) {
+      continue
+    }
+
+    values.push(cleanScalarValue(item[1]))
+  }
+
+  return values
+}
+
+function parseListValue(frontmatter, key) {
+  const field = getTopLevelField(frontmatter, key)
+
+  if (!field) {
+    return []
+  }
+
+  const inlineArray = parseInlineArray(field.rawValue)
+
+  if (inlineArray) {
+    return inlineArray
+  }
+
+  if (field.rawValue !== '') {
+    return []
+  }
+
+  return parseBlockArray(frontmatter.split('\n'), field.index)
+}
+
+function parseInlineObject(rawValue) {
+  const match = rawValue.match(/^\{(.*)\}$/)
+
+  if (!match) {
+    return undefined
+  }
+
+  const fields = new Map()
+
+  for (const entry of splitTopLevelCommaValues(match[1])) {
+    const parts = splitKeyValue(entry)
+
+    if (!parts) {
+      continue
+    }
+
+    fields.set(cleanScalarValue(parts[0]), cleanScalarValue(parts[1]))
+  }
+
+  return fields
+}
+
+function parseIndentedObject(lines, keyIndex) {
+  const fields = new Map()
+
+  for (const line of lines.slice(keyIndex + 1)) {
+    if (line.trim() === '') {
+      continue
+    }
+
+    if (!line.startsWith(' ')) {
+      break
+    }
+
+    const match = line.match(/^\s+([A-Za-z][A-Za-z0-9]*):\s*(.*)$/)
+
+    if (match) {
+      fields.set(match[1], cleanScalarValue(match[2]))
+    }
+  }
+
+  return fields
 }
 
 function normalizeSlug(value) {
@@ -146,25 +305,13 @@ function normalizeSlug(value) {
 
 function parseSeriesSlug(frontmatter) {
   const lines = frontmatter.split('\n')
-  const seriesIndex = lines.findIndex((line) => line === 'series:')
+  const series = getTopLevelField(frontmatter, 'series')
 
-  if (seriesIndex === -1) {
+  if (!series) {
     return undefined
   }
 
-  const seriesFields = new Map()
-
-  for (const line of lines.slice(seriesIndex + 1)) {
-    if (!line.startsWith('  ')) {
-      break
-    }
-
-    const match = line.match(/^  ([A-Za-z][A-Za-z0-9]*):\s*(.*)$/)
-
-    if (match) {
-      seriesFields.set(match[1], match[2].trim().replace(/^['"]|['"]$/g, ''))
-    }
-  }
+  const seriesFields = parseInlineObject(series.rawValue) ?? parseIndentedObject(lines, series.index)
 
   const slugSource = seriesFields.get('slug') || seriesFields.get('title')
 
