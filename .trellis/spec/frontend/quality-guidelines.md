@@ -75,6 +75,69 @@ frontmatter, root-relative public asset links, and empty or duplicated tags.
 
 If additional Astro check or lint scripts are configured, run them before finishing.
 
+## Scenario: Utility and Script Unit Tests
+
+### 1. Scope / Trigger
+
+- Trigger: adding or changing reusable utility behavior or build-time validation script behavior.
+- Scope: keep tests local, fast, and dependency-light for static blog helpers and Node scripts.
+
+### 2. Signatures
+
+- Command: `npm test`
+- Runner: `node --test "tests/**/*.test.mjs"`
+- Test files: `tests/*.test.mjs`
+- TypeScript helper: `tests/import-ts-module.mjs`
+
+### 3. Contracts
+
+- Tests must not add a browser, backend service, database, or runtime dependency.
+- Tests may use Node's built-in `node:test` and the existing `typescript` dev dependency.
+- Tests for Astro-free utility logic should import pure utility modules, not `astro:content` entry modules.
+- Build-time scripts that need tests should expose pure functions while keeping CLI output and exit behavior stable.
+
+### 4. Validation & Error Matrix
+
+- Missing test command -> add `npm test`.
+- New utility behavior without focused assertions -> add a unit test.
+- Script behavior only reachable through `process.exit` -> expose a pure function and test that function.
+- Test helper adds an unexpected dependency -> reject it and use existing tooling.
+
+### 5. Good/Base/Bad Cases
+
+- Good: test `src/utils/article-core.ts` sorting with fake article objects.
+- Base: test a script through exported `validateContent()` using a temporary fixture directory.
+- Bad: add Vitest, Playwright, or browser tooling only for small pure helper tests.
+
+### 6. Tests Required
+
+- Article utility tests cover slug normalization, taxonomy grouping, date sorting, featured fallback, and related ranking.
+- Reading utility tests cover slug normalization, grouping, ordering, and external URL safety.
+- Content validation tests cover at least one passing fixture and one failing fixture with file-specific errors.
+- Finish by running `npm test`, `npm run check`, and `npm run check:budget`.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```json
+{
+  "scripts": {
+    "test": "vitest"
+  }
+}
+```
+
+#### Correct
+
+```json
+{
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.mjs\""
+  }
+}
+```
+
 Manual verification should cover:
 
 * home page
