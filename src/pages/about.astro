@@ -51,9 +51,11 @@ import { siteIdentity } from '../data/site'
       <li>
         <a href={siteIdentity.githubUrl}>GitHub</a>
       </li>
-      <li>
-        <a href={`mailto:${siteIdentity.emailAddress}`}>Email</a>
-      </li>
+      {siteIdentity.emailAddress ? (
+        <li>
+          <a href={`mailto:${siteIdentity.emailAddress}`}>Email</a>
+        </li>
+      ) : null}
     </ul>
   </section>
 </Layout>

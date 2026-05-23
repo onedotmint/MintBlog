@@ -6,7 +6,7 @@ export interface SiteIdentity {
   shortIntro: string
   aboutIntro: string
   githubUrl: string
-  emailAddress: string
+  emailAddress?: string
   socialImagePath: string
   socialImageAlt: string
   canonicalOrigin?: string
@@ -22,7 +22,7 @@ export function toAbsoluteUrl(path: string) {
   return new URL(path, `${getSiteOrigin()}/`).toString()
 }
 
-export const siteIdentity = {
+export const siteIdentity: SiteIdentity = {
   siteName: 'Jeff Tim',
   ownerName: 'Jeff Tim',
   defaultTitle: 'Jeff Tim',
@@ -30,8 +30,7 @@ export const siteIdentity = {
   shortIntro: 'Notes on backend systems, small tools, and the habits that make them easier to ship.',
   aboutIntro: 'Computer science student. Backend and systems learner. I keep a public log of the small things I build and the notes that help me reason about them.',
   githubUrl: 'https://github.com/jefftim',
-  emailAddress: 'jeff@example.com',
   socialImagePath: '/social-card.png',
   socialImageAlt: 'Jeff Tim personal blog preview card',
   canonicalOrigin: '',
-} satisfies SiteIdentity
+}

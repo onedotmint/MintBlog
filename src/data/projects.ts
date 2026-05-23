@@ -40,7 +40,6 @@ export const projectGroups: readonly ProjectGroup[] = [
         name: 'Rust Notes',
         description: 'Small exercises on ownership, error handling, and tooling around cargo.',
         tags: ['Rust', 'Systems', 'Notes'],
-        link: '#',
       },
       {
         name: 'Build Pipeline Sketches',
