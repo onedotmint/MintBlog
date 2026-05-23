@@ -8,13 +8,13 @@
 
 Use TypeScript for configuration, content schemas, and structured data files. Keep types close to the data they describe unless a type is reused across files.
 
-Astro Content Collections should validate blog frontmatter with Zod through `src/content.config.ts`.
+Astro Content Collections should validate blog, reading, and project frontmatter with Zod through `src/content.config.ts`.
 
 ---
 
 ## Type Organization
 
-Define project data types in `src/data/projects.ts` when the type is only used there.
+Define content collection wrapper types close to the utility that normalizes that collection.
 
 Define Astro component props with local `interface Props` blocks inside component frontmatter.
 
@@ -81,33 +81,6 @@ exclude the current article, rank by shared tag count first, then by publish dat
 
 Format dates in one helper or local utility function when the format repeats across pages/components.
 
-Use readonly-style data where practical:
-
-```ts
-export const projectGroups: readonly ProjectGroup[] = [
-  // ...
-]
-```
-
-Project detail pages use optional `detail` metadata on project items.
-Expose a typed helper that narrows to projects with detail pages before routes,
-sitemap entries, or links consume the slug:
-
-```ts
-export function getProjectsWithDetails(): ProjectWithDetail[] {
-  return projectGroups.flatMap((group) =>
-    group.items
-      .filter(hasProjectDetail)
-      .map((project) => ({
-        ...project,
-        link: project.link || `/projects/${project.detail.slug}/`,
-      })),
-  )
-}
-```
-
-Do not access `project.detail.slug` from broad `ProjectItemData` without a type guard.
-
 Reading resources use a dedicated content collection schema with these fields:
 
 ```ts
@@ -127,6 +100,52 @@ When generating blog routes or links, use the normalized slug from `src/utils/ar
 Astro collection slugs for `.mdx` content can still carry the source extension in this project,
 so route URLs must normalize them first.
 
+Projects use a dedicated content collection schema with these fields:
+
+```ts
+{
+  name: z.string(),
+  description: z.string(),
+  group: z.object({
+    title: z.string(),
+    description: z.string(),
+    order: z.number().int().nonnegative(),
+  }),
+  order: z.number().int().nonnegative(),
+  tags: z.array(z.string()).default([]),
+  link: z.string().optional(),
+  detail: z.boolean().default(false),
+  summary: z.string().optional(),
+  designNotes: z.array(z.string()).default([]),
+  links: z.array(z.object({
+    label: z.string(),
+    href: z.string(),
+  })).default([]),
+  retrospective: z.string().optional(),
+}
+```
+
+Use `src/utils/projects.ts` for project collection loading, slug normalization, grouping, detail filtering, and URL construction before rendering lists, detail routes, or sitemap entries.
+
+Use `src/utils/project-core.ts` for Astro-free project sorting, grouping, link construction, and detail guards. Add focused `node:test` coverage there when project behavior changes.
+
+Project group ordering comes from `group.order`; item ordering inside a group comes from `order`. Do not derive project order from file system ordering.
+
+Project detail pages are generated only for projects that pass the detail guard: `detail: true`, `summary`, `designNotes`, `links`, and `retrospective` must be present. Detail page background content comes from the MDX body via `entry.render()`.
+
+When generating project routes or links, use the normalized slug from `src/utils/projects.ts` and the `href` returned by project helpers. Do not rebuild `/projects/${slug}/` in route files except inside the shared project helper.
+
+Expose a typed helper that narrows to projects with detail pages before routes,
+sitemap entries, or links consume the project route:
+
+```ts
+export async function getDetailedProjects() {
+  return getProjectsWithDetails(await getProjects())
+}
+```
+
+Do not access optional project detail fields from broad `ProjectItemData` without using the shared detail helper or guard.
+
 ---
 
 ## Forbidden Patterns
@@ -136,3 +155,5 @@ Do not use `any` for content, project, or component props.
 Do not duplicate blog metadata in route files.
 
 Do not bypass content collection validation by reading MDX files manually.
+
+Do not keep project metadata in `src/data/projects.ts`; projects are content files under `src/content/projects/` synced from `sample-content/projects/` or private content.
