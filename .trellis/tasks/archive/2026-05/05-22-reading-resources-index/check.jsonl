@@ -1,0 +1,7 @@
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Primary quality checklist for static output, sitemap coverage, responsive layout, and verification commands."}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Validates content schema usage and route typing for the new reading collection and its helpers."}
+{"file":".trellis/spec/frontend/directory-structure.md","reason":"Checks the final file layout, content mount points, and sync target placement."}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Checks semantic markup, component boundaries, and lightweight styling conventions."}
+{"file":".trellis/spec/frontend/state-management.md","reason":"Confirms no client state or runtime data flow slipped into the implementation."}
+{"file":".trellis/spec/guides/simplicity-guardrails.md","reason":"Checks the feature stayed static-first and did not add unnecessary runtime infrastructure."}
+{"file":".trellis/spec/guides/dependency-runtime-budget.md","reason":"Checks the implementation did not add dependencies or exceed static output budgets."}
