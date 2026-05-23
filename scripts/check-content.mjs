@@ -2,46 +2,54 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const blogDir = join(root, 'src/content/blog')
-const readingDir = join(root, 'src/content/reading')
-const publicDir = join(root, 'public')
+const defaultRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const requiredFrontmatter = ['title', 'date', 'description', 'tags', 'readingTime']
-const errors = []
 
-function report(file, message) {
-  errors.push(`${relative(root, file)}: ${message}`)
+function createContext(options = {}) {
+  const root = options.root ?? defaultRoot
+
+  return {
+    root,
+    blogDir: options.blogDir ?? join(root, 'src/content/blog'),
+    readingDir: options.readingDir ?? join(root, 'src/content/reading'),
+    publicDir: options.publicDir ?? join(root, 'public'),
+    errors: [],
+  }
 }
 
-function getBlogFiles() {
-  if (!existsSync(blogDir)) {
+function report(context, file, message) {
+  context.errors.push(`${relative(context.root, file)}: ${message}`)
+}
+
+function getBlogFiles(context) {
+  if (!existsSync(context.blogDir)) {
     return []
   }
 
-  return readdirSync(blogDir)
+  return readdirSync(context.blogDir)
     .filter((name) => name.endsWith('.mdx'))
-    .map((name) => join(blogDir, name))
+    .map((name) => join(context.blogDir, name))
 }
 
-function getReadingFiles() {
-  if (!existsSync(readingDir)) {
+function getReadingFiles(context) {
+  if (!existsSync(context.readingDir)) {
     return []
   }
 
-  return readdirSync(readingDir)
+  return readdirSync(context.readingDir)
     .filter((name) => name.endsWith('.mdx'))
-    .map((name) => join(readingDir, name))
+    .map((name) => join(context.readingDir, name))
 }
 
-function normalizeBlogSlug(file) {
+function normalizeBlogSlug(context, file) {
   return file
-    .slice(blogDir.length + 1)
+    .slice(context.blogDir.length + 1)
     .replace(/\.(md|mdx)$/, '')
 }
 
-function normalizeReadingSlug(file) {
+function normalizeReadingSlug(context, file) {
   return file
-    .slice(readingDir.length + 1)
+    .slice(context.readingDir.length + 1)
     .replace(/\.(md|mdx)$/, '')
 }
 
@@ -49,16 +57,16 @@ function cleanScalarValue(value) {
   return value.replace(/^['"]|['"]$/g, '')
 }
 
-function splitFrontmatter(file, source) {
+function splitFrontmatter(context, file, source) {
   if (!source.startsWith('---\n')) {
-    report(file, 'missing frontmatter block')
+    report(context, file, 'missing frontmatter block')
     return undefined
   }
 
   const end = source.indexOf('\n---', 4)
 
   if (end === -1) {
-    report(file, 'frontmatter block is not closed')
+    report(context, file, 'frontmatter block is not closed')
     return undefined
   }
 
@@ -163,18 +171,18 @@ function parseSeriesSlug(frontmatter) {
   return slugSource ? normalizeSlug(slugSource) : undefined
 }
 
-function getKnownRoutes(blogFiles, readingFiles) {
+function getKnownRoutes(context, blogFiles, readingFiles) {
   const seriesRoutes = blogFiles
     .map((file) => {
       const source = readFileSync(file, 'utf8')
-      const parts = splitFrontmatter(file, source)
+      const parts = splitFrontmatter(context, file, source)
       const seriesSlug = parts ? parseSeriesSlug(parts.frontmatter) : undefined
 
       return seriesSlug ? `/blog/series/${seriesSlug}/` : undefined
     })
     .filter(Boolean)
 
-  const readingRoutes = readingFiles.map((file) => `/reading/${normalizeReadingSlug(file)}/`)
+  const readingRoutes = readingFiles.map((file) => `/reading/${normalizeReadingSlug(context, file)}/`)
 
   return new Set([
     '/',
@@ -185,13 +193,13 @@ function getKnownRoutes(blogFiles, readingFiles) {
     '/projects/',
     '/now/',
     '/reading/',
-    ...blogFiles.map((file) => `/blog/${normalizeBlogSlug(file)}/`),
+    ...blogFiles.map((file) => `/blog/${normalizeBlogSlug(context, file)}/`),
     ...seriesRoutes,
     ...readingRoutes,
   ])
 }
 
-function checkFrontmatter(file, frontmatter) {
+function checkFrontmatter(context, file, frontmatter) {
   const fields = parseFrontmatter(frontmatter)
 
   for (const key of requiredFrontmatter) {
@@ -200,14 +208,14 @@ function checkFrontmatter(file, frontmatter) {
     }
 
     if (!fields.has(key) || fields.get(key) === '') {
-      report(file, `missing required frontmatter: ${key}`)
+      report(context, file, `missing required frontmatter: ${key}`)
     }
   }
 
   const tags = parseListValue(frontmatter, 'tags')
 
   if (tags.length === 0) {
-    report(file, 'missing required frontmatter: tags')
+    report(context, file, 'missing required frontmatter: tags')
     return
   }
 
@@ -215,14 +223,14 @@ function checkFrontmatter(file, frontmatter) {
 
   for (const tag of tags) {
     if (!tag) {
-      report(file, 'tags cannot contain empty values')
+      report(context, file, 'tags cannot contain empty values')
       continue
     }
 
     const normalized = tag.toLowerCase()
 
     if (seenTags.has(normalized)) {
-      report(file, `duplicate tag: ${tag}`)
+      report(context, file, `duplicate tag: ${tag}`)
       continue
     }
 
@@ -230,13 +238,13 @@ function checkFrontmatter(file, frontmatter) {
   }
 }
 
-function checkReadingFrontmatter(file, frontmatter, knownRoutes) {
+function checkReadingFrontmatter(context, file, frontmatter, knownRoutes) {
   const fields = parseFrontmatter(frontmatter)
   const requiredKeys = ['title', 'type', 'note']
 
   for (const key of requiredKeys) {
     if (!fields.has(key) || fields.get(key) === '') {
-      report(file, `missing required frontmatter: ${key}`)
+      report(context, file, `missing required frontmatter: ${key}`)
     }
   }
 
@@ -247,14 +255,14 @@ function checkReadingFrontmatter(file, frontmatter, knownRoutes) {
 
     for (const tag of tags) {
       if (!tag) {
-        report(file, 'tags cannot contain empty values')
+        report(context, file, 'tags cannot contain empty values')
         continue
       }
 
       const normalized = tag.toLowerCase()
 
       if (seenTags.has(normalized)) {
-        report(file, `duplicate tag: ${tag}`)
+        report(context, file, `duplicate tag: ${tag}`)
         continue
       }
 
@@ -265,12 +273,12 @@ function checkReadingFrontmatter(file, frontmatter, knownRoutes) {
   const image = fields.get('image')
 
   if (image && !image.startsWith('/')) {
-    report(file, 'image must use a root-relative public path')
+    report(context, file, 'image must use a root-relative public path')
     return
   }
 
   if (image) {
-    checkRootRelativeTarget(file, image, knownRoutes)
+    checkRootRelativeTarget(context, file, image, knownRoutes)
   }
 }
 
@@ -296,59 +304,78 @@ function findRootRelativeTargets(source) {
   return targets
 }
 
-function checkRootRelativeTargets(file, body, knownRoutes) {
+function checkRootRelativeTargets(context, file, body, knownRoutes) {
   for (const target of findRootRelativeTargets(body)) {
-    checkRootRelativeTarget(file, target, knownRoutes)
+    checkRootRelativeTarget(context, file, target, knownRoutes)
   }
 }
 
-function checkRootRelativeTarget(file, target, knownRoutes) {
-  const publicPath = join(publicDir, decodeURIComponent(target))
+function checkRootRelativeTarget(context, file, target, knownRoutes) {
+  const publicPath = join(context.publicDir, decodeURIComponent(target))
 
   if (knownRoutes.has(target) || (existsSync(publicPath) && statSync(publicPath).isFile())) {
     return
   }
 
-  report(file, `missing internal route or public file: ${target}`)
+  report(context, file, `missing internal route or public file: ${target}`)
 }
 
-const blogFiles = getBlogFiles()
-const readingFiles = getReadingFiles()
-const knownRoutes = getKnownRoutes(blogFiles, readingFiles)
+export function validateContent(options = {}) {
+  const context = createContext(options)
+  const blogFiles = getBlogFiles(context)
+  const readingFiles = getReadingFiles(context)
+  const knownRoutes = getKnownRoutes(context, blogFiles, readingFiles)
 
-for (const file of blogFiles) {
-  const source = readFileSync(file, 'utf8')
-  const parts = splitFrontmatter(file, source)
+  for (const file of blogFiles) {
+    const source = readFileSync(file, 'utf8')
+    const parts = splitFrontmatter(context, file, source)
 
-  if (!parts) {
-    continue
+    if (!parts) {
+      continue
+    }
+
+    checkFrontmatter(context, file, parts.frontmatter)
+    checkRootRelativeTargets(context, file, parts.body, knownRoutes)
   }
 
-  checkFrontmatter(file, parts.frontmatter)
-  checkRootRelativeTargets(file, parts.body, knownRoutes)
-}
+  for (const file of readingFiles) {
+    const source = readFileSync(file, 'utf8')
+    const parts = splitFrontmatter(context, file, source)
 
-for (const file of readingFiles) {
-  const source = readFileSync(file, 'utf8')
-  const parts = splitFrontmatter(file, source)
+    if (!parts) {
+      continue
+    }
 
-  if (!parts) {
-    continue
+    checkReadingFrontmatter(context, file, parts.frontmatter, knownRoutes)
+    checkRootRelativeTargets(context, file, parts.body, knownRoutes)
   }
 
-  checkReadingFrontmatter(file, parts.frontmatter, knownRoutes)
-  checkRootRelativeTargets(file, parts.body, knownRoutes)
+  return {
+    blogCount: blogFiles.length,
+    readingCount: readingFiles.length,
+    errors: context.errors,
+  }
 }
 
-if (errors.length > 0) {
-  console.error('[content] failed')
+export function runContentCheck(options = {}) {
+  const result = validateContent(options)
 
-  for (const error of errors) {
-    console.error(`[content] ${error}`)
+  if (result.errors.length > 0) {
+    console.error('[content] failed')
+
+    for (const error of result.errors) {
+      console.error(`[content] ${error}`)
+    }
+
+    return 1
   }
 
-  process.exit(1)
+  console.log(`[content] ok: ${result.blogCount} blog post(s) checked`)
+  console.log(`[content] ok: ${result.readingCount} reading resource(s) checked`)
+
+  return 0
 }
 
-console.log(`[content] ok: ${blogFiles.length} blog post(s) checked`)
-console.log(`[content] ok: ${readingFiles.length} reading resource(s) checked`)
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  process.exit(runContentCheck())
+}
