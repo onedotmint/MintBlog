@@ -451,3 +451,37 @@ Improved build-time MDX frontmatter parsing for quoted arrays, block arrays, inl
 ### Next Steps
 
 - None - task complete
+
+
+## Session 14: Move project data to content collection
+
+**Date**: 2026-05-23
+**Task**: Move project data to content collection
+**Branch**: `main`
+
+### Summary
+
+Moved project metadata into the Astro projects content collection, updated sync/content validation/tests, and documented the new project content contract.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3702d7d` | (see git log) |
+| `893b831` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
