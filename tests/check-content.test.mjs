@@ -11,10 +11,13 @@ function createFixtureRoot() {
 
   mkdirSync(join(root, 'src/content/blog'), { recursive: true })
   mkdirSync(join(root, 'src/content/reading'), { recursive: true })
+  mkdirSync(join(root, 'src/content/projects'), { recursive: true })
   mkdirSync(join(root, 'public/images/blog'), { recursive: true })
   mkdirSync(join(root, 'public/images/reading'), { recursive: true })
+  mkdirSync(join(root, 'public/images/projects'), { recursive: true })
   writeFileSync(join(root, 'public/images/blog/post.svg'), '<svg />')
   writeFileSync(join(root, 'public/images/reading/resource.svg'), '<svg />')
+  writeFileSync(join(root, 'public/images/projects/project.svg'), '<svg />')
 
   return root
 }
@@ -27,7 +30,11 @@ function writeReading(root, name, frontmatter, body = '') {
   writeFileSync(join(root, 'src/content/reading', name), `---\n${frontmatter}\n---\n${body}`)
 }
 
-test('passes valid blog and reading content', () => {
+function writeProject(root, name, frontmatter, body = '') {
+  writeFileSync(join(root, 'src/content/projects', name), `---\n${frontmatter}\n---\n${body}`)
+}
+
+test('passes valid blog, reading, and project content', () => {
   const root = createFixtureRoot()
 
   writeBlog(
@@ -59,6 +66,29 @@ test('passes valid blog and reading content', () => {
       'url: "https://docs.astro.build"',
       'image: "/images/reading/resource.svg"',
     ].join('\n'),
+  )
+  writeProject(
+    root,
+    'valid-project.mdx',
+    [
+      'name: "Valid Project"',
+      'description: "A valid project."',
+      'group:',
+      '  title: "Tools"',
+      '  description: "Useful project tools."',
+      '  order: 0',
+      'order: 0',
+      'tags: ["Astro", "Content"]',
+      'detail: true',
+      'summary: "A detail project."',
+      'designNotes:',
+      '  - "Keep it static."',
+      'links:',
+      '  - label: "Project image"',
+      '    href: "/images/projects/project.svg"',
+      'retrospective: "It stayed small."',
+    ].join('\n'),
+    'Project body with [post](/blog/valid-post/) and [asset](/images/projects/project.svg).',
   )
 
   assert.deepEqual(validateContent({ root }).errors, [])
@@ -93,6 +123,18 @@ test('handles realistic blog frontmatter values without false positives', () => 
       'image: "/images/reading/resource.svg"',
     ].join('\n'),
   )
+  writeProject(
+    root,
+    'list-only-project.mdx',
+    [
+      'name: "List Only"',
+      'description: "Project without a detail page."',
+      'group: { title: "Tools", description: "Project tools.", order: 0 }',
+      'order: 1',
+      'tags: ["Astro, Content", "Notes"]',
+      'link: "/reading/"',
+    ].join('\n'),
+  )
 
   assert.deepEqual(validateContent({ root }).errors, [])
 })
@@ -122,11 +164,27 @@ test('reports empty required arrays and empty block array items predictably', ()
       '  - ""',
     ].join('\n'),
   )
+  writeProject(
+    root,
+    'empty-project-tag.mdx',
+    [
+      'name: "Empty Project Tag"',
+      'description: "Project tags are optional, but present values cannot be empty."',
+      'group:',
+      '  title: "Tools"',
+      '  description: "Project tools."',
+      '  order: 0',
+      'order: 0',
+      'tags:',
+      '  - ""',
+    ].join('\n'),
+  )
 
   const errors = validateContent({ root }).errors
 
   assert(errors.some((error) => error.includes('src/content/blog/empty-tags.mdx: missing required frontmatter: tags')))
   assert(errors.some((error) => error.includes('src/content/reading/empty-reading-tag.mdx: tags cannot contain empty values')))
+  assert(errors.some((error) => error.includes('src/content/projects/empty-project-tag.mdx: tags cannot contain empty values')))
 })
 
 test('reports failing content with file-specific errors', () => {
@@ -155,6 +213,24 @@ test('reports failing content with file-specific errors', () => {
       'image: "images/reading/resource.svg"',
     ].join('\n'),
   )
+  writeProject(
+    root,
+    'bad-project.mdx',
+    [
+      'name: ""',
+      'description: "A broken project."',
+      'group:',
+      '  title: ""',
+      '  description: "Project tools."',
+      'order: 0',
+      'tags: ["Astro", "astro", ""]',
+      'detail: true',
+      'summary: ""',
+      'designNotes: []',
+      'retrospective: ""',
+    ].join('\n'),
+    '[Missing](/missing-project-route/)',
+  )
 
   const errors = validateContent({ root }).errors
 
@@ -165,4 +241,13 @@ test('reports failing content with file-specific errors', () => {
   assert(errors.some((error) => error.includes('src/content/reading/bad-resource.mdx: missing required frontmatter: note')))
   assert(errors.some((error) => error.includes('src/content/reading/bad-resource.mdx: duplicate tag: http')))
   assert(errors.some((error) => error.includes('src/content/reading/bad-resource.mdx: image must use a root-relative public path')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project.mdx: missing required frontmatter: name')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project.mdx: missing required frontmatter: group.title')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project.mdx: missing required frontmatter: group.order')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project.mdx: duplicate tag: astro')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project.mdx: tags cannot contain empty values')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project.mdx: missing required frontmatter: summary')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project.mdx: missing required frontmatter: designNotes')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project.mdx: missing required frontmatter: retrospective')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project.mdx: missing internal route or public file: /missing-project-route/')))
 })

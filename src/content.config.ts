@@ -31,4 +31,30 @@ const reading = defineCollection({
   }),
 })
 
-export const collections = { blog, reading }
+const projectLink = z.object({
+  label: z.string(),
+  href: z.string(),
+})
+
+const projects = defineCollection({
+  type: 'content',
+  schema: z.object({
+    name: z.string(),
+    description: z.string(),
+    group: z.object({
+      title: z.string(),
+      description: z.string(),
+      order: z.number().int().nonnegative(),
+    }),
+    order: z.number().int().nonnegative(),
+    tags: z.array(z.string()).default([]),
+    link: z.string().optional(),
+    detail: z.boolean().default(false),
+    summary: z.string().optional(),
+    designNotes: z.array(z.string()).default([]),
+    links: z.array(projectLink).default([]),
+    retrospective: z.string().optional(),
+  }),
+})
+
+export const collections = { blog, reading, projects }

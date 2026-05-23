@@ -1,0 +1,24 @@
+---
+name: "Nginx Static Host"
+description: "Configuration notes for serving a generated site from a small VPS."
+group:
+  title: "Systems Practice"
+  description: "Low-level experiments and service patterns that sharpen backend judgment."
+  order: 1
+order: 1
+tags: ["Nginx", "Ops", "Static"]
+detail: true
+summary: "Static hosting notes for serving generated pages from a small Linux server."
+designNotes:
+  - "Serve generated files directly instead of running an app process in production."
+  - "Keep route behavior aligned with Astro trailing-slash output."
+  - "Document cache and fallback behavior so deployment changes are easy to review."
+links:
+  - label: "Nginx note"
+    href: "/blog/linux-nginx-note/"
+  - label: "Server checklist"
+    href: "/files/server-checklist.txt"
+retrospective: "Static hosting has fewer moving parts, but it still needs explicit decisions around routes, cache headers, and rollback paths."
+---
+
+This project keeps deployment close to the operating system: build static files, copy them to a server, and let Nginx serve them predictably.

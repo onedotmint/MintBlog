@@ -1,33 +1,33 @@
 ---
 import Badge from './Badge.astro'
-import type { ProjectItemData } from '../data/projects'
+import type { ProjectItemData } from '../utils/projects'
 
 interface Props {
   project: ProjectItemData
 }
 
 const { project } = Astro.props
-const projectHref = project.link || (project.detail ? `/projects/${project.detail.slug}/` : undefined)
+const projectHref = project.href
 ---
 
 <article class="project-item">
   {projectHref ? (
     <a class="project-link" href={projectHref}>
       <div class="project-headline">
-        <h3>{project.name}</h3>
+        <h3>{project.data.name}</h3>
         <span class="arrow" aria-hidden="true">-></span>
       </div>
-      <p>{project.description}</p>
+      <p>{project.data.description}</p>
     </a>
   ) : (
     <div class="project-link">
-      <h3>{project.name}</h3>
-      <p>{project.description}</p>
+      <h3>{project.data.name}</h3>
+      <p>{project.data.description}</p>
     </div>
   )}
 
   <div class="tag-row">
-    {project.tags.map((tag: string) => <Badge label={tag} />)}
+    {project.data.tags.map((tag: string) => <Badge label={tag} />)}
   </div>
 </article>
 

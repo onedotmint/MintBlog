@@ -1,6 +1,6 @@
 import { toAbsoluteUrl } from '../data/site'
-import { getProjectsWithDetails } from '../data/projects'
 import { getArticleArchives, getArticleSeries, getArticleTags, getArticles, getArticleUpdatedDate } from '../utils/articles'
+import { getDetailedProjects } from '../utils/projects'
 import { getReadingResources } from '../utils/reading'
 
 function sitemapUrl(path: string, lastmod?: Date) {
@@ -15,7 +15,7 @@ export async function GET() {
   const articleArchives = getArticleArchives(articles)
   const articleSeries = getArticleSeries(articles)
   const articleTags = getArticleTags(articles)
-  const projectDetails = getProjectsWithDetails()
+  const projectDetails = await getDetailedProjects()
   const staticPages = ['/', '/blog/', '/blog/archive/', '/blog/series/', '/blog/tags/', '/reading/', '/projects/', '/now/', '/about/']
   const urls = [
     ...staticPages.map((path) => sitemapUrl(path)),
@@ -23,7 +23,7 @@ export async function GET() {
     ...articleSeries.map((series) => sitemapUrl(series.href)),
     ...articleTags.map((tag) => sitemapUrl(tag.href)),
     ...readingResources.map((resource) => sitemapUrl(resource.href)),
-    ...projectDetails.map((project) => sitemapUrl(`/projects/${project.detail.slug}/`)),
+    ...projectDetails.map((project) => sitemapUrl(project.href)),
     ...articles.map((article) => sitemapUrl(article.href, getArticleUpdatedDate(article) ?? article.data.date)),
   ]
 

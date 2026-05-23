@@ -12,6 +12,7 @@ function createContext(options = {}) {
     root,
     blogDir: options.blogDir ?? join(root, 'src/content/blog'),
     readingDir: options.readingDir ?? join(root, 'src/content/reading'),
+    projectsDir: options.projectsDir ?? join(root, 'src/content/projects'),
     publicDir: options.publicDir ?? join(root, 'public'),
     errors: [],
   }
@@ -41,6 +42,16 @@ function getReadingFiles(context) {
     .map((name) => join(context.readingDir, name))
 }
 
+function getProjectFiles(context) {
+  if (!existsSync(context.projectsDir)) {
+    return []
+  }
+
+  return readdirSync(context.projectsDir)
+    .filter((name) => name.endsWith('.mdx'))
+    .map((name) => join(context.projectsDir, name))
+}
+
 function normalizeBlogSlug(context, file) {
   return file
     .slice(context.blogDir.length + 1)
@@ -50,6 +61,12 @@ function normalizeBlogSlug(context, file) {
 function normalizeReadingSlug(context, file) {
   return file
     .slice(context.readingDir.length + 1)
+    .replace(/\.(md|mdx)$/, '')
+}
+
+function normalizeProjectSlug(context, file) {
+  return file
+    .slice(context.projectsDir.length + 1)
     .replace(/\.(md|mdx)$/, '')
 }
 
@@ -318,7 +335,7 @@ function parseSeriesSlug(frontmatter) {
   return slugSource ? normalizeSlug(slugSource) : undefined
 }
 
-function getKnownRoutes(context, blogFiles, readingFiles) {
+function getKnownRoutes(context, blogFiles, readingFiles, projectFiles) {
   const seriesRoutes = blogFiles
     .map((file) => {
       const source = readFileSync(file, 'utf8')
@@ -330,6 +347,15 @@ function getKnownRoutes(context, blogFiles, readingFiles) {
     .filter(Boolean)
 
   const readingRoutes = readingFiles.map((file) => `/reading/${normalizeReadingSlug(context, file)}/`)
+  const projectRoutes = projectFiles
+    .filter((file) => {
+      const source = readFileSync(file, 'utf8')
+      const parts = splitFrontmatter(context, file, source)
+      const fields = parts ? parseFrontmatter(parts.frontmatter) : new Map()
+
+      return fields.get('detail') === 'true'
+    })
+    .map((file) => `/projects/${normalizeProjectSlug(context, file)}/`)
 
   return new Set([
     '/',
@@ -343,6 +369,7 @@ function getKnownRoutes(context, blogFiles, readingFiles) {
     ...blogFiles.map((file) => `/blog/${normalizeBlogSlug(context, file)}/`),
     ...seriesRoutes,
     ...readingRoutes,
+    ...projectRoutes,
   ])
 }
 
@@ -429,6 +456,67 @@ function checkReadingFrontmatter(context, file, frontmatter, knownRoutes) {
   }
 }
 
+function checkProjectFrontmatter(context, file, frontmatter, body, knownRoutes) {
+  const fields = parseFrontmatter(frontmatter)
+  const requiredKeys = ['name', 'description', 'order']
+
+  for (const key of requiredKeys) {
+    if (!fields.has(key) || fields.get(key) === '') {
+      report(context, file, `missing required frontmatter: ${key}`)
+    }
+  }
+
+  const group = getTopLevelField(frontmatter, 'group')
+  const groupFields = group ? parseInlineObject(group.rawValue) ?? parseIndentedObject(frontmatter.split('\n'), group.index) : new Map()
+
+  for (const key of ['title', 'description', 'order']) {
+    if (!groupFields.get(key)) {
+      report(context, file, `missing required frontmatter: group.${key}`)
+    }
+  }
+
+  const tags = parseListValue(frontmatter, 'tags')
+  const seenTags = new Set()
+
+  for (const tag of tags) {
+    if (!tag) {
+      report(context, file, 'tags cannot contain empty values')
+      continue
+    }
+
+    const normalized = tag.toLowerCase()
+
+    if (seenTags.has(normalized)) {
+      report(context, file, `duplicate tag: ${tag}`)
+      continue
+    }
+
+    seenTags.add(normalized)
+  }
+
+  const detail = fields.get('detail') === 'true'
+
+  if (!detail) {
+    return
+  }
+
+  for (const key of ['summary', 'retrospective']) {
+    if (!fields.has(key) || fields.get(key) === '') {
+      report(context, file, `missing required frontmatter: ${key}`)
+    }
+  }
+
+  if (parseListValue(frontmatter, 'designNotes').length === 0) {
+    report(context, file, 'missing required frontmatter: designNotes')
+  }
+
+  if (body.trim() === '') {
+    report(context, file, 'detail projects require body content')
+  }
+
+  checkRootRelativeTargets(context, file, frontmatter, knownRoutes)
+}
+
 function stripCodeFences(source) {
   return source.replace(/```[\s\S]*?```/g, '')
 }
@@ -471,7 +559,8 @@ export function validateContent(options = {}) {
   const context = createContext(options)
   const blogFiles = getBlogFiles(context)
   const readingFiles = getReadingFiles(context)
-  const knownRoutes = getKnownRoutes(context, blogFiles, readingFiles)
+  const projectFiles = getProjectFiles(context)
+  const knownRoutes = getKnownRoutes(context, blogFiles, readingFiles, projectFiles)
 
   for (const file of blogFiles) {
     const source = readFileSync(file, 'utf8')
@@ -497,9 +586,22 @@ export function validateContent(options = {}) {
     checkRootRelativeTargets(context, file, parts.body, knownRoutes)
   }
 
+  for (const file of projectFiles) {
+    const source = readFileSync(file, 'utf8')
+    const parts = splitFrontmatter(context, file, source)
+
+    if (!parts) {
+      continue
+    }
+
+    checkProjectFrontmatter(context, file, parts.frontmatter, parts.body, knownRoutes)
+    checkRootRelativeTargets(context, file, parts.body, knownRoutes)
+  }
+
   return {
     blogCount: blogFiles.length,
     readingCount: readingFiles.length,
+    projectCount: projectFiles.length,
     errors: context.errors,
   }
 }
@@ -519,6 +621,7 @@ export function runContentCheck(options = {}) {
 
   console.log(`[content] ok: ${result.blogCount} blog post(s) checked`)
   console.log(`[content] ok: ${result.readingCount} reading resource(s) checked`)
+  console.log(`[content] ok: ${result.projectCount} project(s) checked`)
 
   return 0
 }

@@ -2,7 +2,9 @@
 import Layout from '../layouts/Layout.astro'
 import ProjectList from '../components/ProjectList.astro'
 import SectionTitle from '../components/SectionTitle.astro'
-import { projectGroups } from '../data/projects'
+import { getGroupedProjects } from '../utils/projects'
+
+const projectGroups = await getGroupedProjects()
 ---
 
 <Layout

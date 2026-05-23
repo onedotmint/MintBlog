@@ -4,12 +4,13 @@ import ArticleList from '../components/ArticleList.astro'
 import Layout from '../layouts/Layout.astro'
 import ProjectList from '../components/ProjectList.astro'
 import SectionTitle from '../components/SectionTitle.astro'
-import { projectGroups } from '../data/projects'
 import { siteIdentity } from '../data/site'
 import { getArticles, getFeaturedArticles } from '../utils/articles'
+import { getGroupedProjects } from '../utils/projects'
 
 const articles = await getArticles()
 const featuredArticles = getFeaturedArticles(articles, 3)
+const projectGroups = await getGroupedProjects()
 const featuredGroups = projectGroups.map((group) => ({
   ...group,
   items: group.items.slice(0, 1),

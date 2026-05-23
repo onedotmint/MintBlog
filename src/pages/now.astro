@@ -3,9 +3,10 @@ import Layout from '../layouts/Layout.astro'
 import ProjectList from '../components/ProjectList.astro'
 import SectionTitle from '../components/SectionTitle.astro'
 import { nowPageData } from '../data/now'
-import { projectGroups } from '../data/projects'
 import { formatDate } from '../utils/date'
+import { getGroupedProjects } from '../utils/projects'
 
+const projectGroups = await getGroupedProjects()
 const currentFocusGroups = projectGroups.filter((group) => group.title === 'Current Focus')
 const updatedAt = new Date(`${nowPageData.lastUpdated}T00:00:00Z`)
 ---

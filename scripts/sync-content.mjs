@@ -27,6 +27,12 @@ const targets = [
     requiredInStrict: true,
   },
   {
+    sourcePath: 'projects',
+    target: join(root, 'src/content/projects'),
+    label: 'projects',
+    requiredInStrict: true,
+  },
+  {
     sourcePath: 'assets/images/blog',
     target: join(root, 'public/images/blog'),
     label: 'blog images',

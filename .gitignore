@@ -19,6 +19,9 @@ src/content/blog/*
 src/content/reading/*
 !src/content/reading/.gitkeep
 
+src/content/projects/*
+!src/content/projects/.gitkeep
+
 public/images/blog/*
 !public/images/blog/.gitkeep
 

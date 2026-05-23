@@ -14,8 +14,9 @@ npm run preview
 ```
 
 `npm run build` and `npm run dev` both run the content sync script first.
-If `private-content/` exists, private files are copied into `src/content/blog/`
-and `public/` before Astro starts. Missing private directories fall back to
+If `private-content/` exists, private files are copied into `src/content/blog/`,
+`src/content/reading/`, `src/content/projects/`, and `public/` before Astro starts.
+Missing private directories fall back to
 `sample-content/` during local builds so the public sample site remains usable.
 
 For real publishing, use strict sync:
@@ -30,8 +31,8 @@ or:
 PRIVATE_CONTENT_STRICT=1 npm run build
 ```
 
-Strict sync fails when private blog posts are missing. Optional asset directories
-are cleaned instead of falling back to sample assets.
+Strict sync fails when private blog, reading, or project content is missing.
+Optional asset directories are cleaned instead of falling back to sample assets.
 
 ## Docker Compose
 
@@ -64,6 +65,8 @@ context to the builder before the final runtime image is created.
 ```text
 private-content/
   blog/
+  reading/
+  projects/
   assets/
     images/
       blog/
@@ -72,6 +75,8 @@ private-content/
 
 sample-content/
   blog/
+  reading/
+  projects/
   assets/
     images/
       blog/

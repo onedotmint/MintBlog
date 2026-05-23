@@ -1,17 +1,19 @@
 ---
 import Badge from '../../components/Badge.astro'
 import Layout from '../../layouts/Layout.astro'
-import { getProjectsWithDetails } from '../../data/projects'
-import type { ProjectLink, ProjectWithDetail } from '../../data/projects'
+import { getDetailedProjects } from '../../utils/projects'
+import type { ProjectLink, ProjectWithDetail } from '../../utils/projects'
 
 interface Props {
   project: ProjectWithDetail
 }
 
-export function getStaticPaths() {
-  return getProjectsWithDetails().map((project) => ({
+export async function getStaticPaths() {
+  const projects = await getDetailedProjects()
+
+  return projects.map((project) => ({
     params: {
-      slug: project.detail.slug,
+      slug: project.slug,
     },
     props: {
       project,
@@ -20,41 +22,43 @@ export function getStaticPaths() {
 }
 
 const { project } = Astro.props
-const detail = project.detail
+const { Content } = await project.entry.render()
 ---
 
 <Layout
-  title={project.name}
-  description={detail.summary}
-  canonicalPath={`/projects/${detail.slug}/`}
+  title={project.data.name}
+  description={project.data.summary}
+  canonicalPath={project.href}
 >
   <article class="project-detail">
     <header class="section prose project-hero">
       <a class="back-link" href="/projects/">Projects</a>
       <p class="eyebrow">Project</p>
-      <h1>{project.name}</h1>
-      <p class="lead">{detail.summary}</p>
+      <h1>{project.data.name}</h1>
+      <p class="lead">{project.data.summary}</p>
       <div class="tag-row">
-        {project.tags.map((tag: string) => <Badge label={tag} />)}
+        {project.data.tags.map((tag: string) => <Badge label={tag} />)}
       </div>
     </header>
 
     <section class="section project-section">
       <h2>Background</h2>
-      <p>{detail.background}</p>
+      <div class="prose">
+        <Content />
+      </div>
     </section>
 
     <section class="section project-section">
       <h2>Design Notes</h2>
       <ul>
-        {detail.designNotes.map((note: string) => <li>{note}</li>)}
+        {project.data.designNotes.map((note: string) => <li>{note}</li>)}
       </ul>
     </section>
 
     <section class="section project-section">
       <h2>Related Links</h2>
       <ul class="list-reset project-links">
-        {detail.links.map((link: ProjectLink) => (
+        {project.data.links.map((link: ProjectLink) => (
           <li>
             <a href={link.href}>
               <span>{link.label}</span>
@@ -67,7 +71,7 @@ const detail = project.detail
 
     <section class="section project-section">
       <h2>Retrospective</h2>
-      <p>{detail.retrospective}</p>
+      <p>{project.data.retrospective}</p>
     </section>
   </article>
 </Layout>

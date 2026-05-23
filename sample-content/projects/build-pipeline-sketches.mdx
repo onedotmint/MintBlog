@@ -1,0 +1,22 @@
+---
+name: "Build Pipeline Sketches"
+description: "Drafts for content sync, deploy flow, and static hosting checks."
+group:
+  title: "Current Focus"
+  description: "Things I am learning right now and keeping close to the terminal."
+  order: 0
+order: 1
+tags: ["Astro", "CI", "Deploy"]
+detail: true
+summary: "Build notes for keeping content sync, static generation, and deployment checks visible."
+designNotes:
+  - "Keep the build path boring: content sync happens before Astro starts, then the generated dist output becomes the deployment artifact."
+  - "Make checks local and repeatable so CI and manual publishing use the same commands."
+  - "Prefer small Node scripts over extra services for content and budget validation."
+links:
+  - label: "Architecture decisions"
+    href: "/files/server-checklist.txt"
+retrospective: "The useful part is not automation volume. It is knowing which assumptions the build relies on and making those assumptions fail early."
+---
+
+This project collects the operational pieces behind the blog: syncing private content, building Astro output, and checking that generated assets stay small.

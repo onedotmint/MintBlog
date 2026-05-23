@@ -1,0 +1,24 @@
+---
+name: "TCP Server Lab"
+description: "A tiny Go server used to study connection handling and logs."
+group:
+  title: "Systems Practice"
+  description: "Low-level experiments and service patterns that sharpen backend judgment."
+  order: 1
+order: 0
+tags: ["Go", "Networking", "Linux"]
+detail: true
+summary: "A small networking exercise focused on connection lifecycle, logging, and failure paths."
+designNotes:
+  - "Keep the server small enough that every connection state can be inspected directly."
+  - "Use logs to explain lifecycle transitions instead of hiding behavior behind framework defaults."
+  - "Treat timeouts and closed connections as first-class cases, not noisy afterthoughts."
+links:
+  - label: "Related note"
+    href: "/blog/go-tcp-server/"
+  - label: "Project image"
+    href: "/images/projects/tcp-server.svg"
+retrospective: "The main lesson was that simple network programs are usually debugging exercises. Clear boundaries matter more than clever abstractions."
+---
+
+The lab started as a way to make socket behavior less abstract. A small TCP service is enough to study accept loops, connection cleanup, and observability habits.
