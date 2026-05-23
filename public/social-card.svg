@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">Jeff Tim personal blog preview card</title>
+  <desc id="description">A dark preview card for a technical personal blog.</desc>
+  <rect width="1200" height="630" fill="#080808" />
+  <path d="M0 0h1200v630H0z" fill="url(#grid)" opacity="0.42" />
+  <rect x="84" y="84" width="1032" height="462" rx="24" fill="#101010" stroke="#2a2a2a" stroke-width="2" />
+  <path d="M154 196h340" stroke="#f0f0f0" stroke-width="2" />
+  <path d="M154 284h638" stroke="#444444" stroke-width="2" />
+  <path d="M154 340h520" stroke="#333333" stroke-width="2" />
+  <path d="M154 396h452" stroke="#333333" stroke-width="2" />
+  <circle cx="954" cy="206" r="72" fill="#151515" stroke="#363636" stroke-width="2" />
+  <path d="M920 208h68" stroke="#d8d8d8" stroke-width="2" />
+  <path d="M954 174v68" stroke="#6f6f6f" stroke-width="2" />
+  <text x="154" y="178" fill="#f0f0f0" font-family="Inter, Arial, sans-serif" font-size="58" font-weight="700">Jeff Tim</text>
+  <text x="154" y="262" fill="#bbbbbb" font-family="Inter, Arial, sans-serif" font-size="30">Backend systems, small tools, and learning notes</text>
+  <text x="154" y="474" fill="#7d7d7d" font-family="IBM Plex Mono, Consolas, monospace" font-size="24">jefftim.blog</text>
+  <defs>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0v48" fill="none" stroke="#ffffff" stroke-opacity="0.06" />
+    </pattern>
+  </defs>
+</svg>

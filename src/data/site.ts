@@ -7,6 +7,8 @@ export interface SiteIdentity {
   aboutIntro: string
   githubUrl: string
   emailAddress: string
+  socialImagePath: string
+  socialImageAlt: string
   canonicalOrigin?: string
 }
 
@@ -29,5 +31,7 @@ export const siteIdentity = {
   aboutIntro: 'Computer science student. Backend and systems learner. I keep a public log of the small things I build and the notes that help me reason about them.',
   githubUrl: 'https://github.com/jefftim',
   emailAddress: 'jeff@example.com',
+  socialImagePath: '/social-card.png',
+  socialImageAlt: 'Jeff Tim personal blog preview card',
   canonicalOrigin: '',
 } satisfies SiteIdentity
