@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 10
+- **Total Sessions**: 11
 - **Last Active**: 2026-05-23
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~343 | Active |
+| `journal-1.md` | ~378 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 11 | 2026-05-23 | Blog discovery and social metadata | `fc3ddc5`, `ea8232e`, `a682ec4` | `main` |
 | 10 | 2026-05-23 | Article reading navigation | `ca8da31` | `main` |
 | 9 | 2026-05-23 | Add reading resources pages | `42dbb46` | `main` |
 | 8 | 2026-05-23 | Harden private content sync | `ac4ba3b` | `main` |

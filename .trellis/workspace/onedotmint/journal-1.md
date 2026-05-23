@@ -341,3 +341,38 @@ Archived the Docker Compose docs task after validation, then added static articl
 ### Next Steps
 
 - None - task complete
+
+
+## Session 11: Blog discovery and social metadata
+
+**Date**: 2026-05-23
+**Task**: Blog discovery and social metadata
+**Branch**: `main`
+
+### Summary
+
+Added static blog archive pages, default social preview metadata, and updated frontend specs.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `fc3ddc5` | (see git log) |
+| `ea8232e` | (see git log) |
+| `a682ec4` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
