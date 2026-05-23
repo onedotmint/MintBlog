@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url'
 const defaultRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const requiredFrontmatter = ['title', 'date', 'description', 'tags', 'readingTime']
 const minuteReadingTimePattern = /^[1-9]\d*\s+min$/
+export const readingTypeValues = ['Course', 'Book', 'Documentation', 'Reference']
+const readingTypeSet = new Set(readingTypeValues)
 
 function createContext(options = {}) {
   const root = options.root ?? defaultRoot
@@ -565,6 +567,12 @@ function checkReadingFrontmatter(context, file, frontmatter, body, knownRoutes) 
     if (isBlankValue(fields.get(key))) {
       report(context, file, `missing required frontmatter: ${key}`)
     }
+  }
+
+  const type = fields.get('type')
+
+  if (!isBlankValue(type) && !readingTypeSet.has(type)) {
+    report(context, file, `type must be one of: ${readingTypeValues.join(', ')}`)
   }
 
   const tags = parseListValue(frontmatter, 'tags')

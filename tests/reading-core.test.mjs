@@ -5,7 +5,9 @@ import { importTsModule } from './import-ts-module.mjs'
 const {
   getReadingResourceExternalHref,
   getReadingResourceGroups,
+  isReadingResourceType,
   normalizeReadingSlug,
+  readingTypeValues,
   sortReadingResources,
 } = await importTsModule(new URL('../src/utils/reading-core.ts', import.meta.url))
 
@@ -24,6 +26,12 @@ function resource(slug, type, title, url) {
 test('normalizes reading slugs', () => {
   assert.equal(normalizeReadingSlug('intro-to-astro.mdx'), 'intro-to-astro')
   assert.equal(normalizeReadingSlug('http-reference.md'), 'http-reference')
+})
+
+test('defines accepted reading type values', () => {
+  assert.deepEqual(readingTypeValues, ['Course', 'Book', 'Documentation', 'Reference'])
+  assert.equal(isReadingResourceType('Book'), true)
+  assert.equal(isReadingResourceType('book'), false)
 })
 
 test('sorts resources by known type order and title', () => {

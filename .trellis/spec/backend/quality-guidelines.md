@@ -45,6 +45,7 @@ Use Astro static generation for blog pages and local files for content/data.
 
 - Blog frontmatter requires `title`, `date`, `description`, `tags`, and `readingTime`.
 - Reading frontmatter requires `title`, `type`, and `note`; `tags` is optional.
+- Reading `type` must be one of `Course`, `Book`, `Documentation`, or `Reference`.
 - `tags` must support quoted inline arrays, block arrays, empty arrays, and quoted values containing commas.
 - Optional blog `series` may be a block object or inline object. Series routes derive from `series.slug`, then `series.title`.
 - When blog `series` is present, `series.title` is required.
@@ -67,6 +68,7 @@ Use Astro static generation for blog pages and local files for content/data.
 - Invalid blog `readingTime` -> `readingTime must use minutes format like "4 min"`
 - Blog `series` without title -> `missing required frontmatter: series.title`
 - Invalid blog `series.order` -> `series.order must be a positive integer`
+- Reading `type` outside the accepted set -> `type must be one of: Course, Book, Documentation, Reference`
 - Reading entry without `url` and without body content -> `reading resources require url or body content`
 - Reading `url` that is neither `http(s)` nor root-relative -> `url must be http(s) or a root-relative internal target`
 - Reading `image` that is not root-relative -> `image must use a root-relative public path`
@@ -82,6 +84,7 @@ Use Astro static generation for blog pages and local files for content/data.
 
 - Good: `tags: ["Go, Systems", "Astro"]`
 - Good: `readingTime: "4 min"`
+- Good: reading `type: "Documentation"`
 - Good: reading resource with `url: "https://example.com"` or body notes
 - Good: project `link: "/reading/"` or `links.href: "https://example.com"`
 - Base:
@@ -93,6 +96,7 @@ Use Astro static generation for blog pages and local files for content/data.
 - Bad: parsing inline arrays with `value.split(',')`, because quoted commas become false tag values.
 - Bad: `date: "2026-02-30"` or `updatedAt` earlier than `date`.
 - Bad: `readingTime: "about four minutes"`; keep the short minutes format.
+- Bad: reading `type: "documentation"`; reading category values are case-sensitive.
 - Bad: reading resource with only metadata and no `url` or body.
 - Bad: `image: "images/reading/file.svg"` must report image path errors and still validate the same file's `url`.
 - Bad: detail project with `detail: true` and no `links` item.
@@ -102,6 +106,7 @@ Use Astro static generation for blog pages and local files for content/data.
 
 - Add `node:test` coverage for any parser behavior change.
 - Include at least one valid-content case and one actionable error case when changing validation semantics.
+- Keep accepted reading type values aligned with `src/utils/reading-core.ts`.
 - Regression tests must prove independent field errors in one file are aggregated instead of hidden by early returns.
 - Run `npm test` and `npm run check`.
 

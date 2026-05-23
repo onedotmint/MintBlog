@@ -1,4 +1,5 @@
 import { defineCollection, z } from 'astro:content'
+import { readingTypeValues } from './utils/reading-core'
 
 const blog = defineCollection({
   type: 'content',
@@ -23,7 +24,7 @@ const reading = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
-    type: z.string(),
+    type: z.enum(readingTypeValues),
     note: z.string(),
     tags: z.array(z.string()).default([]),
     url: z.string().optional(),

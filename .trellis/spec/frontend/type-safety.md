@@ -79,6 +79,11 @@ Do not re-read blog content or duplicate draft filtering inside archive route fi
 Use `getRelatedArticles()` for related-post sections. It should receive the current normalized article plus the published article list,
 exclude the current article, rank by shared tag count first, then by publish date.
 
+Article detail pages pass article-specific SEO data to `Layout` through an `articleMetadata` prop.
+Keep the head output centralized in `src/layouts/Layout.astro` and the serializable metadata builder in `src/utils/seo.ts`.
+Do not duplicate article published date, modified date, tag, keyword, or JSON-LD generation in route files.
+`updatedAt` becomes article modified metadata only when it is later than `date`.
+
 Format dates in one helper or local utility function when the format repeats across pages/components.
 
 Reading resources use a dedicated content collection schema with these fields:
@@ -86,13 +91,17 @@ Reading resources use a dedicated content collection schema with these fields:
 ```ts
 {
   title: z.string(),
-  type: z.string(),
+  type: z.enum(readingTypeValues),
   note: z.string(),
   tags: z.array(z.string()).default([]),
   url: z.string().optional(),
   image: z.string().optional(),
 }
 ```
+
+The allowed reading `type` values are `Course`, `Book`, `Documentation`, and `Reference`.
+Keep the frontend schema values in `src/utils/reading-core.ts` as `readingTypeValues`.
+If the build-time content checker repeats these values, add or keep a test that proves the two lists stay aligned.
 
 Use a helper that normalizes the filename to the route slug and a second helper that groups resources by `type` for the index page. Keep the MDX body on the detail route, not in the index data path.
 

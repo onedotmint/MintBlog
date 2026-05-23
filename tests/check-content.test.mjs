@@ -4,7 +4,10 @@ import { join } from 'node:path'
 import test from 'node:test'
 import { tmpdir } from 'node:os'
 import { mkdtempSync } from 'node:fs'
-import { validateContent } from '../scripts/check-content.mjs'
+import { readingTypeValues as contentReadingTypeValues, validateContent } from '../scripts/check-content.mjs'
+import { importTsModule } from './import-ts-module.mjs'
+
+const { readingTypeValues: coreReadingTypeValues } = await importTsModule(new URL('../src/utils/reading-core.ts', import.meta.url))
 
 function createFixtureRoot() {
   const root = mkdtempSync(join(tmpdir(), 'blog-content-test-'))
@@ -33,6 +36,10 @@ function writeReading(root, name, frontmatter, body = '') {
 function writeProject(root, name, frontmatter, body = '') {
   writeFileSync(join(root, 'src/content/projects', name), `---\n${frontmatter}\n---\n${body}`)
 }
+
+test('keeps content check reading types aligned with the reading utility schema', () => {
+  assert.deepEqual(contentReadingTypeValues, coreReadingTypeValues)
+})
 
 test('passes valid blog, reading, and project content', () => {
   const root = createFixtureRoot()
@@ -425,6 +432,25 @@ test('reports reading resources without url or body content', () => {
   const errors = validateContent({ root }).errors
 
   assert(errors.some((error) => error.includes('src/content/reading/empty-resource.mdx: reading resources require url or body content')))
+})
+
+test('reports unsupported reading type values', () => {
+  const root = createFixtureRoot()
+
+  writeReading(
+    root,
+    'bad-type.mdx',
+    [
+      'title: "Bad Type"',
+      'type: "book"',
+      'note: "Reading types must use canonical display values."',
+      'url: "https://example.com/resource"',
+    ].join('\n'),
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/reading/bad-type.mdx: type must be one of: Course, Book, Documentation, Reference')))
 })
 
 test('validates reading url values', () => {

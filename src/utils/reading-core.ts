@@ -1,6 +1,6 @@
 export interface ReadingResourceDataShape {
   title: string
-  type: string
+  type: ReadingResourceType
   url?: string
 }
 
@@ -15,7 +15,15 @@ export interface ReadingResourceGroup<TResource extends ReadingResourceCore = Re
   resources: TResource[]
 }
 
-const typeOrder = ['course', 'book', 'documentation', 'reference']
+export const readingTypeValues = ['Course', 'Book', 'Documentation', 'Reference'] as const
+
+export type ReadingResourceType = (typeof readingTypeValues)[number]
+
+const typeOrder = readingTypeValues.map((type) => type.toLowerCase())
+
+export function isReadingResourceType(value: string): value is ReadingResourceType {
+  return readingTypeValues.includes(value as ReadingResourceType)
+}
 
 export function normalizeReadingSlug(slug: string) {
   return slug.replace(/\.(md|mdx)$/, '')
