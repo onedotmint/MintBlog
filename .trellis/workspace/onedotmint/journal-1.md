@@ -762,3 +762,37 @@ Tightened build-time content validation for blog series metadata, reading resour
 ### Next Steps
 
 - None - task complete
+
+
+## Session 23: Article metadata and reading category cleanup
+
+**Date**: 2026-05-23
+**Task**: Article metadata and reading category cleanup
+**Branch**: `main`
+
+### Summary
+
+Added article-specific sharing metadata and JSON-LD output, then constrained reading resource category values with content validation and tests.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ef9d3d0` | (see git log) |
+| `81cffd0` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

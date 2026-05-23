@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 22
+- **Total Sessions**: 23
 - **Last Active**: 2026-05-23
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~758 | Active |
+| `journal-1.md` | ~798 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 23 | 2026-05-23 | Article metadata and reading category cleanup | `ef9d3d0`, `81cffd0` | `main` |
 | 22 | 2026-05-23 | Improve content format checks | `198dd56`, `b94758f` | `main` |
 | 21 | 2026-05-23 | Add deploy configuration preflight | `c231ca7`, `3970b53` | `main` |
 | 20 | 2026-05-23 | Document deployment troubleshooting | `c29cee2` | `main` |
