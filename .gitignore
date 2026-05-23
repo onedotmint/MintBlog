@@ -11,23 +11,19 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Private content copied into Astro mount points during local or CI builds.
-# Keep the public demo posts and demo assets committed.
+# Public sample content lives in sample-content/ and is copied in when private
+# content is unavailable.
 src/content/blog/*
-!src/content/blog/cs61a-week-1.mdx
-!src/content/blog/go-tcp-server.mdx
-!src/content/blog/linux-nginx-note.mdx
+!src/content/blog/.gitkeep
 
 public/images/blog/*
 !public/images/blog/.gitkeep
-!public/images/blog/cs61a-week-1.svg
 
 public/images/projects/*
 !public/images/projects/.gitkeep
-!public/images/projects/tcp-server.svg
 
 public/files/*
 !public/files/.gitkeep
-!public/files/server-checklist.txt
 
 .agents
 .codex

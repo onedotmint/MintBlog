@@ -14,8 +14,24 @@ npm run preview
 ```
 
 `npm run build` and `npm run dev` both run the content sync script first.
-If `private-content/` exists, it is copied into `src/content/blog/` and `public/`
-before Astro starts.
+If `private-content/` exists, private files are copied into `src/content/blog/`
+and `public/` before Astro starts. Missing private directories fall back to
+`sample-content/` during local builds so the public sample site remains usable.
+
+For real publishing, use strict sync:
+
+```bash
+npm run sync:content:strict
+```
+
+or:
+
+```bash
+PRIVATE_CONTENT_STRICT=1 npm run build
+```
+
+Strict sync fails when private blog posts are missing. Optional asset directories
+are cleaned instead of falling back to sample assets.
 
 ## Docker Compose
 
@@ -43,7 +59,7 @@ content sync step can include it in the generated output. Use a trusted local
 Docker builder when building with private content, because Docker sends the build
 context to the builder before the final runtime image is created.
 
-## Private content layout
+## Content source layout
 
 ```text
 private-content/
@@ -53,7 +69,18 @@ private-content/
       blog/
       projects/
     files/
+
+sample-content/
+  blog/
+  assets/
+    images/
+      blog/
+      projects/
+    files/
 ```
+
+`private-content/` is ignored by Git. `sample-content/` is committed and is the
+public fallback copied into Astro mount points when no private source exists.
 
 ## Architecture decisions
 

@@ -13,10 +13,12 @@
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "prepreview": "npm run sync:content",
     "check": "npm run check:content && ASTRO_TELEMETRY_DISABLED=1 astro check",
+    "precheck:content": "npm run sync:content",
     "check:budget": "node scripts/check-budget.mjs",
     "check:budget:dist": "node scripts/check-budget.mjs --dist",
     "check:content": "node scripts/check-content.mjs",
-    "sync:content": "node scripts/sync-content.mjs"
+    "sync:content": "node scripts/sync-content.mjs",
+    "sync:content:strict": "node scripts/sync-content.mjs --strict"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",

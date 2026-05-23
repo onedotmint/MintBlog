@@ -38,7 +38,7 @@ jobs:
         run: npm install
 
       - name: Build site
-        run: npm run build
+        run: PRIVATE_CONTENT_STRICT=1 npm run build
 
       - name: Configure SSH
         run: |
