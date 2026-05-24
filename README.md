@@ -2,6 +2,15 @@
 
 Static personal blog built with Astro and MDX.
 
+## Runtime policy
+
+Use Node.js 20 for CI and Docker builds. `package.json` keeps the local engine
+range at `>=20.0.0`, but Node 20 is the pinned build baseline used for
+reproducible project checks and container builds.
+
+Production serving remains static-only. The final Docker image uses Nginx and
+does not run Node.
+
 ## Commands
 
 ```bash
