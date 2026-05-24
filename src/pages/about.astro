@@ -9,18 +9,37 @@ import { siteIdentity } from '../data/site'
   title="About"
   description={`${siteIdentity.ownerName}'s short introduction, learning route, technical interests, current focus, and contact links.`}
 >
-  <section class="section prose">
-    <p class="eyebrow">About</p>
-    <h1 class="hero-title">{siteIdentity.ownerName}</h1>
-    <p class="lead">
-      {siteIdentity.aboutIntro}
-    </p>
+  <section class="section page-intro identity-grid">
+    <div class="watermark" aria-hidden="true">About</div>
+
+    <div class="identity-stack">
+      <p class="eyebrow">About</p>
+      <h1 class="hero-title">{siteIdentity.ownerName}</h1>
+      <p class="lead">
+        {siteIdentity.aboutIntro}
+      </p>
+    </div>
+
+    <aside class="identity-rows" aria-label="Profile summary">
+      <div class="identity-row">
+        <span>Role</span>
+        <strong>Developer, maintainer, systems learner</strong>
+      </div>
+      <div class="identity-row">
+        <span>Stack</span>
+        <strong>Astro, MDX, TypeScript, Go, Linux</strong>
+      </div>
+      <div class="identity-row">
+        <span>Contact</span>
+        <a class="text-link" href={siteIdentity.githubUrl}>GitHub -&gt;</a>
+      </div>
+    </aside>
   </section>
 
   <section class="section prose">
-    <SectionTitle title="Learning route" />
+    <SectionTitle title="Working route" />
     <ul>
-      <li>Core CS courses and the habits that make them stick.</li>
+      <li>Core CS notes that turn coursework into reusable mental models.</li>
       <li>Linux, networking, and services that stay easy to inspect.</li>
       <li>Static web delivery with Astro and simple build pipelines.</li>
     </ul>
@@ -41,21 +60,20 @@ import { siteIdentity } from '../data/site'
   <section class="section prose">
     <SectionTitle title="Current focus" />
     <p>
-      I am keeping the site small, the content files simple, and the deploy path explicit so the code stays easy to hand off and extend.
+      The current work is keeping this site small, making content files easy to maintain, and writing down the decisions that keep static software useful.
     </p>
   </section>
 
   <section class="section prose">
-    <SectionTitle title="Contact" />
-    <ul>
-      <li>
-        <a href={siteIdentity.githubUrl}>GitHub</a>
-      </li>
+    <SectionTitle title="Elsewhere" />
+    <div class="link-row">
+      <a class="text-link" href={siteIdentity.githubUrl}>GitHub -&gt;</a>
+      <a class="text-link" href="/blog/">Blog -&gt;</a>
+      <a class="text-link" href="/reading/">Reading -&gt;</a>
+      <a class="text-link" href="/now/">Now -&gt;</a>
       {siteIdentity.emailAddress ? (
-        <li>
-          <a href={`mailto:${siteIdentity.emailAddress}`}>Email</a>
-        </li>
+        <a class="text-link" href={`mailto:${siteIdentity.emailAddress}`}>Email -&gt;</a>
       ) : null}
-    </ul>
+    </div>
   </section>
 </Layout>

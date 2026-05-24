@@ -8,18 +8,45 @@ const { title, description } = Astro.props
 ---
 
 <header class="section-title">
+  <span class="section-rule" aria-hidden="true"></span>
   <h2>{title}</h2>
   {description && <p>{description}</p>}
 </header>
 
 <style>
   .section-title {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
+    display: grid;
+    grid-template-columns: 2.2rem minmax(0, 1fr);
+    column-gap: 0.8rem;
+    row-gap: 0.25rem;
+    align-items: start;
+  }
+
+  .section-rule {
+    margin-top: 0.72rem;
+    border-top: 1px solid var(--border-strong);
+  }
+
+  .section-title h2,
+  .section-title p {
+    grid-column: 2;
+  }
+
+  .section-title h2 {
+    margin-bottom: 0;
   }
 
   .section-title p {
     max-width: 42rem;
+    margin-bottom: 0;
+    font-size: 0.96rem;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 720px) {
+    .section-title {
+      grid-template-columns: 1.4rem minmax(0, 1fr);
+      column-gap: 0.65rem;
+    }
   }
 </style>

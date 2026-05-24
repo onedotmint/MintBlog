@@ -1,17 +1,21 @@
 :root {
   color-scheme: dark;
   --bg: #080808;
-  --bg-soft: #0d0d0d;
-  --bg-elevated: #111111;
-  --text: #e7e7e7;
-  --text-muted: #a0a0a0;
-  --text-faint: #6e6e6e;
-  --border: #232323;
-  --border-strong: #353535;
-  --accent: #f0f0f0;
-  --accent-muted: #bbbbbb;
+  --bg-soft: #0c0c0c;
+  --bg-elevated: #121212;
+  --text: #e5e5e5;
+  --text-muted: #9d9d9d;
+  --text-faint: #686868;
+  --border: #222222;
+  --border-strong: #3a3a3a;
+  --accent: #f1f1f1;
+  --accent-muted: #b9b9b9;
+  --ghost: rgba(255, 255, 255, 0.055);
+  --surface: rgba(255, 255, 255, 0.024);
+  --surface-hover: rgba(255, 255, 255, 0.045);
   --radius: 8px;
-  --content-width: 880px;
+  --content-width: 920px;
+  --measure: 700px;
 }
 
 *,
@@ -32,15 +36,17 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0.015)),
+    linear-gradient(rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0.012)),
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.08) 1px, transparent 0),
     repeating-linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.02) 0,
-      rgba(255, 255, 255, 0.02) 1px,
+      rgba(255, 255, 255, 0.018) 0,
+      rgba(255, 255, 255, 0.018) 1px,
       transparent 1px,
-      transparent 48px
+      transparent 72px
     ),
     var(--bg);
+  background-size: auto, 18px 18px, auto, auto;
   font-family:
     Inter,
     ui-sans-serif,
@@ -60,9 +66,9 @@ body::before {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.035), transparent 32%),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent 20%);
-  opacity: 0.6;
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent 18%, transparent 82%, rgba(255, 255, 255, 0.04)),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03), transparent 24%);
+  opacity: 0.5;
 }
 
 a {
@@ -95,6 +101,10 @@ main {
   margin: 0 auto;
 }
 
+main > * + * {
+  margin-top: 2.8rem;
+}
+
 h1,
 h2,
 h3,
@@ -112,10 +122,11 @@ h3 {
   color: var(--accent);
   line-height: 1.12;
   letter-spacing: 0;
+  text-wrap: balance;
 }
 
 h1 {
-  font-size: 3rem;
+  font-size: 3.25rem;
 }
 
 h2 {
@@ -128,6 +139,7 @@ h3 {
 
 p {
   color: var(--text-muted);
+  overflow-wrap: anywhere;
 }
 
 small,
@@ -201,41 +213,44 @@ li + li {
 .page-shell {
   position: relative;
   z-index: 1;
-  padding: 1.1rem 0 3rem;
+  padding: 1.25rem 0 3.2rem;
 }
 
 .site-frame {
   display: flex;
   flex-direction: column;
-  gap: 2.4rem;
+  gap: 2.75rem;
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.1rem;
 }
 
 .prose {
-  max-width: 760px;
+  max-width: var(--measure);
 }
 
 .hero-title {
   margin-bottom: 0.75rem;
-  font-size: 4rem;
+  font-size: 4.7rem;
+  letter-spacing: 0;
 }
 
 .lead {
-  max-width: 44rem;
-  font-size: 1.05rem;
+  max-width: 45rem;
+  color: var(--text-muted);
+  font-size: 1.08rem;
+  line-height: 1.75;
 }
 
 .eyebrow {
   margin-bottom: 0.7rem;
   color: var(--text-faint);
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0;
+  letter-spacing: 0.08em;
 }
 
 .meta-row,
@@ -259,15 +274,165 @@ li + li {
 
 .watermark {
   position: absolute;
-  top: -0.5rem;
+  top: -1.2rem;
   right: 0;
   z-index: 0;
-  color: rgba(255, 255, 255, 0.045);
-  font-size: 8rem;
+  color: var(--ghost);
+  font-size: 9rem;
   line-height: 1;
   letter-spacing: 0;
   pointer-events: none;
   user-select: none;
+}
+
+.page-intro {
+  position: relative;
+  min-height: 15rem;
+}
+
+.page-intro > *:not(.watermark) {
+  position: relative;
+  z-index: 1;
+}
+
+.identity-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(17rem, 0.85fr);
+  gap: 2rem;
+  align-items: end;
+}
+
+.identity-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.identity-rows {
+  display: grid;
+  gap: 0.45rem;
+  padding-top: 0.2rem;
+}
+
+.identity-row {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.identity-row span:first-child {
+  color: var(--text-faint);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 0.24em;
+}
+
+.text-link:hover,
+.text-link:focus-visible {
+  color: var(--accent);
+  text-decoration-color: var(--accent-muted);
+}
+
+.ghost-label {
+  color: var(--ghost);
+  font-size: 4.8rem;
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: 0;
+}
+
+.split-layout {
+  display: grid;
+  grid-template-columns: minmax(10rem, 0.35fr) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.row-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.row-item {
+  border-top: 1px solid var(--border);
+}
+
+.row-link,
+.row-static {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem 0;
+}
+
+.row-link:hover,
+.row-link:focus-visible {
+  color: var(--accent);
+}
+
+.row-link:hover .row-arrow,
+.row-link:focus-visible .row-arrow {
+  color: var(--accent-muted);
+  transform: translateX(0.18rem);
+}
+
+.row-main {
+  min-width: 0;
+}
+
+.row-kicker {
+  margin-bottom: 0.28rem;
+  color: var(--text-faint);
+  font-size: 0.8rem;
+}
+
+.row-title {
+  margin: 0 0 0.32rem;
+  color: var(--accent);
+  font-size: 1.02rem;
+  line-height: 1.35;
+}
+
+.row-summary {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  line-height: 1.62;
+}
+
+.row-arrow {
+  color: var(--text-faint);
+  transition:
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.tab-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 @media (max-width: 720px) {
@@ -277,7 +442,7 @@ li + li {
 
   h1,
   .hero-title {
-    font-size: 2.3rem;
+    font-size: 2.45rem;
   }
 
   h2 {
@@ -285,6 +450,35 @@ li + li {
   }
 
   .watermark {
-    font-size: 5rem;
+    top: -0.4rem;
+    font-size: 4.8rem;
+  }
+
+  .page-intro {
+    min-height: auto;
+  }
+
+  .identity-grid,
+  .split-layout,
+  .row-link,
+  .row-static {
+    grid-template-columns: 1fr;
+  }
+
+  .identity-grid {
+    gap: 1.2rem;
+  }
+
+  .identity-row {
+    grid-template-columns: 1fr;
+    gap: 0.18rem;
+  }
+
+  .ghost-label {
+    font-size: 3.25rem;
+  }
+
+  .row-arrow {
+    display: none;
   }
 }

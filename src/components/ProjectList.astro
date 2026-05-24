@@ -1,6 +1,5 @@
 ---
 import type { ProjectGroup } from '../utils/projects'
-import SectionTitle from './SectionTitle.astro'
 import ProjectItem from './ProjectItem.astro'
 
 interface Props {
@@ -11,9 +10,13 @@ const { groups } = Astro.props
 ---
 
 <div class="project-groups">
-  {groups.map((group: ProjectGroup) => (
-    <section class="project-group">
-      <SectionTitle title={group.title} description={group.description} />
+  {groups.map((group: ProjectGroup, index: number) => (
+    <section class="project-group split-layout">
+      <div class="project-group-copy">
+        <p class="ghost-label" aria-hidden="true">{String(index + 1).padStart(2, '0')}</p>
+        <h2>{group.title}</h2>
+        <p>{group.description}</p>
+      </div>
 
       <div class="project-items">
         {group.items.map((project) => <ProjectItem project={project} />)}
@@ -26,12 +29,33 @@ const { groups } = Astro.props
   .project-groups {
     display: flex;
     flex-direction: column;
-    gap: 1.85rem;
+    gap: 2.2rem;
+  }
+
+  .project-group-copy {
+    position: sticky;
+    top: 1rem;
+  }
+
+  .project-group-copy h2 {
+    margin-bottom: 0.45rem;
+    font-size: 1.1rem;
+  }
+
+  .project-group-copy p:not(.ghost-label) {
+    margin-bottom: 0;
+    font-size: 0.95rem;
   }
 
   .project-items {
     display: flex;
     flex-direction: column;
-    gap: 0.9rem;
+    gap: 0;
+  }
+
+  @media (max-width: 720px) {
+    .project-group-copy {
+      position: static;
+    }
   }
 </style>

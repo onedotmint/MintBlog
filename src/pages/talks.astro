@@ -1,0 +1,114 @@
+---
+import Badge from '../components/Badge.astro'
+import Layout from '../layouts/Layout.astro'
+import { siteIdentity } from '../data/site'
+import { talkGroups } from '../data/talks'
+import { formatDate } from '../utils/date'
+---
+
+<Layout
+  title="Talks"
+  description={`Talk notes, session drafts, and speaker links from ${siteIdentity.ownerName}.`}
+>
+  <section class="section page-intro talks-index">
+    <div class="watermark" aria-hidden="true">Talks</div>
+    <div class="prose">
+      <p class="eyebrow">Talks</p>
+      <h1 class="hero-title">Talks</h1>
+      <p class="lead">
+        Public session notes and talk drafts. Some are finished references; some are outlines that later become articles or project writeups.
+      </p>
+    </div>
+
+    <nav class="tab-row" aria-label="Talk groups">
+      {talkGroups.map((group) => <Badge label={group.label} href={`#${group.label.toLowerCase()}`} />)}
+      <Badge label="Speaker" href="/about/" />
+    </nav>
+  </section>
+
+  <div class="talk-groups">
+    {talkGroups.map((group) => (
+      <section id={group.label.toLowerCase()} class="section split-layout">
+        <div class="talk-group-copy">
+          <p class="ghost-label" aria-hidden="true">{group.label}</p>
+          <h2>{group.label}</h2>
+          <p>{group.description}</p>
+        </div>
+
+        <div class="row-list">
+          {group.talks.map((talk) => (
+            <article class="talk-item row-item">
+              <div class="row-static">
+                <div class="row-main">
+                  <p class="row-kicker">
+                    <time datetime={talk.date}>{formatDate(new Date(`${talk.date}T00:00:00Z`))}</time>
+                    {' / '}
+                    {talk.event}
+                    {' / '}
+                    {talk.location}
+                  </p>
+                  <h3 class="row-title">{talk.title}</h3>
+                  <p class="row-summary">{talk.summary}</p>
+                </div>
+
+                <a class="speaker-link text-link" href={talk.speakerHref}>Speaker -&gt;</a>
+              </div>
+
+              <div class="talk-actions">
+                {talk.actions.map((action) => <Badge label={action.label} href={action.href} />)}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
+</Layout>
+
+<style>
+  .talks-index {
+    position: relative;
+  }
+
+  .talk-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 2.2rem;
+  }
+
+  .talk-group-copy {
+    position: sticky;
+    top: 1rem;
+  }
+
+  .talk-group-copy h2 {
+    margin-bottom: 0.45rem;
+    font-size: 1.1rem;
+  }
+
+  .talk-group-copy p:not(.ghost-label) {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+  }
+
+  .talk-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0 0 1rem;
+  }
+
+  .speaker-link {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 720px) {
+    .talk-group-copy {
+      position: static;
+    }
+
+    .speaker-link {
+      width: fit-content;
+    }
+  }
+</style>

@@ -28,12 +28,12 @@ const { label, href, active = false, ariaCurrent } = Astro.props
     display: inline-flex;
     align-items: center;
     min-height: 1.9rem;
-    padding: 0.28rem 0.65rem;
+    padding: 0.28rem 0.68rem;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--surface);
     color: var(--text-muted);
-    font-size: 0.83rem;
+    font-size: 0.8rem;
     line-height: 1;
     white-space: nowrap;
   }
@@ -41,7 +41,7 @@ const { label, href, active = false, ariaCurrent } = Astro.props
   a.badge:hover,
   a.badge:focus-visible {
     border-color: var(--border-strong);
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-hover);
     color: var(--accent);
   }
 

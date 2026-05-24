@@ -10,55 +10,33 @@ const { project } = Astro.props
 const projectHref = project.href
 ---
 
-<article class="project-item">
+<article class="project-item row-item">
   {projectHref ? (
-    <a class="project-link" href={projectHref}>
-      <div class="project-headline">
-        <h3>{project.data.name}</h3>
-        <span class="arrow" aria-hidden="true">-></span>
+    <a class="project-link row-link" href={projectHref}>
+      <div class="row-main">
+        <p class="row-kicker">{project.data.status}</p>
+        <h3 class="row-title">{project.data.name}</h3>
+        <p class="row-summary">{project.data.description}</p>
       </div>
-      <p>{project.data.description}</p>
+      <span class="row-arrow" aria-hidden="true">-&gt;</span>
     </a>
   ) : (
-    <div class="project-link">
-      <h3>{project.data.name}</h3>
-      <p>{project.data.description}</p>
+    <div class="project-link row-static">
+      <div class="row-main">
+        <p class="row-kicker">{project.data.status}</p>
+        <h3 class="row-title">{project.data.name}</h3>
+        <p class="row-summary">{project.data.description}</p>
+      </div>
     </div>
   )}
 
   <div class="tag-row">
-    <Badge label={project.data.status} />
     {project.data.tags.map((tag: string) => <Badge label={tag} />)}
   </div>
 </article>
 
 <style>
-  .project-item {
-    padding: 1rem 0 0;
-    border-top: 1px solid var(--border);
-  }
-
-  .project-link {
-    display: block;
-  }
-
-  .project-headline {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .project-headline h3 {
-    margin-bottom: 0.25rem;
-  }
-
-  .arrow {
-    color: var(--text-faint);
-    font-size: 0.95rem;
-  }
-
-  .project-link p {
-    margin-bottom: 0.65rem;
+  .project-item > .tag-row {
+    padding: 0 0 1rem;
   }
 </style>

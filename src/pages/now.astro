@@ -15,13 +15,16 @@ const updatedAt = new Date(`${nowPageData.lastUpdated}T00:00:00Z`)
   title="Now"
   description="Current learning focus, active projects, and short-term direction."
 >
-  <section class="section prose now-hero">
-    <p class="eyebrow">Now</p>
-    <h1 class="hero-title">Current focus</h1>
-    <p class="lead">
-      A small snapshot of what is active right now. This changes faster than the about page.
-    </p>
-    <p class="meta">Last updated {formatDate(updatedAt)}</p>
+  <section class="section page-intro now-hero">
+    <div class="watermark" aria-hidden="true">Now</div>
+    <div class="prose">
+      <p class="eyebrow">Now</p>
+      <h1 class="hero-title">Current focus</h1>
+      <p class="lead">
+        A small snapshot of what is active right now. This changes faster than the about page.
+      </p>
+      <p class="meta">Last updated {formatDate(updatedAt)}</p>
+    </div>
   </section>
 
   <section class="section prose">

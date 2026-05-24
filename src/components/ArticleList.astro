@@ -19,17 +19,21 @@ const articleItems = articles.map((article) => ({
 
 <ul class="article-list list-reset">
   {articleItems.map((entry) => (
-    <li class="article-item">
-      <a class="article-link" href={entry.href}>
-        <div class="article-topline">
+    <li class="article-item row-item">
+      <a class="article-link row-link" href={entry.href}>
+        <div class="row-main">
+          <div class="article-topline row-kicker">
           <time datetime={entry.data.date.toISOString()}>{formatDate(entry.data.date)}</time>
           {entry.updatedAt && <span>Updated {formatDate(entry.updatedAt)}</span>}
           {entry.data.series?.order && <span>Part {entry.data.series.order}</span>}
           <span>{entry.data.readingTime}</span>
+          </div>
+
+          <h3 class="row-title">{entry.data.title}</h3>
+          <p class="row-summary">{entry.data.description}</p>
         </div>
 
-        <h3>{entry.data.title}</h3>
-        <p>{entry.data.description}</p>
+        <span class="row-arrow" aria-hidden="true">-&gt;</span>
       </a>
 
       <div class="tag-row">
@@ -44,32 +48,16 @@ const articleItems = articles.map((article) => ({
   .article-list {
     display: flex;
     flex-direction: column;
-    gap: 0.9rem;
-  }
-
-  .article-item {
-    padding: 1rem 0 0;
-    border-top: 1px solid var(--border);
-  }
-
-  .article-link {
-    display: block;
+    gap: 0;
   }
 
   .article-topline {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-    margin-bottom: 0.35rem;
-    color: var(--text-faint);
-    font-size: 0.85rem;
   }
 
-  .article-link h3 {
-    margin-bottom: 0.35rem;
-  }
-
-  .article-link p {
-    margin-bottom: 0.65rem;
+  .article-item > .tag-row {
+    padding: 0 0 1rem;
   }
 </style>

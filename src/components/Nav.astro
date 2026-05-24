@@ -5,18 +5,19 @@ const pathname = Astro.url.pathname
 
 const links = [
   { href: '/blog/', label: 'Blog' },
-  { href: '/reading/', label: 'Reading' },
   { href: '/projects/', label: 'Projects' },
-  { href: '/now/', label: 'Now' },
+  { href: '/talks/', label: 'Talks' },
   { href: '/about/', label: 'About' },
+  { href: siteIdentity.githubUrl, label: 'GitHub', external: true },
 ]
 
-const isActive = (href: string) => pathname.startsWith(href)
+const isActive = (href: string) => href.startsWith('/') && pathname.startsWith(href)
 ---
 
 <nav class="site-nav" aria-label="Primary">
   <a class="brand" href="/" aria-label={`${siteIdentity.ownerName} home`}>
-    {siteIdentity.ownerName}
+    <span class="brand-mark" aria-hidden="true">JT</span>
+    <span>{siteIdentity.ownerName}</span>
   </a>
 
   <div class="nav-links">
@@ -24,6 +25,8 @@ const isActive = (href: string) => pathname.startsWith(href)
       <a
         href={link.href}
         aria-current={isActive(link.href) ? 'page' : undefined}
+        target={link.external ? '_blank' : undefined}
+        rel={link.external ? 'noreferrer' : undefined}
         class:list={{ active: isActive(link.href) }}
       >
         {link.label}
@@ -37,28 +40,45 @@ const isActive = (href: string) => pathname.startsWith(href)
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 1.1rem;
     width: min(var(--content-width), calc(100vw - 2rem));
     margin: 0 auto;
-    padding: 0.35rem 0 0.95rem;
+    padding: 0.1rem 0 1rem;
     border-bottom: 1px solid var(--border);
   }
 
   .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
     color: var(--accent);
     font-size: 0.95rem;
     letter-spacing: 0;
   }
 
+  .brand-mark {
+    display: inline-grid;
+    width: 1.95rem;
+    height: 1.95rem;
+    place-items: center;
+    border: 1px solid var(--border-strong);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--accent);
+    font-size: 0.72rem;
+    line-height: 1;
+  }
+
   .nav-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    justify-content: flex-end;
+    gap: 0.95rem;
   }
 
   .nav-links a {
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: 0.86rem;
   }
 
   .nav-links a.active,
@@ -69,6 +89,29 @@ const isActive = (href: string) => pathname.startsWith(href)
   @media (max-width: 720px) {
     .site-nav {
       width: min(var(--content-width), calc(100vw - 1.25rem));
+      align-items: flex-start;
+    }
+
+    .brand span:last-child {
+      display: none;
+    }
+
+    .nav-links {
+      gap: 0.7rem;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .site-nav {
+      gap: 0.8rem;
+    }
+
+    .nav-links {
+      gap: 0.55rem;
+    }
+
+    .nav-links a {
+      font-size: 0.82rem;
     }
   }
 </style>

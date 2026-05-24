@@ -17,9 +17,9 @@ const featuredGroups = projectGroups.map((group) => ({
 }))
 
 const entryActions = [
-  { href: '/blog/', label: 'Blog', note: 'Articles and notes' },
-  { href: '/projects/', label: 'Projects', note: 'Builds and experiments' },
-  { href: '/about/', label: 'About', note: 'Background and focus' },
+  { href: '/blog/', label: 'Blog', note: 'Articles, build logs, field notes' },
+  { href: '/projects/', label: 'Projects', note: 'Tools, labs, shipped experiments' },
+  { href: '/talks/', label: 'Talks', note: 'Talk notes and drafts' },
 ]
 ---
 
@@ -27,32 +27,55 @@ const entryActions = [
   title={siteIdentity.defaultTitle}
   description={`${siteIdentity.ownerName} writes about backend systems, small experiments, and the notes that keep both readable.`}
 >
-  <section class="section prose">
-    <p class="eyebrow">Personal blog</p>
-    <h1 class="hero-title">{siteIdentity.ownerName}</h1>
-    <p class="lead">
-      {siteIdentity.shortIntro}
-    </p>
+  <section class="section page-intro identity-grid">
+    <div class="watermark" aria-hidden="true">JT</div>
 
-    <nav class="entry-actions" aria-label="Homepage entry points">
-      {entryActions.map((action) => (
-        <a class="entry-action" href={action.href}>
-          <span>{action.label}</span>
-          <small>{action.note}</small>
-        </a>
-      ))}
-    </nav>
+    <div class="identity-stack">
+      <p class="eyebrow">Independent developer</p>
+      <h1 class="hero-title">{siteIdentity.ownerName}</h1>
+      <p class="lead">
+        {siteIdentity.shortIntro}
+      </p>
 
-    <div class="badge-row">
-      <Badge label="Learning" />
-      <Badge label="Building" />
-      <Badge label="Systems" />
-      <Badge label="Writing" />
+      <nav class="entry-actions" aria-label="Homepage entry points">
+        {entryActions.map((action) => (
+          <a class="entry-action" href={action.href}>
+            <span>{action.label}</span>
+            <small>{action.note}</small>
+          </a>
+        ))}
+      </nav>
+
+      <div class="link-row">
+        <a class="text-link" href="/reading/">Reading -&gt;</a>
+        <a class="text-link" href="/now/">Now -&gt;</a>
+      </div>
     </div>
+
+    <aside class="identity-rows" aria-label="Site identity">
+      <div class="identity-row">
+        <span>Focus</span>
+        <strong>Backend systems, static tooling, interface detail</strong>
+      </div>
+      <div class="identity-row">
+        <span>Mode</span>
+        <strong>Open-source maintenance and public notes</strong>
+      </div>
+      <div class="identity-row">
+        <span>Elsewhere</span>
+        <a class="text-link" href={siteIdentity.githubUrl}>GitHub -&gt;</a>
+      </div>
+      <div class="badge-row">
+        <Badge label="Systems" />
+        <Badge label="Astro" />
+        <Badge label="MDX" />
+        <Badge label="Design engineering" />
+      </div>
+    </aside>
   </section>
 
   <section class="section">
-    <SectionTitle title="Recent articles" description="Short notes from the blog." />
+    <SectionTitle title="Recent articles" description="Selected notes from the public archive." />
     <ArticleList articles={featuredArticles} />
   </section>
 
@@ -67,7 +90,7 @@ const entryActions = [
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.5rem;
-    max-width: 34rem;
+    max-width: 40rem;
   }
 
   .entry-action {
@@ -75,15 +98,15 @@ const entryActions = [
     min-width: 0;
     flex-direction: column;
     gap: 0.2rem;
-    padding: 0.72rem 0.8rem;
+    padding: 0.78rem 0.85rem;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--surface);
   }
 
   .entry-action:hover {
     border-color: var(--border-strong);
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-hover);
   }
 
   .entry-action span,
@@ -93,7 +116,7 @@ const entryActions = [
 
   .entry-action span {
     color: var(--accent);
-    font-size: 0.95rem;
+    font-size: 0.94rem;
     line-height: 1.2;
   }
 

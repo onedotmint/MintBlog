@@ -2,7 +2,6 @@
 import Badge from '../components/Badge.astro'
 import Layout from '../layouts/Layout.astro'
 import ReadingResourceList from '../components/ReadingResourceList.astro'
-import SectionTitle from '../components/SectionTitle.astro'
 import { getReadingResourceGroups, getReadingResources } from '../utils/reading'
 
 const resources = await getReadingResources()
@@ -14,18 +13,18 @@ const hasGroups = groups.length > 0
   title="Reading"
   description="Courses, books, documentation, and technical references used while learning."
 >
-  <section id="reading-all" class="section prose reading-index">
-    <SectionTitle
-      title="Reading"
-      description="Courses, books, documentation, and technical references used while learning."
-    />
-
-    <p class="lead">
-      A static index for the resources worth keeping close. Each entry opens a detail page with the full notes.
-    </p>
+  <section id="reading-all" class="section page-intro reading-index">
+    <div class="watermark" aria-hidden="true">Read</div>
+    <div class="prose">
+      <p class="eyebrow">Reading</p>
+      <h1 class="hero-title">Reading</h1>
+      <p class="lead">
+        Courses, books, documentation, and references worth keeping close. Each entry opens a detail page with the full notes.
+      </p>
+    </div>
 
     {hasGroups && (
-      <nav class="reading-shortcuts" aria-label="Reading categories">
+      <nav class="tab-row" aria-label="Reading categories">
         <Badge label="All" href="#reading-all" active ariaCurrent="location" />
         {groups.map((group) => (
           <Badge label={group.type} href={group.href} />
@@ -42,12 +41,5 @@ const hasGroups = groups.length > 0
 <style>
   .reading-index {
     position: relative;
-  }
-
-  .reading-shortcuts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1rem;
   }
 </style>

@@ -16,33 +16,23 @@ const articleTags = getArticleTags(articles)
   title="Blog"
   description={`Field notes, build logs, and small technical writeups from ${siteIdentity.ownerName}.`}
 >
-  <section class="section prose blog-index">
-    <div class="watermark" aria-hidden="true">2026</div>
-    <SectionTitle title="Blog" description="Field notes, build logs, and short writeups." />
-
-    <p class="lead">
-      A static index for the posts that matter most. Topics stay small, practical, and close to the work.
-    </p>
-
-    <div class="tag-row surface">
-      <Badge label="Archive" href="/blog/archive/" />
-      {articleTags.map((tag) => <Badge label={`${tag.label} (${tag.articles.length})`} href={tag.href} />)}
+  <section class="section page-intro blog-index">
+    <div class="watermark" aria-hidden="true">Blog</div>
+    <div class="prose">
+      <p class="eyebrow">Archive</p>
+      <h1 class="hero-title">Blog</h1>
+      <p class="lead">
+        Field notes, build logs, and short technical writeups. The index is grouped by year so older work stays findable without turning the page into a card wall.
+      </p>
     </div>
-  </section>
 
-  {articleArchives.length > 0 && (
-    <section class="section">
-      <SectionTitle title="Archive" description="Posts grouped by publication year." />
-      <div class="tag-row">
-        {articleArchives.map((archive) => (
-          <Badge
-            label={`${archive.year} (${archive.articles.length})`}
-            href={archive.href}
-          />
-        ))}
-      </div>
-    </section>
-  )}
+    <nav class="tab-row" aria-label="Blog sections">
+      <Badge label="Archive" href="/blog/archive/" />
+      <Badge label="Series" href="/blog/series/" />
+      <Badge label="Tags" href="/blog/tags/" />
+      {articleTags.map((tag) => <Badge label={`${tag.label} (${tag.articles.length})`} href={tag.href} />)}
+    </nav>
+  </section>
 
   {articleSeries.length > 0 && (
     <section class="section">
@@ -53,13 +43,50 @@ const articleTags = getArticleTags(articles)
     </section>
   )}
 
-  <section class="section">
-    <ArticleList articles={articles} />
-  </section>
+  <div class="article-year-groups">
+    {articleArchives.map((archive) => (
+      <section class="section split-layout">
+        <div class="year-copy">
+          <a class="ghost-label" href={archive.href}>{archive.year}</a>
+          <p>{archive.articles.length} {archive.articles.length === 1 ? 'article' : 'articles'}</p>
+        </div>
+
+        <ArticleList articles={archive.articles} />
+      </section>
+    ))}
+  </div>
 </Layout>
 
 <style>
   .blog-index {
     position: relative;
+  }
+
+  .article-year-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 2.2rem;
+  }
+
+  .year-copy {
+    position: sticky;
+    top: 1rem;
+  }
+
+  .year-copy p {
+    margin: 0.55rem 0 0;
+    color: var(--text-faint);
+    font-size: 0.9rem;
+  }
+
+  .year-copy .ghost-label {
+    display: inline-flex;
+    text-decoration: none;
+  }
+
+  @media (max-width: 720px) {
+    .year-copy {
+      position: static;
+    }
   }
 </style>

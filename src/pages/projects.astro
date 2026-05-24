@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro'
+import Badge from '../components/Badge.astro'
 import ProjectList from '../components/ProjectList.astro'
-import SectionTitle from '../components/SectionTitle.astro'
 import { getGroupedProjects } from '../utils/projects'
 
 const projectGroups = await getGroupedProjects()
@@ -9,19 +9,40 @@ const projectGroups = await getGroupedProjects()
 
 <Layout
   title="Projects"
-  description="Things I built while learning computer systems."
+  description="Small tools, systems labs, and static-first experiments."
 >
-  <section class="section prose">
-    <SectionTitle
-      title="Projects"
-      description="Things I built while learning computer systems."
-    />
-    <p class="lead">
-      Small projects stay visible here. The focus is on habits, tools, and systems practice rather than product polish.
-    </p>
+  <section class="section page-intro project-index">
+    <div class="watermark" aria-hidden="true">Build</div>
+    <div class="prose centered-intro">
+      <p class="eyebrow">Projects</p>
+      <h1 class="hero-title">Projects</h1>
+      <p class="lead">
+        Small tools, systems labs, and static-first experiments. The useful parts are the constraints, tradeoffs, and follow-up notes.
+      </p>
+    </div>
+
+    <nav class="tab-row project-actions" aria-label="Project shortcuts">
+      <Badge label="All projects" href="#project-list" active ariaCurrent="location" />
+      <Badge label="Blog notes" href="/blog/" />
+      <Badge label="Current focus" href="/now/" />
+    </nav>
   </section>
 
-  <section class="section">
+  <section id="project-list" class="section">
     <ProjectList groups={projectGroups} />
   </section>
 </Layout>
+
+<style>
+  .project-index {
+    text-align: center;
+  }
+
+  .centered-intro {
+    margin: 0 auto;
+  }
+
+  .project-actions {
+    justify-content: center;
+  }
+</style>
