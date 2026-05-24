@@ -2,17 +2,23 @@
 interface Props {
   label: string
   href?: string
+  active?: boolean
+  ariaCurrent?: 'page' | 'step' | 'location' | 'date' | 'time' | boolean
 }
 
-const { label, href } = Astro.props
+const { label, href, active = false, ariaCurrent } = Astro.props
 ---
 
 {href ? (
-  <a class="badge" href={href}>
+  <a
+    class:list={{ badge: true, 'badge-active': active }}
+    href={href}
+    aria-current={ariaCurrent}
+  >
     {label}
   </a>
 ) : (
-  <span class="badge">
+  <span class:list={{ badge: true, 'badge-active': active }}>
     {label}
   </span>
 )}
@@ -32,9 +38,15 @@ const { label, href } = Astro.props
     white-space: nowrap;
   }
 
-  a.badge:hover {
+  a.badge:hover,
+  a.badge:focus-visible {
     border-color: var(--border-strong);
     background: rgba(255, 255, 255, 0.04);
+    color: var(--accent);
+  }
+
+  .badge-active {
+    border-color: var(--border-strong);
     color: var(--accent);
   }
 </style>
