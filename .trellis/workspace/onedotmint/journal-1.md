@@ -1061,3 +1061,37 @@ Documented the production rsync deployment contract, added dependency-free post-
 ### Next Steps
 
 - None - task complete
+
+
+## Session 32: Dark minimalist developer site refresh
+
+**Date**: 2026-05-24
+**Task**: Dark minimalist developer site refresh
+**Branch**: `main`
+
+### Summary
+
+Refreshed the Astro blog into a dark minimalist developer personal site with content-hub navigation, updated core pages, added Talks, refreshed design baseline screenshots, and synced route validation plus sitemap coverage.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0db72c7` | (see git log) |
+| `f94514f` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

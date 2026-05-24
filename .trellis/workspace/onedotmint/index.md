@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 31
+- **Total Sessions**: 32
 - **Last Active**: 2026-05-24
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1063 | Active |
+| `journal-1.md` | ~1097 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 32 | 2026-05-24 | Dark minimalist developer site refresh | `0db72c7`, `f94514f` | `main` |
 | 31 | 2026-05-24 | Define deployment contract and health checks | `d7577d2` | `main` |
 | 30 | 2026-05-24 | Content sync tests and badge shortcut reuse | `4b3eae2`, `3fd0afb` | `main` |
 | 29 | 2026-05-24 | Align Docker Node runtime | `11b2325` | `main` |
