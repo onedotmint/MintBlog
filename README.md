@@ -100,6 +100,56 @@ public fallback copied into Astro mount points when no private source exists.
 
 Long-lived technical tradeoffs are recorded in [docs/decisions/](docs/decisions/README.md).
 
+## Production deployment contract
+
+The production deployment path is GitHub Actions plus `rsync dist/`.
+
+Build ownership:
+
+- GitHub Actions uses Node 20 and installs dependencies with `npm ci`.
+- `npm run check:deploy-env` validates required secrets before private content
+  checkout, build, SSH setup, or upload.
+- `npm run build:deploy` runs `npm run check:origin`, then builds with
+  `PRIVATE_CONTENT_STRICT=1`.
+- `PUBLIC_SITE_ORIGIN` is the public production origin used for canonical URLs,
+  RSS links, sitemap URLs, social metadata, and post-deploy health checks.
+
+Artifact ownership:
+
+- `dist/` is the only production artifact.
+- Private content is copied into Astro content and public asset mount points
+  during the strict build.
+- The deployment workflow does not upload source files, `node_modules/`, Docker
+  layers, or local build caches.
+
+Upload and serving ownership:
+
+- The workflow uploads `dist/` to
+  `${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/` with
+  `rsync -az --delete`.
+- The target server owns the live static file server, TLS, cache headers,
+  redirects, compression, and process supervision.
+- This repository's `nginx.conf` does not govern that production server unless
+  the server is separately configured to use the same file.
+
+Docker ownership:
+
+- `Dockerfile`, `compose.yaml`, and `nginx.conf` provide a local or alternate
+  static-serving path.
+- The Docker runtime image serves generated `dist/` files with Nginx and does
+  not run Node.
+- The GitHub Actions production deployment does not build, push, or run that
+  Docker image.
+
+Health ownership:
+
+- After upload, `npm run check:deployment-health` probes the public site at
+  `/`, `/rss.xml`, and `/sitemap.xml`.
+- The health check fails when `PUBLIC_SITE_ORIGIN` is missing, a key path
+  returns a non-2xx response, or a key path returns an empty body.
+- Health check logs print only the public origin, paths, statuses, and error
+  categories. They do not print SSH keys or tokens.
+
 ## Deployment flow
 
 The repository includes a GitHub Actions workflow that can:
@@ -112,6 +162,7 @@ The repository includes a GitHub Actions workflow that can:
 6. install dependencies with `npm ci`
 7. run `npm run build:deploy`
 8. rsync `dist/` to the target server over SSH
+9. verify the public deployment with `npm run check:deployment-health`
 
 Required secrets:
 
@@ -137,6 +188,9 @@ RSS links, sitemap URLs, and social metadata. Local builds fall back to
 - Origin check fails: set the `PUBLIC_SITE_ORIGIN` secret to the production
   origin, for example `https://example.com`. `npm run build:deploy` runs
   `npm run check:origin` before syncing content, and blank values are rejected.
+- Deployment health check fails: open the failed path shown in the workflow log.
+  The check runs after `rsync`, uses `PUBLIC_SITE_ORIGIN`, and requires
+  `/`, `/rss.xml`, and `/sitemap.xml` to return non-empty 2xx responses.
 - Private content checkout fails: verify `PRIVATE_CONTENT_REPOSITORY` and
   `PRIVATE_CONTENT_TOKEN` in repository secrets. The deployment configuration
   check fails early when either value is blank.
