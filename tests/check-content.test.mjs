@@ -157,6 +157,29 @@ test('handles realistic blog frontmatter values without false positives', () => 
   assert.deepEqual(validateContent({ root }).errors, [])
 })
 
+test('passes generated blog tag and archive body links', () => {
+  const root = createFixtureRoot()
+
+  writeBlog(
+    root,
+    'generated-routes.mdx',
+    [
+      'title: "Generated Routes"',
+      'date: "2026-05-23"',
+      'description: "Links to generated taxonomy and archive pages."',
+      'tags: ["Go Systems", "Build"]',
+      'readingTime: "4 min"',
+    ].join('\n'),
+    [
+      '[Tag](/blog/tags/go-systems/)',
+      '[Archive year](/blog/archive/2026/)',
+      '[Archive index](/blog/archive/)',
+    ].join('\n\n'),
+  )
+
+  assert.deepEqual(validateContent({ root }).errors, [])
+})
+
 test('reports empty required arrays and empty block array items predictably', () => {
   const root = createFixtureRoot()
 
@@ -491,6 +514,31 @@ test('validates reading url values', () => {
 
   assert(errors.some((error) => error.includes('src/content/reading/internal-resource.mdx: missing internal route or public file: /blog/missing-post/')))
   assert(errors.some((error) => error.includes('src/content/reading/invalid-url.mdx: url must be http(s) or a root-relative internal target')))
+})
+
+test('reports missing generated blog tag and archive links', () => {
+  const root = createFixtureRoot()
+
+  writeBlog(
+    root,
+    'missing-generated-routes.mdx',
+    [
+      'title: "Missing Generated Routes"',
+      'date: "2026-05-23"',
+      'description: "Links should still fail when generated routes do not exist."',
+      'tags: ["Go"]',
+      'readingTime: "4 min"',
+    ].join('\n'),
+    [
+      '[Missing tag](/blog/tags/rust/)',
+      '[Missing archive year](/blog/archive/2025/)',
+    ].join('\n\n'),
+  )
+
+  const errors = validateContent({ root }).errors
+
+  assert(errors.some((error) => error.includes('src/content/blog/missing-generated-routes.mdx: missing internal route or public file: /blog/tags/rust/')))
+  assert(errors.some((error) => error.includes('src/content/blog/missing-generated-routes.mdx: missing internal route or public file: /blog/archive/2025/')))
 })
 
 test('continues reading validation after invalid image path', () => {

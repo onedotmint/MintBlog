@@ -449,14 +449,35 @@ function checkHttpOrRootRelativeTarget(context, file, field, value, knownRoutes)
 }
 
 function getKnownRoutes(context, blogFiles, readingFiles, projectFiles) {
-  const seriesRoutes = blogFiles
-    .map((file) => {
-      const source = readFileSync(file, 'utf8')
-      const parts = splitFrontmatter(context, file, source)
-      const seriesSlug = parts ? parseSeriesSlug(parts.frontmatter) : undefined
+  const blogRouteMetadata = blogFiles.map((file) => {
+    const source = readFileSync(file, 'utf8')
+    const parts = splitFrontmatter(context, file, source)
 
-      return seriesSlug ? `/blog/series/${seriesSlug}/` : undefined
-    })
+    if (!parts) {
+      return {
+        seriesSlug: undefined,
+        tagSlugs: [],
+        archiveYear: undefined,
+      }
+    }
+
+    const fields = parseFrontmatter(parts.frontmatter)
+    const parsedDate = parseDateValue(fields.get('date') ?? '')
+
+    return {
+      seriesSlug: parseSeriesSlug(parts.frontmatter),
+      tagSlugs: parseListValue(parts.frontmatter, 'tags').map(normalizeSlug).filter(Boolean),
+      archiveYear: parsedDate ? String(parsedDate.getUTCFullYear()) : undefined,
+    }
+  })
+  const seriesRoutes = blogRouteMetadata
+    .map((metadata) => (metadata.seriesSlug ? `/blog/series/${metadata.seriesSlug}/` : undefined))
+    .filter(Boolean)
+  const tagRoutes = blogRouteMetadata.flatMap((metadata) => (
+    metadata.tagSlugs.map((tagSlug) => `/blog/tags/${tagSlug}/`)
+  ))
+  const archiveRoutes = blogRouteMetadata
+    .map((metadata) => (metadata.archiveYear ? `/blog/archive/${metadata.archiveYear}/` : undefined))
     .filter(Boolean)
 
   const readingRoutes = readingFiles.map((file) => `/reading/${normalizeReadingSlug(context, file)}/`)
@@ -474,6 +495,7 @@ function getKnownRoutes(context, blogFiles, readingFiles, projectFiles) {
     '/',
     '/about/',
     '/blog/',
+    '/blog/archive/',
     '/blog/series/',
     '/blog/tags/',
     '/projects/',
@@ -481,6 +503,8 @@ function getKnownRoutes(context, blogFiles, readingFiles, projectFiles) {
     '/reading/',
     ...blogFiles.map((file) => `/blog/${normalizeBlogSlug(context, file)}/`),
     ...seriesRoutes,
+    ...tagRoutes,
+    ...archiveRoutes,
     ...readingRoutes,
     ...projectRoutes,
   ])
