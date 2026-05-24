@@ -37,6 +37,7 @@ const pages = [
   { name: 'article-series-detail', path: '/blog/series/cs61a-notes/' },
   { name: 'projects-index', path: '/projects/' },
   { name: 'project-detail', path: '/projects/build-pipeline-sketches/' },
+  { name: 'talks', path: '/talks/' },
   { name: 'about', path: '/about/' },
 ]
 

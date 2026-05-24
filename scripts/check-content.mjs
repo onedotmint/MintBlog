@@ -499,6 +499,7 @@ function getKnownRoutes(context, blogFiles, readingFiles, projectFiles) {
     '/blog/series/',
     '/blog/tags/',
     '/projects/',
+    '/talks/',
     '/now/',
     '/reading/',
     ...blogFiles.map((file) => `/blog/${normalizeBlogSlug(context, file)}/`),

@@ -92,6 +92,7 @@ test('builds sitemap with static and dynamic URLs plus article lastmod dates', (
 
   assert(sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>'))
   assert(sitemap.includes('<loc>http://localhost:4321/blog/</loc>'))
+  assert(sitemap.includes('<loc>http://localhost:4321/talks/</loc>'))
   assert(sitemap.includes('<loc>http://localhost:4321/blog/archive/2026/</loc>'))
   assert(sitemap.includes('<loc>http://localhost:4321/blog/series/build-notes/</loc>'))
   assert(sitemap.includes('<loc>http://localhost:4321/blog/tags/go/</loc>'))

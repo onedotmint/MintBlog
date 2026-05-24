@@ -28,6 +28,7 @@ CHROME_PATH=/path/to/chrome npm run design:baseline
 * `/blog/series/cs61a-notes/`
 * `/projects/`
 * `/projects/build-pipeline-sketches/`
+* `/talks/`
 * `/about/`
 
 ## Notes

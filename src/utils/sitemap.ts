@@ -13,7 +13,7 @@ export interface SitemapInput<TArticle extends ArticleCore = ArticleCore> {
   projectDetails: readonly ProjectWithDetail[]
 }
 
-const staticPages = ['/', '/blog/', '/blog/archive/', '/blog/series/', '/blog/tags/', '/reading/', '/projects/', '/now/', '/about/']
+const staticPages = ['/', '/blog/', '/blog/archive/', '/blog/series/', '/blog/tags/', '/reading/', '/projects/', '/talks/', '/now/', '/about/']
 
 function sitemapUrl(path: string, lastmod?: Date) {
   const lastmodTag = lastmod ? `<lastmod>${lastmod.toISOString().slice(0, 10)}</lastmod>` : ''
