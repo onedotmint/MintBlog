@@ -2,6 +2,7 @@
 import type { CollectionEntry } from 'astro:content'
 
 import Badge from '../../components/Badge.astro'
+import BackLink from '../../components/BackLink.astro'
 import ArticleList from '../../components/ArticleList.astro'
 import ArticleReadingNav from '../../components/ArticleReadingNav.astro'
 import ArticleTableOfContents from '../../components/ArticleTableOfContents.astro'
@@ -50,9 +51,7 @@ const tableOfContents = getArticleTableOfContents(headings)
   }}
 >
   <article class="section prose article-detail" aria-labelledby="article-title">
-    <a class="back-link" href="/blog/">
-      Back to blog
-    </a>
+    <BackLink href="/blog/">Back to blog</BackLink>
 
     <header class="post-header">
       <p class="eyebrow">Article</p>
@@ -93,17 +92,6 @@ const tableOfContents = getArticleTableOfContents(headings)
 </Layout>
 
 <style>
-  .back-link {
-    display: inline-flex;
-    width: fit-content;
-    color: var(--text-faint);
-    font-size: 0.9rem;
-  }
-
-  .back-link:hover {
-    color: var(--accent);
-  }
-
   .post-header {
     display: flex;
     flex-direction: column;

@@ -1,5 +1,6 @@
 ---
 import ArticleList from '../../../components/ArticleList.astro'
+import BackLink from '../../../components/BackLink.astro'
 import Layout from '../../../layouts/Layout.astro'
 import SectionTitle from '../../../components/SectionTitle.astro'
 import { getArticleSeries, getArticles } from '../../../utils/articles'
@@ -23,9 +24,7 @@ const { series } = Astro.props as { series: ArticleSeries }
   description={`${series.title} articles from the blog.`}
 >
   <section class="section prose">
-    <a class="back-link" href="/blog/series/">
-      Back to series
-    </a>
+    <BackLink href="/blog/series/">Back to series</BackLink>
 
     <SectionTitle
       title={series.title}
@@ -37,16 +36,3 @@ const { series } = Astro.props as { series: ArticleSeries }
     <ArticleList articles={series.articles} />
   </section>
 </Layout>
-
-<style>
-  .back-link {
-    display: inline-flex;
-    width: fit-content;
-    color: var(--text-faint);
-    font-size: 0.9rem;
-  }
-
-  .back-link:hover {
-    color: var(--accent);
-  }
-</style>

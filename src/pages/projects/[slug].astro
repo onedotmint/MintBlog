@@ -1,5 +1,6 @@
 ---
 import Badge from '../../components/Badge.astro'
+import BackLink from '../../components/BackLink.astro'
 import Layout from '../../layouts/Layout.astro'
 import { getDetailedProjects } from '../../utils/projects'
 import type { ProjectLink, ProjectWithDetail } from '../../utils/projects'
@@ -32,7 +33,7 @@ const { Content } = await project.entry.render()
 >
   <article class="project-detail">
     <header class="section prose project-hero">
-      <a class="back-link" href="/projects/">Projects</a>
+      <BackLink href="/projects/">Projects</BackLink>
       <p class="eyebrow">Project</p>
       <h1>{project.data.name}</h1>
       <p class="lead">{project.data.summary}</p>
@@ -85,16 +86,6 @@ const { Content } = await project.entry.render()
 
   .project-hero {
     gap: 0.7rem;
-  }
-
-  .back-link {
-    width: fit-content;
-    color: var(--text-faint);
-    font-size: 0.9rem;
-  }
-
-  .back-link:hover {
-    color: var(--accent);
   }
 
   .project-section {

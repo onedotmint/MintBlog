@@ -1,5 +1,6 @@
 ---
 import ArticleList from '../../../components/ArticleList.astro'
+import BackLink from '../../../components/BackLink.astro'
 import Layout from '../../../layouts/Layout.astro'
 import SectionTitle from '../../../components/SectionTitle.astro'
 import { getArticles, getArticleTags } from '../../../utils/articles'
@@ -23,9 +24,7 @@ const { tag } = Astro.props as { tag: ArticleTag }
   description={`${tag.label} articles from the blog.`}
 >
   <section class="section prose">
-    <a class="back-link" href="/blog/tags/">
-      Back to tags
-    </a>
+    <BackLink href="/blog/tags/">Back to tags</BackLink>
 
     <SectionTitle
       title={tag.label}
@@ -37,16 +36,3 @@ const { tag } = Astro.props as { tag: ArticleTag }
     <ArticleList articles={tag.articles} />
   </section>
 </Layout>
-
-<style>
-  .back-link {
-    display: inline-flex;
-    width: fit-content;
-    color: var(--text-faint);
-    font-size: 0.9rem;
-  }
-
-  .back-link:hover {
-    color: var(--accent);
-  }
-</style>

@@ -1,4 +1,5 @@
 ---
+import BackLink from '../../../components/BackLink.astro'
 import Layout from '../../../layouts/Layout.astro'
 import SectionTitle from '../../../components/SectionTitle.astro'
 import { getArticles, getArticleTags } from '../../../utils/articles'
@@ -12,9 +13,7 @@ const articleTags = getArticleTags(articles)
   description="Blog notes grouped by technical topic."
 >
   <section class="section prose">
-    <a class="back-link" href="/blog/">
-      Back to blog
-    </a>
+    <BackLink href="/blog/">Back to blog</BackLink>
 
     <SectionTitle title="Article Tags" description="Blog notes grouped by technical topic." />
   </section>
@@ -34,17 +33,6 @@ const articleTags = getArticleTags(articles)
 </Layout>
 
 <style>
-  .back-link {
-    display: inline-flex;
-    width: fit-content;
-    color: var(--text-faint);
-    font-size: 0.9rem;
-  }
-
-  .back-link:hover {
-    color: var(--accent);
-  }
-
   .tag-index {
     display: flex;
     flex-direction: column;

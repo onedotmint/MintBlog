@@ -2,6 +2,7 @@
 import type { CollectionEntry } from 'astro:content'
 
 import Badge from '../../components/Badge.astro'
+import BackLink from '../../components/BackLink.astro'
 import Layout from '../../layouts/Layout.astro'
 import { getReadingResourceExternalHref, getReadingResources, toReadingResource } from '../../utils/reading'
 
@@ -26,9 +27,7 @@ const { Content } = await entry.render()
 
 <Layout title={entry.data.title} description={entry.data.note} canonicalPath={resource.href} type="article">
   <article class="section prose reading-detail">
-    <a class="back-link" href="/reading/">
-      Back to reading
-    </a>
+    <BackLink href="/reading/">Back to reading</BackLink>
 
     <header class="reading-hero">
       <p class="eyebrow">{entry.data.type}</p>
@@ -58,16 +57,6 @@ const { Content } = await entry.render()
     display: flex;
     flex-direction: column;
     gap: 1.35rem;
-  }
-
-  .back-link {
-    width: fit-content;
-    color: var(--text-faint);
-    font-size: 0.9rem;
-  }
-
-  .back-link:hover {
-    color: var(--accent);
   }
 
   .reading-hero {

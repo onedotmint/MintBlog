@@ -1,5 +1,6 @@
 ---
 import ArticleList from '../../../components/ArticleList.astro'
+import BackLink from '../../../components/BackLink.astro'
 import Layout from '../../../layouts/Layout.astro'
 import SectionTitle from '../../../components/SectionTitle.astro'
 import { getArticleArchives, getArticles } from '../../../utils/articles'
@@ -13,9 +14,7 @@ const articleArchives = getArticleArchives(articles)
   description="Blog posts grouped by publication year."
 >
   <section class="section prose">
-    <a class="back-link" href="/blog/">
-      Back to blog
-    </a>
+    <BackLink href="/blog/">Back to blog</BackLink>
 
     <SectionTitle title="Article Archive" description="Blog posts grouped by publication year." />
   </section>
@@ -37,17 +36,6 @@ const articleArchives = getArticleArchives(articles)
 </Layout>
 
 <style>
-  .back-link {
-    display: inline-flex;
-    width: fit-content;
-    color: var(--text-faint);
-    font-size: 0.9rem;
-  }
-
-  .back-link:hover {
-    color: var(--accent);
-  }
-
   .archive-list {
     display: flex;
     flex-direction: column;
