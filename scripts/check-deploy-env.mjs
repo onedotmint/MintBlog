@@ -46,7 +46,7 @@ export function runDeployEnvironmentCheck(env = process.env, log = logger) {
    * 步骤1：校验部署配置
    * ================================================================================
    * 目标：
-   * 1) 在构建、SSH 和 rsync 前检查 GitHub Actions 必填配置
+   * 1) 在镜像构建、镜像推送、SSH 和 Compose 发布前检查必填配置
    * 2) 只输出配置项名称，不输出 secret 原文
    */
   log.info('Start deployment configuration check...')

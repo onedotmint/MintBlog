@@ -45,7 +45,7 @@ Optional asset directories are cleaned instead of falling back to sample assets.
 
 ## Docker Compose
 
-Build and serve the static site with Nginx:
+Build and serve the static site locally with Nginx:
 
 ```bash
 docker compose up --build
@@ -68,6 +68,20 @@ run Node. If `private-content/` exists during the Docker build, the normal
 content sync step can include it in the generated output. Use a trusted local
 Docker builder when building with private content, because Docker sends the build
 context to the builder before the final runtime image is created.
+
+For production, use `compose.prod.yaml`. It does not build. It pulls a published
+image and runs the Nginx-only runtime container:
+
+```bash
+BLOG_IMAGE=ghcr.io/owner/mintblog:latest docker compose -f compose.prod.yaml up -d
+```
+
+The production server must be logged in to GHCR before it can pull a private
+image:
+
+```bash
+docker login ghcr.io
+```
 
 ## Content source layout
 
@@ -102,49 +116,51 @@ Long-lived technical tradeoffs are recorded in [docs/decisions/](docs/decisions/
 
 ## Production deployment contract
 
-The production deployment path is GitHub Actions plus `rsync dist/`.
+The production deployment path is GitHub Actions plus GHCR plus Docker Compose.
 
 Build ownership:
 
-- GitHub Actions uses Node 20 and installs dependencies with `npm ci`.
+- GitHub Actions uses Node 20 for deployment guard and health scripts.
+- Docker build uses Node 20 and installs dependencies with `npm ci`.
 - `npm run check:deploy-env` validates required secrets before private content
-  checkout, build, SSH setup, or upload.
-- `npm run build:deploy` runs `npm run check:origin`, then builds with
+  checkout, Docker build, SSH setup, or server update.
+- Docker build runs `npm run build:deploy` inside the image build with
   `PRIVATE_CONTENT_STRICT=1`.
 - `PUBLIC_SITE_ORIGIN` is the public production origin used for canonical URLs,
   RSS links, sitemap URLs, social metadata, and post-deploy health checks.
 
 Artifact ownership:
 
-- `dist/` is the only production artifact.
+- The GHCR image is the production artifact.
 - Private content is copied into Astro content and public asset mount points
   during the strict build.
-- The deployment workflow does not upload source files, `node_modules/`, Docker
-  layers, or local build caches.
+- The deployment workflow does not upload source files, `node_modules/`, or
+  local build caches to the server.
 
-Upload and serving ownership:
+Image and serving ownership:
 
-- The workflow uploads `dist/` to
-  `${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/` with
-  `rsync -az --delete`.
-- The target server owns the live static file server, TLS, cache headers,
-  redirects, compression, and process supervision.
-- This repository's `nginx.conf` does not govern that production server unless
-  the server is separately configured to use the same file.
+- The workflow pushes the image to `ghcr.io/<owner>/mintblog`.
+- The image includes OCI source and revision labels for GHCR package metadata.
+- The workflow uploads `compose.prod.yaml` to
+  `${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/compose.yaml` and writes
+  `${DEPLOY_PATH}/.env` with the image tag and port.
+- The target server runs `docker compose pull` and `docker compose up -d`.
+- The target server owns TLS, public reverse proxying, and host-level firewall
+  rules if the container is not exposed directly.
 
 Docker ownership:
 
-- `Dockerfile`, `compose.yaml`, and `nginx.conf` provide a local or alternate
-  static-serving path.
+- `Dockerfile`, `compose.yaml`, `compose.prod.yaml`, and `nginx.conf` provide
+  the static-serving paths.
+- `compose.yaml` is local build-and-run.
+- `compose.prod.yaml` is production pull-and-run.
 - The Docker runtime image serves generated `dist/` files with Nginx and does
   not run Node.
-- The GitHub Actions production deployment does not build, push, or run that
-  Docker image.
 
 Health ownership:
 
-- After upload, `npm run check:deployment-health` probes the public site at
-  `/`, `/rss.xml`, and `/sitemap.xml`.
+- After Compose restarts the container, `npm run check:deployment-health`
+  probes the public site at `/`, `/rss.xml`, and `/sitemap.xml`.
 - The health check fails when `PUBLIC_SITE_ORIGIN` is missing, a key path
   returns a non-2xx response, or a key path returns an empty body.
 - Health check logs print only the public origin, paths, statuses, and error
@@ -158,10 +174,10 @@ The repository includes a GitHub Actions workflow that can:
 2. set up Node.js
 3. validate required deployment configuration with `npm run check:deploy-env`
 4. checkout the private content repository from CI secrets
-5. sync content into Astro's expected paths
-6. install dependencies with `npm ci`
-7. run `npm run build:deploy`
-8. rsync `dist/` to the target server over SSH
+5. build a production Docker image with strict private content
+6. push the image to GHCR with the commit SHA tag and `latest`
+7. upload the production Compose file and `.env` to the target server
+8. run `docker compose pull` and `docker compose up -d` over SSH
 9. verify the public deployment with `npm run check:deployment-health`
 
 Required secrets:
@@ -174,9 +190,39 @@ Required secrets:
 - `DEPLOY_PATH`
 - `DEPLOY_KEY`
 
+Optional repository variable:
+
+- `BLOG_PORT` defaults to `8080` when unset
+
 `PUBLIC_SITE_ORIGIN` should be the production origin used for canonical URLs,
 RSS links, sitemap URLs, and social metadata. Local builds fall back to
 `http://localhost:4321`.
+
+Before the first deploy, the production server needs Docker Compose and GHCR
+pull access:
+
+```bash
+docker login ghcr.io
+mkdir -p /path/to/deploy
+```
+
+Use a token with permission to read the private package if the GHCR image is
+private.
+
+Manual fallback build:
+
+```bash
+PRIVATE_CONTENT_STRICT=1 PUBLIC_SITE_ORIGIN=https://example.com docker build \
+  --build-arg PRIVATE_CONTENT_STRICT=1 \
+  --build-arg PUBLIC_SITE_ORIGIN=https://example.com \
+  -t personal-blog-v1:manual .
+```
+
+Then run it with the production Compose file:
+
+```bash
+BLOG_IMAGE=personal-blog-v1:manual docker compose -f compose.prod.yaml up -d
+```
 
 ## Deployment troubleshooting
 
@@ -189,7 +235,7 @@ RSS links, sitemap URLs, and social metadata. Local builds fall back to
   origin, for example `https://example.com`. `npm run build:deploy` runs
   `npm run check:origin` before syncing content, and blank values are rejected.
 - Deployment health check fails: open the failed path shown in the workflow log.
-  The check runs after `rsync`, uses `PUBLIC_SITE_ORIGIN`, and requires
+  The check runs after `docker compose up -d`, uses `PUBLIC_SITE_ORIGIN`, and requires
   `/`, `/rss.xml`, and `/sitemap.xml` to return non-empty 2xx responses.
 - Private content checkout fails: verify `PRIVATE_CONTENT_REPOSITORY` and
   `PRIVATE_CONTENT_TOKEN` in repository secrets. The deployment configuration
@@ -197,7 +243,8 @@ RSS links, sitemap URLs, and social metadata. Local builds fall back to
 - SSH setup fails: verify `DEPLOY_HOST` and `DEPLOY_KEY`. The workflow writes
   `DEPLOY_KEY` to `~/.ssh/id_ed25519` and runs `ssh-keyscan -H "$DEPLOY_HOST"`,
   so an invalid host or malformed private key fails before upload.
-- `rsync` fails with a permission or path error: verify `DEPLOY_USER`,
-  `DEPLOY_HOST`, and `DEPLOY_PATH`. The deploy step uploads only `dist/` to
-  `${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/`, so the target user must be
-  able to create, update, and delete files in that directory.
+- Image pull fails on the server: run `docker login ghcr.io` on the server with
+  an account or token that can read the private package.
+- Compose update fails with a permission or path error: verify `DEPLOY_USER`,
+  `DEPLOY_HOST`, and `DEPLOY_PATH`. The deploy user must be able to write
+  `compose.yaml` and `.env`, then run Docker Compose from that directory.

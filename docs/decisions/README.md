@@ -18,3 +18,4 @@ Keep records short. Use [template.md](./template.md), choose the next numeric pr
 - [002 - Keep Real Content in a Private Sync Source](./002-keep-real-content-in-private-sync-source.md)
 - [003 - Keep Dependency and Runtime Budgets Small](./003-keep-dependency-and-runtime-budgets-small.md)
 - [004 - Do Not Add a CMS or Runtime Backend for V1](./004-no-cms-or-runtime-backend-for-v1.md)
+- [005 - Use GHCR Image and Compose for Production](./005-use-ghcr-image-and-compose-for-production.md)
