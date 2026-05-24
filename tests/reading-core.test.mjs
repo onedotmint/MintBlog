@@ -5,6 +5,7 @@ import { importTsModule } from './import-ts-module.mjs'
 const {
   getReadingResourceExternalHref,
   getReadingResourceGroups,
+  getReadingTypeSectionId,
   isReadingResourceType,
   normalizeReadingSlug,
   readingTypeValues,
@@ -26,6 +27,11 @@ function resource(slug, type, title, url) {
 test('normalizes reading slugs', () => {
   assert.equal(normalizeReadingSlug('intro-to-astro.mdx'), 'intro-to-astro')
   assert.equal(normalizeReadingSlug('http-reference.md'), 'http-reference')
+})
+
+test('builds stable reading type section ids', () => {
+  assert.equal(getReadingTypeSectionId('Documentation'), 'reading-documentation')
+  assert.equal(getReadingTypeSectionId('Case Study'), 'reading-case-study')
 })
 
 test('defines accepted reading type values', () => {
@@ -55,6 +61,7 @@ test('groups resources after applying sort order', () => {
   const groups = getReadingResourceGroups(resources)
 
   assert.deepEqual(groups.map((group) => group.type), ['Book', 'Documentation', 'Reference'])
+  assert.deepEqual(groups.map((group) => group.href), ['#reading-book', '#reading-documentation', '#reading-reference'])
   assert.deepEqual(groups.map((group) => group.resources[0]?.slug), ['book', 'doc', 'ref'])
 })
 

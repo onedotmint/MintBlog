@@ -12,6 +12,8 @@ export interface ReadingResourceCore<TData extends ReadingResourceDataShape = Re
 
 export interface ReadingResourceGroup<TResource extends ReadingResourceCore = ReadingResourceCore> {
   type: string
+  href: string
+  sectionId: string
   resources: TResource[]
 }
 
@@ -27,6 +29,10 @@ export function isReadingResourceType(value: string): value is ReadingResourceTy
 
 export function normalizeReadingSlug(slug: string) {
   return slug.replace(/\.(md|mdx)$/, '')
+}
+
+export function getReadingTypeSectionId(type: string) {
+  return `reading-${type.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
 }
 
 export function sortReadingResources<TResource extends ReadingResourceCore>(resources: readonly TResource[]) {
@@ -62,10 +68,16 @@ export function getReadingResourceGroups<TResource extends ReadingResourceCore>(
     groupsByType.set(resource.data.type, [resource])
   }
 
-  return [...groupsByType.entries()].map(([type, groupedResources]) => ({
-    type,
-    resources: groupedResources,
-  }))
+  return [...groupsByType.entries()].map(([type, groupedResources]) => {
+    const sectionId = getReadingTypeSectionId(type)
+
+    return {
+      type,
+      href: `#${sectionId}`,
+      sectionId,
+      resources: groupedResources,
+    }
+  })
 }
 
 export function getReadingResourceExternalHref<TResource extends ReadingResourceCore>(resource: TResource) {

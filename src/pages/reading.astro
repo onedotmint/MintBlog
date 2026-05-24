@@ -6,13 +6,14 @@ import { getReadingResourceGroups, getReadingResources } from '../utils/reading'
 
 const resources = await getReadingResources()
 const groups = getReadingResourceGroups(resources)
+const hasGroups = groups.length > 0
 ---
 
 <Layout
   title="Reading"
   description="Courses, books, documentation, and technical references used while learning."
 >
-  <section class="section prose reading-index">
+  <section id="reading-all" class="section prose reading-index">
     <SectionTitle
       title="Reading"
       description="Courses, books, documentation, and technical references used while learning."
@@ -21,6 +22,17 @@ const groups = getReadingResourceGroups(resources)
     <p class="lead">
       A static index for the resources worth keeping close. Each entry opens a detail page with the full notes.
     </p>
+
+    {hasGroups && (
+      <nav class="reading-shortcuts" aria-label="Reading categories">
+        <a class="reading-shortcut reading-shortcut-active" href="#reading-all" aria-current="location">All</a>
+        {groups.map((group) => (
+          <a class="reading-shortcut" href={group.href}>
+            {group.type}
+          </a>
+        ))}
+      </nav>
+    )}
   </section>
 
   <section class="section">
@@ -31,5 +43,37 @@ const groups = getReadingResourceGroups(resources)
 <style>
   .reading-index {
     position: relative;
+  }
+
+  .reading-shortcuts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .reading-shortcut {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.9rem;
+    padding: 0.28rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font-size: 0.83rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .reading-shortcut:hover,
+  .reading-shortcut:focus-visible {
+    border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--accent);
+  }
+
+  .reading-shortcut-active {
+    border-color: var(--border-strong);
+    color: var(--accent);
   }
 </style>

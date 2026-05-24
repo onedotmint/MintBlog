@@ -6,6 +6,7 @@ import type { ReadingResourceCore, ReadingResourceGroup as ReadingResourceGroupC
 export {
   getReadingResourceExternalHref,
   getReadingResourceGroups,
+  getReadingTypeSectionId,
   normalizeReadingSlug,
   sortReadingResources,
 } from './reading-core'

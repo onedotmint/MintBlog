@@ -21,7 +21,7 @@ const groupItems = groups.map((group) => ({
 
 <div class="reading-groups">
   {groupItems.map((group) => (
-    <section class="reading-group">
+    <section class="reading-group" id={group.sectionId}>
       <SectionTitle title={group.type} description={`${group.resources.length} resource${group.resources.length === 1 ? '' : 's'}`} />
 
       <div class="reading-items">
