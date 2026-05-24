@@ -9,12 +9,17 @@ export interface ProjectLink {
   href: string
 }
 
+export const projectStatusValues = ['Active', 'Done', 'Paused', 'Experiment'] as const
+
+export type ProjectStatus = (typeof projectStatusValues)[number]
+
 export interface ProjectDataShape {
   name: string
   description: string
   group: ProjectGroupData
   order: number
   tags: readonly string[]
+  status: ProjectStatus
   link?: string
   detail?: boolean
   summary?: string

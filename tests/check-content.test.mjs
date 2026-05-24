@@ -4,10 +4,15 @@ import { join } from 'node:path'
 import test from 'node:test'
 import { tmpdir } from 'node:os'
 import { mkdtempSync } from 'node:fs'
-import { readingTypeValues as contentReadingTypeValues, validateContent } from '../scripts/check-content.mjs'
+import {
+  projectStatusValues as contentProjectStatusValues,
+  readingTypeValues as contentReadingTypeValues,
+  validateContent,
+} from '../scripts/check-content.mjs'
 import { importTsModule } from './import-ts-module.mjs'
 
 const { readingTypeValues: coreReadingTypeValues } = await importTsModule(new URL('../src/utils/reading-core.ts', import.meta.url))
+const { projectStatusValues: coreProjectStatusValues } = await importTsModule(new URL('../src/utils/project-core.ts', import.meta.url))
 
 function createFixtureRoot() {
   const root = mkdtempSync(join(tmpdir(), 'blog-content-test-'))
@@ -39,6 +44,10 @@ function writeProject(root, name, frontmatter, body = '') {
 
 test('keeps content check reading types aligned with the reading utility schema', () => {
   assert.deepEqual(contentReadingTypeValues, coreReadingTypeValues)
+})
+
+test('keeps content check project statuses aligned with the project utility schema', () => {
+  assert.deepEqual(contentProjectStatusValues, coreProjectStatusValues)
 })
 
 test('passes valid blog, reading, and project content', () => {
@@ -86,6 +95,7 @@ test('passes valid blog, reading, and project content', () => {
       '  order: 0',
       'order: 0',
       'tags: ["Astro", "Content"]',
+      'status: "Active"',
       'detail: true',
       'summary: "A detail project."',
       'designNotes:',
@@ -519,6 +529,7 @@ test('reports invalid project ordering and link shapes', () => {
       '  order: -1',
       'order: -2',
       'tags: ["Validation"]',
+      'status: "Archived"',
       'link: "reading/"',
       'links:',
       '  - label: ""',
@@ -531,6 +542,7 @@ test('reports invalid project ordering and link shapes', () => {
 
   assert(errors.some((error) => error.includes('src/content/projects/bad-project-shapes.mdx: order must be a nonnegative integer')))
   assert(errors.some((error) => error.includes('src/content/projects/bad-project-shapes.mdx: group.order must be a nonnegative integer')))
+  assert(errors.some((error) => error.includes('src/content/projects/bad-project-shapes.mdx: status must be one of: Active, Done, Paused, Experiment')))
   assert(errors.some((error) => error.includes('src/content/projects/bad-project-shapes.mdx: link must be http(s) or a root-relative internal target')))
   assert(errors.some((error) => error.includes('src/content/projects/bad-project-shapes.mdx: missing required frontmatter: links.label')))
   assert(errors.some((error) => error.includes('src/content/projects/bad-project-shapes.mdx: links.href must be http(s) or a root-relative internal target')))

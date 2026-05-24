@@ -7,6 +7,8 @@ const requiredFrontmatter = ['title', 'date', 'description', 'tags', 'readingTim
 const minuteReadingTimePattern = /^[1-9]\d*\s+min$/
 export const readingTypeValues = ['Course', 'Book', 'Documentation', 'Reference']
 const readingTypeSet = new Set(readingTypeValues)
+export const projectStatusValues = ['Active', 'Done', 'Paused', 'Experiment']
+const projectStatusSet = new Set(projectStatusValues)
 
 function createContext(options = {}) {
   const root = options.root ?? defaultRoot
@@ -634,6 +636,12 @@ function checkProjectFrontmatter(context, file, frontmatter, body, knownRoutes) 
 
   if (order && parseNonnegativeInteger(order) === undefined) {
     report(context, file, 'order must be a nonnegative integer')
+  }
+
+  const status = fields.get('status')
+
+  if (status && !projectStatusSet.has(status)) {
+    report(context, file, `status must be one of: ${projectStatusValues.join(', ')}`)
   }
 
   const group = getTopLevelField(frontmatter, 'group')

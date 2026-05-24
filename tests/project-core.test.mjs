@@ -6,6 +6,7 @@ const {
   getProjectGroups,
   getProjectsWithDetails,
   normalizeProjectSlug,
+  projectStatusValues,
   sortProjects,
 } = await importTsModule(new URL('../src/utils/project-core.ts', import.meta.url))
 
@@ -30,6 +31,10 @@ function project(slug, groupTitle, groupOrder, order, name, overrides = {}) {
 test('normalizes project slugs', () => {
   assert.equal(normalizeProjectSlug('tcp-server-lab.mdx'), 'tcp-server-lab')
   assert.equal(normalizeProjectSlug('nginx-static-host.md'), 'nginx-static-host')
+})
+
+test('exposes controlled project statuses', () => {
+  assert.deepEqual(projectStatusValues, ['Active', 'Done', 'Paused', 'Experiment'])
 })
 
 test('sorts projects by group order, item order, and name', () => {

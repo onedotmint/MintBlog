@@ -27,6 +27,7 @@ const projectHref = project.href
   )}
 
   <div class="tag-row">
+    <Badge label={project.data.status} />
     {project.data.tags.map((tag: string) => <Badge label={tag} />)}
   </div>
 </article>

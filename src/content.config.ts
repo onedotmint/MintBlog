@@ -1,4 +1,5 @@
 import { defineCollection, z } from 'astro:content'
+import { projectStatusValues } from './utils/project-core'
 import { readingTypeValues } from './utils/reading-core'
 
 const blog = defineCollection({
@@ -49,6 +50,7 @@ const projects = defineCollection({
     }),
     order: z.number().int().nonnegative(),
     tags: z.array(z.string()).default([]),
+    status: z.enum(projectStatusValues).default('Active'),
     link: z.string().optional(),
     detail: z.boolean().default(false),
     summary: z.string().optional(),
