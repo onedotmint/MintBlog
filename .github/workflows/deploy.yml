@@ -5,6 +5,10 @@ on:
   repository_dispatch:
     types: [publish]
 
+concurrency:
+  group: production-deploy-${{ github.repository }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   packages: write

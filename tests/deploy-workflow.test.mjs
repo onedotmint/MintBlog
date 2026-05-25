@@ -7,6 +7,12 @@ const productionCompose = readFileSync(new URL('../compose.prod.yaml', import.me
 const dockerIgnore = readFileSync(new URL('../.dockerignore', import.meta.url), 'utf8')
 const productionDockerfile = readFileSync(new URL('../Dockerfile.production', import.meta.url), 'utf8')
 
+test('deploy workflow serializes production deployments', () => {
+  assert.match(workflow, /concurrency:/)
+  assert.match(workflow, /group: production-deploy-\$\{\{ github\.repository \}\}/)
+  assert.match(workflow, /cancel-in-progress: true/)
+})
+
 test('deploy workflow publishes a production image before restarting Compose', () => {
   const staticBuildStepIndex = workflow.indexOf('Build production static output')
   const imageContextStepIndex = workflow.indexOf('Prepare production image context')
