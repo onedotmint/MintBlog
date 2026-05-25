@@ -14,6 +14,17 @@ The command builds the Astro site, serves `dist/` locally, and captures PNG scre
 CHROME_PATH=/path/to/chrome npm run design:baseline
 ```
 
+## Review Artifact
+
+Run the `Design Baseline` GitHub Actions workflow manually when a change may
+affect layout, typography, spacing, navigation, or page composition.
+
+The workflow uses public sample content, runs the existing
+`npm run design:baseline` command, and uploads the PNG output as a
+`design-baseline-screenshots` artifact. Download the artifact from the workflow
+run and compare the screenshots against the committed baseline in this
+directory.
+
 ## Viewports
 
 * Desktop: `1440x1200`
@@ -33,6 +44,7 @@ CHROME_PATH=/path/to/chrome npm run design:baseline
 
 ## Notes
 
-These screenshots are a manual design baseline. They are not pixel-diff tests and they do not run in CI.
+These screenshots are a manual design baseline. They are not pixel-diff tests
+and they run only through the manual `Design Baseline` workflow.
 
 Refresh them after intentional visual changes, then review the changed PNGs before committing.

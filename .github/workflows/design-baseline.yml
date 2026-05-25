@@ -1,0 +1,37 @@
+name: Design Baseline
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Capture visual baseline
+        run: npm run design:baseline
+
+      - name: Upload visual baseline artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-baseline-screenshots
+          path: docs/design-baseline/screenshots/*.png
+          if-no-files-found: error
