@@ -6,6 +6,7 @@ const workflow = readFileSync(new URL('../.github/workflows/deploy.yml', import.
 const productionCompose = readFileSync(new URL('../compose.prod.yaml', import.meta.url), 'utf8')
 const dockerIgnore = readFileSync(new URL('../.dockerignore', import.meta.url), 'utf8')
 const productionDockerfile = readFileSync(new URL('../Dockerfile.production', import.meta.url), 'utf8')
+const nginxConfig = readFileSync(new URL('../nginx.conf', import.meta.url), 'utf8')
 
 test('deploy workflow serializes production deployments', () => {
   assert.match(workflow, /concurrency:/)
@@ -70,6 +71,15 @@ test('production image build context only needs static output and Nginx config',
   assert.match(productionDockerfile, /COPY dist \/usr\/share\/nginx\/html/)
   assert.doesNotMatch(productionDockerfile, /node:24-alpine/)
   assert.doesNotMatch(productionDockerfile, /npm run/)
+})
+
+test('Nginx runtime sends conservative security headers without changing cache rules', () => {
+  assert.match(nginxConfig, /add_header X-Content-Type-Options "nosniff" always;/)
+  assert.match(nginxConfig, /add_header Referrer-Policy "strict-origin-when-cross-origin" always;/)
+  assert.match(nginxConfig, /add_header X-Frame-Options "DENY" always;/)
+  assert.match(nginxConfig, /add_header Cache-Control "public, max-age=31536000, immutable";/)
+  assert.match(nginxConfig, /add_header Cache-Control "public, max-age=86400";/)
+  assert.match(nginxConfig, /add_header Cache-Control "public, max-age=300";/)
 })
 
 test('Docker build context excludes private source content by default', () => {
