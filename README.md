@@ -4,8 +4,8 @@ Static personal blog built with Astro and MDX.
 
 ## Runtime policy
 
-Use Node.js 20 for CI and Docker builds. `package.json` keeps the local engine
-range at `>=20.0.0`, but Node 20 is the pinned build baseline used for
+Use Node.js 24 for CI and Docker builds. `package.json` keeps the local engine
+range at `>=24.0.0`, and Node 24 is the pinned build baseline used for
 reproducible project checks and container builds.
 
 Production serving remains static-only. The final Docker image uses Nginx and
@@ -120,8 +120,8 @@ The production deployment path is GitHub Actions plus GHCR plus Docker Compose.
 
 Build ownership:
 
-- GitHub Actions uses Node 20 for deployment guard and health scripts.
-- Docker build uses Node 20 and installs dependencies with `npm ci`.
+- GitHub Actions uses Node 24 for deployment guard and health scripts.
+- Docker build uses Node 24 and installs dependencies with `npm ci`.
 - `npm run check:deploy-env` validates required secrets before private content
   checkout, Docker build, SSH setup, or server update.
 - Docker build runs `npm run build:deploy` inside the image build with
