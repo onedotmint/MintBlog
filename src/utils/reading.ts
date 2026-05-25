@@ -17,7 +17,7 @@ export type ReadingResource = ReadingResourceCore<ReadingEntry['data']> & { entr
 export type ReadingResourceGroup = ReadingResourceGroupCore<ReadingResource>
 
 export function toReadingResource(entry: ReadingEntry): ReadingResource {
-  const slug = normalizeReadingSlug(entry.slug)
+  const slug = normalizeReadingSlug(entry.id)
 
   return {
     entry,

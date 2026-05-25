@@ -26,15 +26,18 @@
     "sync:content:strict": "node scripts/sync-content.mjs --strict"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.0.0",
-    "astro": "^5.0.0"
+    "@astrojs/mdx": "^5.0.6",
+    "astro": "^6.3.7"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.6",
+    "@astrojs/check": "^0.9.9",
     "@types/node": "^24.12.4",
     "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=24.0.0"
+  },
+  "overrides": {
+    "volar-service-yaml": "0.0.71"
   }
 }

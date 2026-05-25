@@ -45,7 +45,7 @@ export type ArticleArchive = ArticleArchiveCore<Article>
 export type { AdjacentArticles, ArticleTableOfContentsItem }
 
 export function toArticle(entry: BlogEntry): Article {
-  const slug = normalizeArticleSlug(entry.slug)
+  const slug = normalizeArticleSlug(entry.id)
 
   return {
     entry,

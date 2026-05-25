@@ -28,7 +28,7 @@ export type ProjectGroup = ProjectGroupCore<ProjectItemData>
 export type { ProjectLink }
 
 export function toProject(entry: ProjectEntry): ProjectItemData {
-  const slug = normalizeProjectSlug(entry.slug)
+  const slug = normalizeProjectSlug(entry.id)
 
   return {
     entry,
