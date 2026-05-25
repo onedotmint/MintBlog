@@ -6,6 +6,14 @@ dist
 .trellis
 .agents
 .codex
+private-content
+src/content/blog
+src/content/reading
+src/content/projects
+public/images/blog
+public/images/reading
+public/images/projects
+public/files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

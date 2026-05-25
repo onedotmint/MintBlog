@@ -20,6 +20,7 @@ function createValidDeployEnv(overrides = {}) {
     DEPLOY_USER: 'deploy',
     DEPLOY_PATH: '/var/www/blog',
     DEPLOY_KEY: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
+    DEPLOY_KNOWN_HOSTS: 'example.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFixedHostKey',
     ...overrides,
   }
 }
@@ -46,6 +47,20 @@ test('treats blank deployment environment values as missing', () => {
     ok: false,
     missing: ['DEPLOY_PATH'],
     message: 'Missing required deployment value: DEPLOY_PATH',
+  })
+})
+
+test('requires pinned SSH known hosts for deploys', () => {
+  const result = validateDeployEnvironment(
+    createValidDeployEnv({
+      DEPLOY_KNOWN_HOSTS: '   ',
+    }),
+  )
+
+  assert.deepEqual(result, {
+    ok: false,
+    missing: ['DEPLOY_KNOWN_HOSTS'],
+    message: 'Missing required deployment value: DEPLOY_KNOWN_HOSTS',
   })
 })
 

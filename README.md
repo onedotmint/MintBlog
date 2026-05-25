@@ -1,15 +1,22 @@
 # Personal Blog V1
 
-Static personal blog built with Astro and MDX.
+Static personal blog built with Astro 6 and MDX.
 
 ## Runtime policy
 
-Use Node.js 24 for CI and Docker builds. `package.json` keeps the local engine
-range at `>=24.0.0`, and Node 24 is the pinned build baseline used for
-reproducible project checks and container builds.
+Use Node.js 24 for CI, local builds, and local Docker builds. `package.json`
+keeps the local engine range at `>=24.0.0`, and Node 24 is the pinned build
+baseline used for reproducible project checks.
 
 Production serving remains static-only. The final Docker image uses Nginx and
 does not run Node.
+
+Dependency policy:
+
+- Runtime dependencies stay limited to `astro` and `@astrojs/mdx`.
+- `@astrojs/check`, TypeScript, and Node types are development-only.
+- `package.json` pins `volar-service-yaml` through `overrides` so Astro's
+  development language tooling uses the patched YAML language server chain.
 
 ## Commands
 
@@ -64,10 +71,17 @@ and is used for canonical URLs, RSS links, sitemap URLs, and social metadata.
 If you change `BLOG_PORT`, set `PUBLIC_SITE_ORIGIN` to the matching public URL.
 
 The final container serves only generated static files from `dist/`. It does not
-run Node. If `private-content/` exists during the Docker build, the normal
-content sync step can include it in the generated output. Use a trusted local
-Docker builder when building with private content, because Docker sends the build
-context to the builder before the final runtime image is created.
+run Node. The default Docker build context excludes `private-content/` and the
+generated content mount points, so local Docker Compose builds use the public
+sample content.
+
+For a local private-content container, build the static output on the host first,
+then package only `dist/` with the production Dockerfile:
+
+```bash
+PRIVATE_CONTENT_STRICT=1 PUBLIC_SITE_ORIGIN=https://example.com npm run build
+docker build -f Dockerfile.production -t personal-blog-v1:manual .
+```
 
 For production, use `compose.prod.yaml`. It does not build. It pulls a published
 image and runs the Nginx-only runtime container:
@@ -121,11 +135,10 @@ The production deployment path is GitHub Actions plus GHCR plus Docker Compose.
 Build ownership:
 
 - GitHub Actions uses Node 24 for deployment guard and health scripts.
-- Docker build uses Node 24 and installs dependencies with `npm ci`.
+- GitHub Actions installs dependencies with `npm ci`.
 - `npm run check:deploy-env` validates required secrets before private content
-  checkout, Docker build, SSH setup, or server update.
-- Docker build runs `npm run build:deploy` inside the image build with
-  `PRIVATE_CONTENT_STRICT=1`.
+  checkout, static build, image publish, SSH setup, or server update.
+- GitHub Actions runs `npm run build:deploy` after private content checkout.
 - `PUBLIC_SITE_ORIGIN` is the public production origin used for canonical URLs,
   RSS links, sitemap URLs, social metadata, and post-deploy health checks.
 
@@ -133,14 +146,20 @@ Artifact ownership:
 
 - The GHCR image is the production artifact.
 - Private content is copied into Astro content and public asset mount points
-  during the strict build.
+  during the strict static build.
+- The production image build context is created under the runner temp directory
+  and contains only `Dockerfile.production`, `nginx.conf`, and `dist/`.
 - The deployment workflow does not upload source files, `node_modules/`, or
   local build caches to the server.
+- The deployment workflow does not send `private-content/` to Docker Buildx and
+  does not write BuildKit GHA image cache for the production image.
 
 Image and serving ownership:
 
 - The workflow pushes the image to `ghcr.io/<owner>/mintblog`.
 - The image includes OCI source and revision labels for GHCR package metadata.
+- SSH host identity is pinned through `DEPLOY_KNOWN_HOSTS`; the workflow does
+  not trust host keys discovered during the deploy run.
 - The workflow uploads `compose.prod.yaml` to
   `${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/compose.yaml` and writes
   `${DEPLOY_PATH}/.env` with the image tag and port.
@@ -150,9 +169,10 @@ Image and serving ownership:
 
 Docker ownership:
 
-- `Dockerfile`, `compose.yaml`, `compose.prod.yaml`, and `nginx.conf` provide
-  the static-serving paths.
+- `Dockerfile`, `Dockerfile.production`, `compose.yaml`, `compose.prod.yaml`,
+  and `nginx.conf` provide the static-serving paths.
 - `compose.yaml` is local build-and-run.
+- `Dockerfile.production` packages prebuilt `dist/` output only.
 - `compose.prod.yaml` is production pull-and-run.
 - The Docker runtime image serves generated `dist/` files with Nginx and does
   not run Node.
@@ -174,11 +194,15 @@ The repository includes a GitHub Actions workflow that can:
 2. set up Node.js
 3. validate required deployment configuration with `npm run check:deploy-env`
 4. checkout the private content repository from CI secrets
-5. build a production Docker image with strict private content
-6. push the image to GHCR with the commit SHA tag and `latest`
-7. upload the production Compose file and `.env` to the target server
-8. run `docker compose pull` and `docker compose up -d` over SSH
-9. verify the public deployment with `npm run check:deployment-health`
+5. install dependencies with `npm ci`
+6. build strict production static output with `npm run build:deploy`
+7. prepare a Docker context containing only `Dockerfile.production`,
+   `nginx.conf`, and `dist/`
+8. build and push the production image to GHCR with the commit SHA tag and
+   `latest`
+9. upload the production Compose file and `.env` to the target server
+10. run `docker compose pull` and `docker compose up -d` over SSH
+11. verify the public deployment with `npm run check:deployment-health`
 
 Required secrets:
 
@@ -189,6 +213,7 @@ Required secrets:
 - `DEPLOY_USER`
 - `DEPLOY_PATH`
 - `DEPLOY_KEY`
+- `DEPLOY_KNOWN_HOSTS`
 
 Optional repository variable:
 
@@ -209,13 +234,23 @@ mkdir -p /path/to/deploy
 Use a token with permission to read the private package if the GHCR image is
 private.
 
+Set `DEPLOY_KNOWN_HOSTS` to the production server public host key line. Collect
+it from a trusted network and verify it against the server fingerprint before
+adding it as a GitHub secret:
+
+```bash
+ssh-keyscan -H example.com
+ssh-keygen -lf ./known_hosts_candidate
+```
+
+The secret should look like a `known_hosts` entry such as
+`example.com ssh-ed25519 AAAA...`. It is not the private deploy key.
+
 Manual fallback build:
 
 ```bash
-PRIVATE_CONTENT_STRICT=1 PUBLIC_SITE_ORIGIN=https://example.com docker build \
-  --build-arg PRIVATE_CONTENT_STRICT=1 \
-  --build-arg PUBLIC_SITE_ORIGIN=https://example.com \
-  -t personal-blog-v1:manual .
+PRIVATE_CONTENT_STRICT=1 PUBLIC_SITE_ORIGIN=https://example.com npm run build
+docker build -f Dockerfile.production -t personal-blog-v1:manual .
 ```
 
 Then run it with the production Compose file:
@@ -240,9 +275,12 @@ BLOG_IMAGE=personal-blog-v1:manual docker compose -f compose.prod.yaml up -d
 - Private content checkout fails: verify `PRIVATE_CONTENT_REPOSITORY` and
   `PRIVATE_CONTENT_TOKEN` in repository secrets. The deployment configuration
   check fails early when either value is blank.
-- SSH setup fails: verify `DEPLOY_HOST` and `DEPLOY_KEY`. The workflow writes
-  `DEPLOY_KEY` to `~/.ssh/id_ed25519` and runs `ssh-keyscan -H "$DEPLOY_HOST"`,
-  so an invalid host or malformed private key fails before upload.
+- SSH setup fails: verify `DEPLOY_HOST`, `DEPLOY_KEY`, and `DEPLOY_KNOWN_HOSTS`.
+  The workflow writes `DEPLOY_KEY` to `~/.ssh/id_ed25519`, writes
+  `DEPLOY_KNOWN_HOSTS` to `~/.ssh/known_hosts`, and uses strict host key
+  checking for `ssh` and `scp`.
+- SSH host key verification fails: refresh `DEPLOY_KNOWN_HOSTS` only after
+  confirming the production server host key changed intentionally.
 - Image pull fails on the server: run `docker login ghcr.io` on the server with
   an account or token that can read the private package.
 - Compose update fails with a permission or path error: verify `DEPLOY_USER`,

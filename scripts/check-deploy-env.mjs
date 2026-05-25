@@ -8,6 +8,7 @@ export const requiredDeployEnvironmentKeys = [
   'DEPLOY_USER',
   'DEPLOY_PATH',
   'DEPLOY_KEY',
+  'DEPLOY_KNOWN_HOSTS',
 ]
 
 const logger = {
