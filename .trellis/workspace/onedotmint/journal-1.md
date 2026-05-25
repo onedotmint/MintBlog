@@ -1095,3 +1095,38 @@ Refreshed the Astro blog into a dark minimalist developer personal site with con
 ### Next Steps
 
 - None - task complete
+
+
+## Session 33: Deploy hardening and visual baseline automation
+
+**Date**: 2026-05-25
+**Task**: Deploy hardening and visual baseline automation
+**Branch**: `main`
+
+### Summary
+
+Completed remaining deployment hardening tasks, added static Nginx security headers, and added a manual visual baseline artifact workflow.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5593699` | (see git log) |
+| `2e36a27` | (see git log) |
+| `a4f7746` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
