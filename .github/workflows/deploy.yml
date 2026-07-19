@@ -106,7 +106,7 @@ jobs:
       DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
       DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-      BLOG_IMAGE: ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+      BLOG_IMAGE: ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
 
     steps:
       - name: Prepare SSH credentials
