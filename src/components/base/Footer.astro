@@ -1,0 +1,98 @@
+---
+import Link from '~/components/base/Link.astro'
+import { SITE } from '~/config'
+
+const copyrightText = `© 2026-PRESENT ${SITE.author}`
+---
+
+<footer class="site-footer slide-enter animate-delay-1600!">
+  <div class="site-footer__inner">
+    <div class="site-footer__content">
+      <span class="site-footer__copyright">{copyrightText}</span>
+      <span class="site-footer__divider" aria-hidden="true">|</span>
+      <span class="site-footer__credit">
+        <span>Built with</span>
+        <Link
+          class="site-footer__link"
+          href="https://astro.build/"
+          external={true}
+        >
+          Astro
+        </Link>
+      </span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    width: 100%;
+    margin-top: auto;
+    padding: 0 1.75rem 2rem;
+  }
+
+  .site-footer__inner {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding-top: 1rem;
+    border-top: 1px solid #8883;
+  }
+
+  .site-footer__content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    color: var(--c-text);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    opacity: 0.55;
+  }
+
+  .site-footer__copyright,
+  .site-footer__credit {
+    margin: 0;
+  }
+
+  .site-footer__divider {
+    flex: 0 0 auto;
+  }
+
+  .site-footer__credit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .site-footer__link {
+    color: inherit !important;
+    opacity: 1 !important;
+    text-decoration: underline;
+    text-decoration-color: #8888;
+    text-underline-offset: 0.2em;
+    transition:
+      opacity 180ms ease,
+      text-decoration-color 180ms ease;
+  }
+
+  .site-footer__link:hover {
+    opacity: 0.7 !important;
+    text-decoration-color: currentColor;
+  }
+
+  @media (max-width: 480px) {
+    .site-footer {
+      padding-inline: 1.75rem;
+    }
+
+    .site-footer__content {
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .site-footer__divider {
+      display: none;
+    }
+  }
+</style>

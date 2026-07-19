@@ -1,0 +1,22 @@
+---
+title: '一点薄荷'
+subtitle: ''
+description: '一个安静的技术笔记本，记录文章、学习笔记、系统实验和小作品。'
+bgType: signal
+ogImage: true
+---
+
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import StandardLayout from '~/layouts/StandardLayout.astro'
+import RenderPage from '~/components/views/RenderPage.astro'
+
+<BaseLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  bgType={frontmatter.bgType}
+  ogImage={frontmatter.ogImage}
+>
+  <StandardLayout title={frontmatter.title} subtitle={frontmatter.subtitle}>
+    <RenderPage slot="article" collectionType="home" id="index" />
+  </StandardLayout>
+</BaseLayout>

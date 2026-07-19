@@ -1,0 +1,20 @@
+[
+  {
+    "id": "antfu.me",
+    "link": "https://antfu.me/",
+    "desc": "Anthony Fu 的个人站点，记录前端工具和开源实践。",
+    "icon": "i-ri-global-line"
+  },
+  {
+    "id": "jvns.ca",
+    "link": "https://jvns.ca/",
+    "desc": "Julia Evans 的技术博客，用短文解释系统和编程。",
+    "icon": "i-ri-terminal-box-line"
+  },
+  {
+    "id": "overreacted.io",
+    "link": "https://overreacted.io/",
+    "desc": "Dan Abramov 的个人博客，讨论 React 和软件设计。",
+    "icon": "i-ri-article-line"
+  }
+]

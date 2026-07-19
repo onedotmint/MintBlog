@@ -1,0 +1,22 @@
+services:
+  web:
+    image: ${BLOG_IMAGE:?BLOG_IMAGE must be set}
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      proxy:
+        aliases:
+          - mintblog
+    healthcheck:
+      test:
+        ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+networks:
+  proxy:
+    name: ${MINTBLOG_PROXY_NETWORK:-npm_default}
+    external: true

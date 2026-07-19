@@ -1,0 +1,12 @@
+.git
+.github
+.agents
+.codex
+.trellis
+.astro
+dist
+node_modules
+.env
+.env.*
+*.log
+.DS_Store

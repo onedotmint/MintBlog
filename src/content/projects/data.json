@@ -1,0 +1,44 @@
+[
+  {
+    "id": "TCP 服务器实验",
+    "link": "https://onedotmint.github.io/blog/go-tcp-server/",
+    "desc": "用一个很小的 Go 服务器观察连接、日志和关闭路径。",
+    "icon": "i-simple-icons-go",
+    "category": "Lab"
+  },
+  {
+    "id": "Nginx 静态托管",
+    "link": "https://onedotmint.github.io/blog/linux-nginx-note/",
+    "desc": "在小型 VPS 上托管 Astro 静态构建产物。",
+    "icon": "i-simple-icons-nginx",
+    "category": "Lab"
+  },
+  {
+    "id": "构建流水线草图",
+    "link": "https://github.com/onedotmint/MintBlog",
+    "desc": "整理内容同步、静态生成和部署检查的构建路径。",
+    "icon": "i-ri-git-branch-line",
+    "category": "Now"
+  },
+  {
+    "id": "Rust 学习记录",
+    "link": "https://github.com/onedotmint/MintBlog",
+    "desc": "围绕所有权、错误处理和 cargo 工具链做小练习。",
+    "icon": "i-simple-icons-rust",
+    "category": "Now"
+  },
+  {
+    "id": "阅读索引",
+    "link": "https://onedotmint.github.io/shorts/",
+    "desc": "收集课程、书籍、文档和技术参考。",
+    "icon": "i-carbon-notebook",
+    "category": "Foundations"
+  },
+  {
+    "id": "项目日志",
+    "link": "https://github.com/onedotmint/MintBlog",
+    "desc": "记录小实验，不给站点增加不必要的复杂度。",
+    "icon": "i-ri-file-list-3-line",
+    "category": "Foundations"
+  }
+]

@@ -1,0 +1,32 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="512"
+  height="512"
+  viewBox="0 0 64 64"
+>
+  <style>
+    .mark-bg { fill: #f4f7f5 }
+    .mark-track { stroke: #7d8985 }
+    .mark-core { fill: #70c7ab }
+    .mark-highlight { fill: #f7fffb }
+    @media (prefers-color-scheme: dark) {
+      .mark-bg { fill: #111614 }
+      .mark-track { stroke: #b9c4c0 }
+      .mark-core { fill: #83d6b9 }
+      .mark-highlight { fill: #10251d }
+    }
+  </style>
+  <rect class="mark-bg" width="64" height="64" rx="16" />
+  <g
+    class="mark-track"
+    fill="none"
+    stroke-width="2.4"
+    stroke-linecap="round"
+    opacity=".88"
+  >
+    <ellipse cx="32" cy="32" rx="21" ry="11" transform="rotate(-28 32 32)" />
+    <ellipse cx="32" cy="32" rx="21" ry="11" transform="rotate(28 32 32)" />
+  </g>
+  <circle class="mark-core" cx="32" cy="32" r="6" />
+  <circle class="mark-highlight" cx="32" cy="32" r="2" />
+</svg>

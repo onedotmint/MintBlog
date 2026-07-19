@@ -1,0 +1,29 @@
+---
+title: Links
+description: 一点薄荷收藏的第三方个人博客和个人站点。
+bgType: signal
+ogImage: true
+---
+
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import StandardLayout from '~/layouts/StandardLayout.astro'
+import GroupView from '~/components/views/GroupView.astro'
+
+<BaseLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  bgType={frontmatter.bgType}
+  ogImage={frontmatter.ogImage}
+>
+  <StandardLayout
+    class="max-w-300"
+    title={frontmatter.title}
+    isCentered={true}
+  >
+    <GroupView
+      collectionType="links"
+      showCategories={false}
+      openLinksInNewTab={true}
+    />
+  </StandardLayout>
+</BaseLayout>

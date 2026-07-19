@@ -1,0 +1,26 @@
+---
+title: 发布记录
+subtitle: ''
+description: 一点薄荷的发布记录
+bgType: plum
+ogImage: true
+---
+
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import StandardLayout from '~/layouts/StandardLayout.astro'
+import GithubView from '~/components/views/GithubView.astro'
+
+<BaseLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  bgType={frontmatter.bgType}
+  ogImage={frontmatter.ogImage}
+>
+  <StandardLayout class="max-w-65ch" isCentered={true}>
+    <Fragment slot="head">
+      <h1>发布记录</h1>
+      <p class="mt--4! op-50 italic">暂无公开发布记录</p>
+    </Fragment>
+    <GithubView collectionType="releases" />
+  </StandardLayout>
+</BaseLayout>

@@ -1,0 +1,22 @@
+---
+title: 记录
+subtitle: 暂无公开的视频或音频记录
+description: 暂无公开的视频或音频记录
+bgType: false
+ogImage: fallback
+---
+
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import TabbedLayout from '~/layouts/TabbedLayout.astro'
+import ListView from '~/components/views/ListView.astro'
+
+<BaseLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  bgType={frontmatter.bgType}
+  ogImage={frontmatter.ogImage}
+>
+  <TabbedLayout subtitle={frontmatter.subtitle}>
+    <ListView collectionType="streams" pageToc={true} />
+  </TabbedLayout>
+</BaseLayout>

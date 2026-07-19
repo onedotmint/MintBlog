@@ -1,0 +1,188 @@
+<div
+  class="signal-background z--1 fixed inset-0 pointer-events-none print:hidden"
+  aria-hidden="true"
+>
+  <svg
+    viewBox="0 0 1440 900"
+    preserveAspectRatio="none"
+    focusable="false"
+    role="presentation"
+  >
+    <g class="signal-traces">
+      <path
+        class="signal-trace signal-trace--one"
+        d="M-120 170C150 30 290 290 540 165S900 90 1160 205 1415 300 1560 150"
+      />
+      <path
+        class="signal-trace signal-trace--two"
+        d="M-160 410C90 280 270 485 510 360S870 250 1115 390 1390 480 1580 330"
+      />
+      <path
+        class="signal-trace signal-trace--three"
+        d="M-140 700C130 560 315 760 575 630S940 540 1180 680 1410 760 1570 610"
+      />
+      <path
+        class="signal-trace signal-trace--four"
+        d="M180-80C320 100 220 250 410 380S760 530 720 740 820 930 980 1020"
+      />
+      <path
+        class="signal-trace signal-trace--five"
+        d="M1160-80C1050 110 1200 230 1035 390S760 540 850 735 1080 900 1270 1010"
+      />
+    </g>
+    <g class="signal-nodes">
+      <circle class="signal-node signal-node--one" cx="340" cy="238" r="2.4" />
+      <circle class="signal-node signal-node--two" cx="760" cy="352" r="1.8" />
+      <circle class="signal-node signal-node--three" cx="1130" cy="205" r="2.2" />
+      <circle class="signal-node signal-node--four" cx="470" cy="648" r="1.8" />
+      <circle class="signal-node signal-node--five" cx="1010" cy="665" r="2.4" />
+    </g>
+  </svg>
+</div>
+
+<style>
+  /*
+   * ======================================================================
+   * 步骤1：绘制 Contour Signal 背景
+   * ======================================================================
+   * 目标：提供不干扰内容阅读的低对比背景。
+   * 数据源：固定 SVG 路径和少量薄荷色信号点。
+   * 操作：
+   * 1) 用银灰流线构成静态轮廓。
+   * 2) 只在允许动画时改变线段和信号点的显示位置。
+   */
+  .signal-background {
+    color: #7f8885;
+    opacity: 0.24;
+    contain: strict;
+  }
+
+  .signal-background svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .signal-trace {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 1.1;
+    stroke-dasharray: 280 90;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .signal-trace--one {
+    opacity: 0.75;
+  }
+
+  .signal-trace--two {
+    opacity: 0.48;
+    stroke-dasharray: 210 130;
+  }
+
+  .signal-trace--three {
+    opacity: 0.58;
+    stroke-dasharray: 340 120;
+  }
+
+  .signal-trace--four,
+  .signal-trace--five {
+    opacity: 0.35;
+    stroke-width: 0.8;
+    stroke-dasharray: 180 140;
+  }
+
+  .signal-node {
+    fill: #78c9b0;
+    opacity: 0.62;
+  }
+
+  .signal-node--two,
+  .signal-node--four {
+    opacity: 0.42;
+  }
+
+  :global(html.dark) .signal-background {
+    color: #bdc6c3;
+    opacity: 0.3;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .signal-trace {
+      animation: signal-flow 42s linear infinite;
+    }
+
+    .signal-trace--two {
+      animation-duration: 52s;
+      animation-direction: reverse;
+    }
+
+    .signal-trace--three {
+      animation-duration: 64s;
+    }
+
+    .signal-trace--four,
+    .signal-trace--five {
+      animation-duration: 58s;
+    }
+
+    .signal-node {
+      animation: signal-pulse 8s ease-in-out infinite;
+    }
+
+    .signal-node--two {
+      animation-delay: -2.5s;
+    }
+
+    .signal-node--three {
+      animation-delay: -5s;
+    }
+
+    .signal-node--four {
+      animation-delay: -1.5s;
+    }
+
+    .signal-node--five {
+      animation-delay: -6s;
+    }
+  }
+
+  @keyframes signal-flow {
+    from {
+      stroke-dashoffset: 0;
+    }
+
+    to {
+      stroke-dashoffset: -740;
+    }
+  }
+
+  @keyframes signal-pulse {
+    0%,
+    100% {
+      opacity: 0.34;
+    }
+
+    50% {
+      opacity: 0.78;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .signal-trace,
+    .signal-node {
+      animation: none;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .signal-background {
+      opacity: 0.18;
+    }
+
+    :global(html.dark) .signal-background {
+      opacity: 0.22;
+    }
+  }
+</style>
