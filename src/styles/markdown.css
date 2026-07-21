@@ -4,8 +4,8 @@
 
 /* Prose Complement */
 .prose {
-  --fg-light: #666;
-  --fg: #333;
+  --fg-light: #555;
+  --fg: #222;
   --fg-deep: #111;
   --fg-deeper: var(--c-text);
 
@@ -23,8 +23,8 @@
  * 2) 不修改基础 signal 页面和深色主题的既有颜色。
  */
 html:not(.dark):has(.signal-background--plus) .prose {
-  --fg-light: #555;
-  --fg: #222;
+  --fg-light: #444;
+  --fg: #111;
   --fg-deep: #000;
 }
 
@@ -39,9 +39,9 @@ html.dark .prose {
    * 1) 提高正文和辅助文本的前景亮度。
    * 2) 保持标题、强调文本和链接使用同一层级关系。
    */
-  --fg-light: #a8a8a8;
-  --fg: #d6d6d6;
-  --fg-deep: #f4f4f4;
+  --fg-light: #b8b8b8;
+  --fg: #ededed;
+  --fg-deep: #fff;
   --fg-deeper: var(--c-text);
 }
 

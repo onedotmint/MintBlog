@@ -258,7 +258,11 @@ if (images && images.length > 0) {
         tags && tags.length > 0 && (
           <>
             <div class="grow" />
-            {date && <p class="text-sm op-75">{formatDate(date)}</p>}
+            {date && (
+              <p class="text-sm color-[var(--c-text)] op-85">
+                {formatDate(date)}
+              </p>
+            )}
             <div
               role="none"
               class="w-[calc(100%+2rem)] h-[1px] my-3.5 ml--4 bg-[#8884]"
@@ -266,7 +270,7 @@ if (images && images.length > 0) {
             <div
               class="flex flex-wrap content-start justify-start items-start
                 min-h-[4.25rem] gap-y-3 gap-x-2.5 mt-0.5 mb-1
-                text-sm color-[var(--c-text)] op-80"
+                text-sm color-[var(--c-text)]"
             >
               {visibleTags.map((tag) => (
                 <Tag tag={tag} />

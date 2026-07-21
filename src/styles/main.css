@@ -84,7 +84,7 @@ body {
 @keyframes slide-enter {
   0% {
     translate: 0 10px;
-    opacity: 0;
+    opacity: 1;
   }
 
   to {
@@ -194,7 +194,7 @@ body {
 /* Panel Animation */
 @keyframes fade-in {
   from {
-    opacity: 0;
+    opacity: 1;
   }
   to {
     opacity: 1;
