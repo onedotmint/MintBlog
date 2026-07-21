@@ -3,9 +3,19 @@ interface Props {
   tag: string
   relations?: Record<string, string[]>
   interactive?: boolean
+  title?: string
+  ariaLabel?: string
+  filterable?: boolean
 }
 
-const { tag, relations, interactive = false } = Astro.props
+const {
+  tag,
+  relations,
+  interactive = false,
+  title,
+  ariaLabel,
+  filterable = true,
+} = Astro.props
 
 const Container = interactive ? 'button' : 'span'
 ---
@@ -13,6 +23,8 @@ const Container = interactive ? 'button' : 'span'
 <Container
   type={interactive ? 'button' : undefined}
   role={interactive ? 'option' : undefined}
+  title={title}
+  aria-label={ariaLabel}
   class={`py-0.4 px-1.2 rounded whitespace-nowrap
     bg-[#88888825] dark:bg-[#88888840] op-transition
     ${
@@ -23,8 +35,8 @@ const Container = interactive ? 'button' : 'span'
     }`}
   aria-selected={interactive ? 'false' : undefined}
   data-active={interactive ? undefined : 'false'}
-  data-tag={tag}
-  data-related={relations?.[tag]}
+  data-tag={filterable ? tag : undefined}
+  data-related={filterable ? relations?.[tag] : undefined}
 >
   {tag}
 </Container>

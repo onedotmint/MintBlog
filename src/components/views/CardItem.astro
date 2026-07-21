@@ -65,6 +65,7 @@ const { item, imageProps, videoProps, class: className } = Astro.props
 
 const COMPACT = false
 const MAX_DETAILS = 3
+const MAX_CARD_TAGS = 3
 
 const {
   date,
@@ -78,6 +79,19 @@ const {
   details,
   tags,
 } = item
+
+/*
+ * ======================================================================
+ * 步骤1：整理卡片标签
+ * ======================================================================
+ * 目标：保持 Shorts 卡片网格的标签区域整齐，同时避免标签被静默裁剪。
+ * 数据源：卡片数据中的 tags 数组。
+ * 操作：
+ * 1) 保留前三个标签在两行标签区域内展示。
+ * 2) 其余标签合并为可识别的数量提示，并保留完整文本供悬停查看。
+ */
+const visibleTags = tags?.slice(0, MAX_CARD_TAGS) ?? []
+const overflowTags = tags?.slice(MAX_CARD_TAGS) ?? []
 
 const MediaContainer = link ? Link : 'div'
 const ContentContainer = details
@@ -250,12 +264,21 @@ if (images && images.length > 0) {
               class="w-[calc(100%+2rem)] h-[1px] my-3.5 ml--4 bg-[#8884]"
             />
             <div
-              class="flex justify-start items-center gap-y-3 gap-x-2.5 mt-0.5 mb-1
-                text-sm color-[var(--c-text)] op-80 inner-x-scroll"
+              class="flex flex-wrap content-start justify-start items-start
+                min-h-[4.25rem] gap-y-3 gap-x-2.5 mt-0.5 mb-1
+                text-sm color-[var(--c-text)] op-80"
             >
-              {tags.map((tag) => (
+              {visibleTags.map((tag) => (
                 <Tag tag={tag} />
               ))}
+              {overflowTags.length > 0 && (
+                <Tag
+                  tag={`+${overflowTags.length}`}
+                  title={overflowTags.join(' / ')}
+                  ariaLabel={`Additional tags: ${overflowTags.join(', ')}`}
+                  filterable={false}
+                />
+              )}
             </div>
           </>
         )
