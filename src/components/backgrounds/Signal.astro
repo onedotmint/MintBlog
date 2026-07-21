@@ -144,8 +144,22 @@ logger.info(`步骤1结束：选择背景变体 ${variant}`)
    * 1) 只降低扩展变体在浅色主题下的整体透明度。
    * 2) 保持基础 signal 页面和深色主题的原有表现。
   */
-  :global(html:not(.dark)) .signal-background--plus {
-    opacity: 0.2;
+  :global(html:not(.dark)) .signal-background.signal-background--plus {
+    opacity: 0.14;
+  }
+
+  /*
+   * ======================================================================
+   * 步骤5：降低深色主题背景干扰
+   * ======================================================================
+   * 目标：让首页扩展背景保留轮廓，同时避免线条削弱正文识别度。
+   * 数据源：signal-plus 变体和深色主题状态。
+   * 操作：
+   * 1) 降低扩展变体在深色主题下的整体透明度。
+   * 2) 保持基础 signal 页面使用原有透明度。
+   */
+  :global(html.dark) .signal-background.signal-background--plus {
+    opacity: 0.18;
   }
 
   .signal-background svg {
@@ -370,8 +384,12 @@ logger.info(`步骤1结束：选择背景变体 ${variant}`)
       opacity: 0.28;
     }
 
-    :global(html:not(.dark)) .signal-background--plus {
-      opacity: 0.16;
+    :global(html:not(.dark)) .signal-background.signal-background--plus {
+      opacity: 0.11;
+    }
+
+    :global(html.dark) .signal-background.signal-background--plus {
+      opacity: 0.14;
     }
 
     :global(html.dark) .signal-background {
