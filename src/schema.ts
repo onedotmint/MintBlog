@@ -27,7 +27,7 @@ export const pageSchema = z.object({
   bgType: z
     .union([
       z.literal(false),
-      z.enum(['plum', 'dot', 'rose', 'particle', 'signal']),
+      z.enum(['plum', 'dot', 'rose', 'particle', 'signal', 'signal-plus']),
     ])
     .default(false)
     .describe(
@@ -124,7 +124,7 @@ export const postSchema = ({ image }: SchemaContext) =>
     bgType: z
       .union([
         z.literal(false),
-        z.enum(['plum', 'dot', 'rose', 'particle', 'signal']),
+        z.enum(['plum', 'dot', 'rose', 'particle', 'signal', 'signal-plus']),
       ])
       .default(false)
       .describe(

@@ -21,9 +21,9 @@
 
 ```md
 ---
-title: "文章标题"
+title: '文章标题'
 pubDate: 2026-07-19
-description: "用于列表和 SEO 的一句话说明。"
+description: '用于列表和 SEO 的一句话说明。'
 ---
 ```
 
@@ -40,7 +40,8 @@ description: "用于列表和 SEO 的一句话说明。"
 - `draft`：设为 `true` 时不进入生产构建。
 - `redirect`：需要跳转时填写 `http://` 或 `https://` URL。
 - `ogImage`：可填 `true`、`false`、`fallback` 或 `public/og-images/` 下图片的相对路径，例如 `custom.png`。
-- `bgType`：可填 `false`、`plum`、`dot`、`rose`、`particle` 或 `signal`。
+- `bgType`：可填 `false`、`plum`、`dot`、`rose`、`particle`、`signal` 或
+  `signal-plus`。
 
 文章正文使用 Markdown。图片放在 `public/images/` 时，用根路径引用，例如 `/images/blog/example.svg`。
 
@@ -124,9 +125,11 @@ ogImage: true
 - `rose`
 - `particle`
 - `signal`
+- `signal-plus`
 - `false`
 
-`signal` 是低对比的 Contour Signal 背景，适合首页、作品页和友链页。文章页和短记页继续使用各自现有背景，除非视觉方向明确改变。
+`signal` 是低对比的 Contour Signal 背景，适合作品页和友链页。文章页和短记页继续使用各自现有背景，除非视觉方向明确改变。
+`signal-plus` 是 `signal` 的低密度扩展版，目前只用于首页，避免影响其他页面。
 
 ## 提交前检查
 

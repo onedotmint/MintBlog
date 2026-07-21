@@ -37,7 +37,14 @@ export interface PostEntry {
 const ANSI_YELLOW = '\x1b[33m' // Yellow color for warnings
 const ANSI_BOLD = '\x1b[1m' // Bold text
 const ANSI_RESET = '\x1b[0m' // Reset color
-const BG_TYPES = ['plum', 'dot', 'rose', 'particle', 'signal'] as const
+const BG_TYPES = [
+  'plum',
+  'dot',
+  'rose',
+  'particle',
+  'signal',
+  'signal-plus',
+] as const
 
 /**
  * Returns a formatted timestamp in HH:MM:SS format.

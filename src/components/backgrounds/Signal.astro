@@ -1,5 +1,36 @@
+---
+interface Props {
+  variant?: 'base' | 'plus'
+}
+
+const { variant = 'base' } = Astro.props
+
+const logger = {
+  info(message: string) {
+    if (import.meta.env.DEV) console.info(`[signal] ${message}`)
+  },
+}
+
+/*
+ * ======================================================================
+ * 步骤1：选择背景变体
+ * ======================================================================
+ * 目标：让现有 signal 背景和扩展版共用同一套 SVG 结构。
+ * 数据源：Background.astro 传入的 variant 属性。
+ * 操作：
+ * 1) 默认渲染原有 signal 背景。
+ * 2) 只有 plus 变体渲染额外的低对比装饰层。
+ */
+logger.info('步骤1开始：选择背景变体')
+const isPlus = variant === 'plus'
+logger.info(`步骤1结束：选择背景变体 ${variant}`)
+---
+
 <div
-  class="signal-background z--1 fixed inset-0 pointer-events-none print:hidden"
+  class:list={[
+    'signal-background z--1 fixed inset-0 pointer-events-none print:hidden',
+    isPlus && 'signal-background--plus',
+  ]}
   aria-hidden="true"
 >
   <svg
@@ -37,6 +68,52 @@
       <circle class="signal-node signal-node--four" cx="470" cy="648" r="1.8" />
       <circle class="signal-node signal-node--five" cx="1010" cy="665" r="2.4" />
     </g>
+    <!--
+      /*
+       * ==================================================================
+       * 步骤2：增加低密度回声层
+       * ==================================================================
+       * 目标：让首页比原有 signal 多一点动态细节，但不改变主轮廓。
+       * 数据源：三条偏移路径和三个几何标记。
+       * 操作：
+       * 1) 用稀疏短划线补充空间层次。
+       * 2) 用低频透明度变化增加轻微动态。
+       */
+    -->
+    {
+      isPlus && (
+        <>
+          <g class="signal-plus-echoes">
+            <path
+              class="signal-plus-echo signal-plus-echo--one"
+              d="M-100 300C100 210 300 390 520 285S910 210 1160 320 1400 370 1540 270"
+            />
+            <path
+              class="signal-plus-echo signal-plus-echo--two"
+              d="M-120 560C120 450 320 640 560 540S900 460 1180 580 1420 620 1570 510"
+            />
+            <path
+              class="signal-plus-echo signal-plus-echo--three"
+              d="M300-90C460 80 420 260 620 360S900 520 1060 700 1200 850 1460 930"
+            />
+          </g>
+          <g class="signal-plus-markers">
+            <path
+              class="signal-plus-marker signal-plus-marker--one"
+              d="M198 120h24M210 108v24"
+            />
+            <path
+              class="signal-plus-marker signal-plus-marker--two"
+              d="M908 470h24M920 458v24"
+            />
+            <path
+              class="signal-plus-marker signal-plus-marker--three"
+              d="M1248 730h24M1260 718v24"
+            />
+          </g>
+        </>
+      )
+    }
   </svg>
 </div>
 
@@ -52,9 +129,23 @@
    * 2) 只在允许动画时改变线段和信号点的显示位置。
    */
   .signal-background {
-    color: #7f8885;
-    opacity: 0.24;
+    color: #68716d;
+    opacity: 0.34;
     contain: strict;
+  }
+
+  /*
+   * ======================================================================
+   * 步骤4：保护浅色主题文字对比度
+   * ======================================================================
+   * 目标：让首页扩展背景保留细节，同时不让浅色正文被背景纹理干扰。
+   * 数据源：signal-plus 变体和浅色主题状态。
+   * 操作：
+   * 1) 只降低扩展变体在浅色主题下的整体透明度。
+   * 2) 保持基础 signal 页面和深色主题的原有表现。
+  */
+  :global(html:not(.dark)) .signal-background--plus {
+    opacity: 0.2;
   }
 
   .signal-background svg {
@@ -67,7 +158,7 @@
     fill: none;
     stroke: currentColor;
     stroke-linecap: round;
-    stroke-width: 1.1;
+    stroke-width: 1.25;
     stroke-dasharray: 280 90;
     vector-effect: non-scaling-stroke;
   }
@@ -89,8 +180,58 @@
   .signal-trace--four,
   .signal-trace--five {
     opacity: 0.35;
-    stroke-width: 0.8;
+    stroke-width: 0.9;
     stroke-dasharray: 180 140;
+  }
+
+  /*
+   * ======================================================================
+   * 步骤3：配置扩展层样式
+   * ======================================================================
+   * 目标：保持新增元素比主流线更轻，避免影响正文阅读。
+   * 数据源：signal-plus-echoes 和 signal-plus-markers SVG 分组。
+   * 操作：
+   * 1) 用更细的线宽和更低的不透明度表达次级层。
+   * 2) 复用 currentColor，确保明暗主题保持黑白方向。
+   */
+  .signal-plus-echo {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 0.7;
+    stroke-dasharray: 8 64;
+    opacity: 0.18;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .signal-plus-echo--one {
+    opacity: 0.24;
+  }
+
+  .signal-plus-echo--two {
+    opacity: 0.15;
+  }
+
+  .signal-plus-echo--three {
+    opacity: 0.12;
+  }
+
+  .signal-plus-marker {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: square;
+    stroke-width: 0.8;
+    opacity: 0.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .signal-plus-marker--two {
+    opacity: 0.14;
+  }
+
+  .signal-plus-marker--three {
+    stroke-width: 1;
+    opacity: 0.16;
   }
 
   .signal-node {
@@ -146,6 +287,31 @@
     .signal-node--five {
       animation-delay: -6s;
     }
+
+    .signal-plus-echo {
+      animation: signal-plus-flow 72s linear infinite;
+    }
+
+    .signal-plus-echo--two {
+      animation-duration: 86s;
+      animation-direction: reverse;
+    }
+
+    .signal-plus-echo--three {
+      animation-duration: 98s;
+    }
+
+    .signal-plus-marker {
+      animation: signal-plus-pulse 11s ease-in-out infinite;
+    }
+
+    .signal-plus-marker--two {
+      animation-delay: -3.5s;
+    }
+
+    .signal-plus-marker--three {
+      animation-delay: -7s;
+    }
   }
 
   @keyframes signal-flow {
@@ -169,20 +335,55 @@
     }
   }
 
+  @keyframes signal-plus-flow {
+    from {
+      stroke-dashoffset: 0;
+    }
+
+    to {
+      stroke-dashoffset: -320;
+    }
+  }
+
+  @keyframes signal-plus-pulse {
+    0%,
+    100% {
+      opacity: 0.1;
+    }
+
+    50% {
+      opacity: 0.32;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .signal-trace,
-    .signal-node {
+    .signal-node,
+    .signal-plus-echo,
+    .signal-plus-marker {
       animation: none;
     }
   }
 
   @media (max-width: 639px) {
     .signal-background {
-      opacity: 0.18;
+      opacity: 0.28;
+    }
+
+    :global(html:not(.dark)) .signal-background--plus {
+      opacity: 0.16;
     }
 
     :global(html.dark) .signal-background {
       opacity: 0.22;
+    }
+
+    .signal-plus-echo {
+      opacity: 0.12;
+    }
+
+    .signal-plus-marker {
+      opacity: 0.13;
     }
   }
 </style>
