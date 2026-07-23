@@ -375,22 +375,6 @@ export interface NavBarLayout {
   mergeOnMobile: boolean
 }
 
-interface Tab {
-  /**
-   * Sets the navigation path associated with the tab, which must start with `/`.
-   *
-   * @example
-   * '/blog'、'/blog/'
-   */
-  path: Path
-
-  /**
-   * Sets the content displayed on hover for accessibility.
-   */
-  title: string
-}
-export type Tabs = [Tab, Tab, ...Tab[]]
-
 interface PostView {
   /**
    * Controls the display style of post metadata (publication date, read time, modified date, and tags):
@@ -422,31 +406,6 @@ interface GroupView {
    * If `true`, the icon for the group item will display in its original colors on hover.
    */
   showGroupItemColorOnHover: boolean
-}
-
-export interface GitHubView {
-  /**
-   * Defines monorepo repositories using `<owner>/<repo>` format.
-   *
-   * For monorepos, the tag name is used as the primary text for `/releases` page.
-   */
-  monorepos: RepoWithOwner[]
-
-  /**
-   * Configures main logos for repositories or packages (for monorepos).
-   *
-   * Matching supports regex or `<owner>/<repo>` format, prioritized by order,
-   * and defaults to the owner's avatar if no custom logo is specified.
-   */
-  mainLogoOverrides: [RepoWithOwner | RegExp, Url | Icon][]
-
-  /**
-   * Configures auxiliary logos for repositories or packages (for monorepos).
-   *
-   * Matching supports regex or `<owner>/<repo>` format, prioritized by order,
-   * with no logo displayed for unmatched cases.
-   */
-  subLogoMatches: [RepoWithOwner | RegExp, Url | Icon][]
 }
 
 interface ExternalLink {
@@ -499,16 +458,6 @@ export interface Ui {
   navBarLayout: NavBarLayout
 
   /**
-   * Enables and configures for tabs within a tabbed layout.
-   *
-   * If your website does not use the `TabbedLayout`, you can set it to `false`.
-   * Otherwise, required before using this layout.
-   *
-   * Used in `src/layouts/TabbedLayout.astro`.
-   */
-  tabbedLayoutTabs: false | Tabs
-
-  /**
    * Configures the post UIs.
    *
    * Used in `src/components/base/PostMeta.astro`and `src/components/base/PostCover.astro`.
@@ -521,13 +470,6 @@ export interface Ui {
    * Used in `src/components/views/GroupItem.astro` and `src/components/base/Categorizer.astro`.
    */
   groupView: GroupView
-
-  /**
-   * Configures the `/releases` and `/prs` UIs.
-   *
-   * Used in `src/components/views/GithubView.astro`.
-   */
-  githubView: GitHubView
 
   /**
    * Configures external links' behavior and appearance.
@@ -752,8 +694,8 @@ interface SearchConfig {
   /**
    * Specify which content collections rendered by `RenderPost.astro` are indexed.
    *
-   * - By default, only `blog` and `changelog` are indexed, as their dynamic routes
-   * (`/blog/[...slug]` and `/changelog/[slug]`) use `RenderPost.astro`.
+   * - By default, only `blog` and `shorts` are indexed, as their dynamic routes
+   * (`/blog/[...slug]` and `/shorts/[...slug]`) use `RenderPost.astro`.
    * - If needed, see https://pagefind.app/ for adjusting the search implementation.
    */
   includes: string[]
@@ -819,7 +761,7 @@ interface TagConfig {
 export interface Features {
   /**
    * Whether to enable slide-in animation on each page
-   * except the `/highlights`, `/photos`, and `/shorts` pages.
+   * except the `/photos` and `/shorts` pages.
    */
   slideEnterAnim: FeatureConfig<slideEnterAnimConfig>
 
@@ -845,8 +787,7 @@ export interface Features {
    * To disable for a specific post, set the `toc` field in the frontmatter to `false`.
    * For list/group/custom content pages, pass `pageToc={false}` to the view component.
    *
-   * Note: The feature is not supported on the `/highlights`, `/photos`, `/shorts`, `/releases`
-   * and `/prs` pages.
+   * Note: The feature is not supported on the `/photos` and `/shorts` pages.
    */
   toc: FeatureConfig<TocConfig>
 

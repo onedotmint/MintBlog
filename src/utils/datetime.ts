@@ -33,12 +33,3 @@ export function isSameYear(
 ) {
   return a && b && getYear(a) === getYear(b)
 }
-
-/**
- * Check if the current time is in the same month as the previous time.
- */
-export function isDiffMonth(currentTime: string, preTime?: string) {
-  return preTime
-    ? new Date(currentTime).getMonth() !== new Date(preTime!).getMonth()
-    : false
-}

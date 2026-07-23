@@ -22,13 +22,11 @@
     "postbuild": "pagefind --site dist --exclude-selectors \"pre\" --include-characters \"<>\" && del-cli \"dist/pagefind/*ui*\""
   },
   "devDependencies": {
-    "@ascorbic/feed-loader": "^2.0.1",
     "@astrojs/check": "^0.9.9",
     "@astrojs/markdown-remark": "^7.2.1",
     "@astrojs/mdx": "^7.0.2",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3",
-    "@atproto/api": "^0.20.25",
     "@eslint/js": "^9.39.4",
     "@expressive-code/plugin-collapsible-sections": "^0.44.0",
     "@expressive-code/plugin-line-numbers": "^0.44.0",
@@ -41,9 +39,6 @@
     "@unocss/reset": "^66.7.4",
     "astro": "^7.0.7",
     "astro-expressive-code": "^0.44.0",
-    "astro-loader-bluesky-posts": "^1.2.5",
-    "astro-loader-github-prs": "^2.0.1",
-    "astro-loader-github-releases": "^3.0.1",
     "astro-robots-txt": "^1.0.0",
     "del-cli": "^7.0.0",
     "eslint": "^9.39.4",

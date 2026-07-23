@@ -59,11 +59,6 @@ export const UI: Ui = {
     ],
     mergeOnMobile: true,
   },
-  tabbedLayoutTabs: [
-    { title: '更新记录', path: '/changelog' },
-    { title: '外部订阅', path: '/feeds' },
-    { title: '记录', path: '/streams' },
-  ],
   postView: {
     postMetaStyle: 'minimal',
     useCoverAltAsCaption: true,
@@ -71,11 +66,6 @@ export const UI: Ui = {
   groupView: {
     maxGroupColumns: 3,
     showGroupItemColorOnHover: true,
-  },
-  githubView: {
-    monorepos: [],
-    mainLogoOverrides: [],
-    subLogoMatches: [],
   },
   externalLink: {
     newTab: false,
@@ -103,7 +93,16 @@ export const FEATURES: Features = {
   ],
   share: false,
   giscus: false,
-  search: false,
+  search: [
+    true,
+    {
+      includes: ['blog', 'shorts'],
+      filter: true,
+      navHighlight: true,
+      batchLoadSize: [true, 10],
+      maxItemsPerPage: [true, 5],
+    },
+  ],
   tag: [
     true,
     {
