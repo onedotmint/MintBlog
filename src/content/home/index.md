@@ -1,17 +1,18 @@
-一点薄荷是一个小型技术笔记本。
 
-我关注系统基础、Linux 和后端实践，习惯把学习拆成能运行、能检查、能回看的小记录。
 
-这里放三类内容：
+Hi,there! I'm onedotmint.
 
-- [写作](/blog/)：记录系统、网络、编程和部署中的具体问题。
-- [作品](/projects/)：收集小型实验、博客基础设施和正在整理的工作。
-- [短记](/shorts/)：放课程、书籍、文档和技术参考的简短摘录。
+Now I focus on AI AGENT and open-source projects. This blog is a place where I share my projects, notes, ideas, and occasional reflections.
 
-站点保持静态。内容写在 Markdown 和 JSON 里，构建后由 Nginx 直接托管。
+I belongs to [NekoMint Labs](https://github.com/orgs/NekoMint-Labs). I hope you have a nice day!
 
-### 最近关注
+You can find me on [Bilibili](https://space.bilibili.com/413283792) , [X](https://x.com/onedotmint) .
 
-- 用 CS61A 练函数、递归和清晰的边界。
-- 用 Linux、Nginx 和小型网络程序理解系统运行路径。
-- 让每一页都足够小，方便手动检查和长期回看。
+Contact me with hi@onedotmint.com.
+
+<img src="https://image.onedotmint.com/image-blog/img/2026/07/ed4d90b5c42f8f3496a73466a6c96c3f.webp" style="zoom: 50%;" />
+
+
+
+
+
