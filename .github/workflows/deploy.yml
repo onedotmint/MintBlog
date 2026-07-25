@@ -136,6 +136,7 @@ jobs:
       - name: Pull, start, and health-check the new image
         run: |
           set -euo pipefail
+          BLOG_IMAGE="$(printf '%s' "$BLOG_IMAGE" | tr '[:upper:]' '[:lower:]')"
           ssh -i "$HOME/.ssh/deploy_key" \
             -p "$DEPLOY_PORT" \
             -o IdentitiesOnly=yes \
