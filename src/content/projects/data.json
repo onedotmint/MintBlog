@@ -1,9 +1,9 @@
 [
   {
-    "id": "构建流水线草图",
+    "id": "个人博客~",
     "link": "https://github.com/onedotmint/MintBlog",
-    "desc": "整理内容同步、静态生成和部署检查的构建路径。",
-    "icon": "i-ri-git-branch-line",
+    "desc": "我的个人博客",
+    "icon": "fluent-mdl2:blog",
     "category": "Now"
   }
 ]
