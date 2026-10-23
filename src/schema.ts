@@ -1,4 +1,5 @@
 import { z } from 'astro/zod'
+import { reference } from 'astro:content'
 import type { SchemaContext } from 'astro:content'
 
 /* Pages */
@@ -27,7 +28,16 @@ export const pageSchema = z.object({
   bgType: z
     .union([
       z.literal(false),
-      z.enum(['plum', 'dot', 'rose', 'particle', 'signal', 'signal-plus']),
+      z.enum([
+        'plum',
+        'dot',
+        'rose',
+        'particle',
+        'signal',
+        'signal-plus',
+        'breeze',
+        'mist',
+      ]),
     ])
     .default(false)
     .describe(
@@ -50,7 +60,7 @@ export const postSchema = ({ image }: SchemaContext) =>
       .min(1)
       .max(60)
       .describe(
-        "**Required**. Sets the post title, limited to **60 characters**. This follows [Moz's recommendation](https://moz.com/learn/seo/title-tag), ensuring approximately 90% of titles display correctly in SERPs and preventing truncation on smaller screens or social platforms. Page-specific OG images also require a title different from `FEATURES.ogImage[1].authorOrBrand`; otherwise the fallback OG image is used."
+        "Sets the post title, limited to **60 characters**. Blog/Shorts automatically use the filename when omitted; other post collections require a title. This follows [Moz's recommendation](https://moz.com/learn/seo/title-tag), ensuring approximately 90% of titles display correctly in SERPs and preventing truncation on smaller screens or social platforms. Page-specific OG images also require a title different from `FEATURES.ogImage[1].authorOrBrand`; otherwise the fallback OG image is used."
       ),
     subtitle: z
       .string()
@@ -88,13 +98,13 @@ export const postSchema = ({ image }: SchemaContext) =>
     pubDate: z.coerce
       .date()
       .describe(
-        '**Required**. Specifies the publication date. See supported formats [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse#examples).'
+        'Specifies the publication date. Blog/Shorts supply Git history dates when omitted; explicit dates take priority. See supported formats [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse#examples).'
       ),
     lastModDate: z
       .union([z.coerce.date(), z.literal('')])
       .optional()
       .describe(
-        'Tracks the last modified date. If not needed, leave the field as an empty string or delete it.'
+        'Tracks the last modified date. Blog/Shorts derive this from Git when omitted. Set an empty string to hide it; an explicit date takes priority.'
       ),
     minutesRead: z
       .union([z.number(), z.boolean()])
@@ -124,7 +134,16 @@ export const postSchema = ({ image }: SchemaContext) =>
     bgType: z
       .union([
         z.literal(false),
-        z.enum(['plum', 'dot', 'rose', 'particle', 'signal', 'signal-plus']),
+        z.enum([
+          'plum',
+          'dot',
+          'rose',
+          'particle',
+          'signal',
+          'signal-plus',
+          'breeze',
+          'mist',
+        ]),
       ])
       .default(false)
       .describe(
@@ -222,3 +241,16 @@ export const photoSchema = z.object({
       'Optional description for the image. If not needed, leave the field as an empty string or delete it.'
     ),
 })
+
+// Preserve authored Collections/Articles as data only; no public routes are restored for them.
+export const collectionSchema = ({ image }: SchemaContext) =>
+  z.object({
+    title: z.string().trim().min(1).max(60),
+    description: z.string().trim().min(1),
+    cover: z.union([image(), z.url()]).default(''),
+    order: z.number().int(),
+    draft: z.boolean().default(false),
+  })
+
+export const articleSchema = ({ image }: SchemaContext) =>
+  postSchema({ image }).extend({ collection: reference('collections') })

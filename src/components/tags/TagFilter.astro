@@ -76,7 +76,7 @@ const { filterMode } = tag[1]
       ) as HTMLAnchorElement[]
 
       for (const a of tocLinks) {
-        let hash = ''
+        let hash: string
         try {
           hash = new URL(a.href).hash
         } catch {
@@ -201,7 +201,7 @@ const { filterMode } = tag[1]
     }
 
     #restoreFromStorage() {
-      let raw: string | null = null
+      let raw: string | null
       try {
         raw = sessionStorage.getItem(this.#storageKey)
       } catch {
@@ -209,7 +209,7 @@ const { filterMode } = tag[1]
       }
       if (!raw) return
 
-      let parsed: unknown = null
+      let parsed: unknown
       try {
         parsed = JSON.parse(raw)
       } catch {

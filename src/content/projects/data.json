@@ -5,5 +5,19 @@
     "desc": "我的个人博客",
     "icon": "i-grommet-icons:blog",
     "category": "Now"
+  },
+  {
+    "id": "Diffusion",
+    "link": "https://github.com/NekoMint-Labs/Diffusion",
+    "desc": "本地优先的桌面思考工作台，在空间中整理想法，自主取舍 AI 建议。",
+    "icon": "i-ri-node-tree",
+    "category": "Now"
+  },
+  {
+    "id": "Siftpath",
+    "link": "https://github.com/onedotmint/Siftpath",
+    "desc": "为 AI Agent 统一网页搜索与阅读入口，连接官方 MCP 服务并按配置失败回退。",
+    "icon": "i-ri-route-line",
+    "category": "Now"
   }
 ]

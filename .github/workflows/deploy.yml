@@ -16,8 +16,8 @@ concurrency:
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}
-  NODE_VERSION: 24
-  PNPM_VERSION: 10.33.4
+  NODE_VERSION: '24.22.1'
+  PNPM_VERSION: '10.34.7'
 
 jobs:
   validate:
@@ -27,6 +27,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
 
       - name: Set up pnpm
         uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -42,8 +44,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Audit production dependencies
-        run: pnpm audit --prod
+      - name: Audit all dependencies, including the build toolchain
+        run: pnpm audit
 
       - name: Sync Astro types
         run: pnpm sync
@@ -53,6 +55,12 @@ jobs:
 
       - name: Run ESLint
         run: pnpm lint
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build static site and search index
+        run: pnpm build
 
   publish:
     name: Build and publish image
@@ -66,6 +74,16 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js for post date export
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Export post dates for the Git-free Docker build
+        run: node --experimental-strip-types scripts/export-post-dates.ts
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3

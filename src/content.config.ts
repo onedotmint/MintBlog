@@ -1,5 +1,6 @@
 import { glob, file } from 'astro/loaders'
 import { defineCollection } from 'astro:content'
+import { postLoader } from './utils/post-loader'
 
 import {
   pageSchema,
@@ -7,6 +8,8 @@ import {
   projectSchema,
   linkSchema,
   photoSchema,
+  collectionSchema,
+  articleSchema,
 } from '~/schema'
 
 const pages = defineCollection({
@@ -19,7 +22,7 @@ const home = defineCollection({
 })
 
 const blog = defineCollection({
-  loader: glob({ base: './src/content/blog', pattern: '**/[^_]*.{md,mdx}' }),
+  loader: postLoader('./src/content/blog'),
   schema: postSchema,
 })
 
@@ -39,8 +42,18 @@ const photos = defineCollection({
 })
 
 const shorts = defineCollection({
-  loader: glob({ base: './src/content/shorts', pattern: '**/[^_]*.{md,mdx}' }),
+  loader: postLoader('./src/content/shorts'),
   schema: postSchema,
+})
+
+const collectionRecords = defineCollection({
+  loader: glob({ base: './src/content/collections', pattern: '[^_]*.{md,mdx}' }),
+  schema: collectionSchema,
+})
+
+const articles = defineCollection({
+  loader: glob({ base: './src/content/articles', pattern: '[^_]*.{md,mdx}' }),
+  schema: articleSchema,
 })
 
 export const collections = {
@@ -51,4 +64,6 @@ export const collections = {
   links,
   photos,
   shorts,
+  collections: collectionRecords,
+  articles,
 }

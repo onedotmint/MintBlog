@@ -44,6 +44,8 @@ const BG_TYPES = [
   'particle',
   'signal',
   'signal-plus',
+  'breeze',
+  'mist',
 ] as const
 
 /**

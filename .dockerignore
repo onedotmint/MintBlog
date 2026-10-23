@@ -2,7 +2,6 @@
 .github
 .agents
 .codex
-.trellis
 .astro
 dist
 node_modules
@@ -10,3 +9,6 @@ node_modules
 .env.*
 *.log
 .DS_Store
+
+# Private experiments and research are not part of the production build context.
+.local

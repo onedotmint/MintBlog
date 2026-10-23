@@ -3,13 +3,15 @@
   "version": "3.0.0",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.33.4",
+  "packageManager": "pnpm@10.34.7",
   "license": "MIT",
   "scripts": {
     "astro": "astro",
     "sync": "astro sync",
     "dev": "astro dev",
     "check": "astro check",
+    "content:dates": "node --experimental-strip-types scripts/export-post-dates.ts",
+    "prebuild": "pnpm content:dates",
     "build": "astro build",
     "preview": "astro preview",
     "format": "prettier . --check --ignore-unknown",
@@ -19,40 +21,40 @@
     "toolbar:on": "astro preferences enable devToolbar",
     "toolbar:off": "astro preferences disable devToolbar",
     "prepare": "simple-git-hooks",
-    "postbuild": "pagefind --site dist --exclude-selectors \"pre\" --include-characters \"<>\" && del-cli \"dist/pagefind/*ui*\""
+    "postbuild": "node scripts/build-search.mjs",
+    "test": "node --test tests/*.test.ts"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
-    "@astrojs/markdown-remark": "^7.2.1",
-    "@astrojs/mdx": "^7.0.2",
+    "@astrojs/check": "^0.9.12",
+    "@astrojs/markdown-remark": "^7.3.4",
+    "@astrojs/mdx": "^7.0.8",
     "@astrojs/rss": "^4.0.19",
-    "@astrojs/sitemap": "^3.7.3",
-    "@eslint/js": "^9.39.4",
-    "@expressive-code/plugin-collapsible-sections": "^0.44.0",
-    "@expressive-code/plugin-line-numbers": "^0.44.0",
-    "@iconify/json": "^2.2.496",
-    "@types/node": "^24.13.2",
+    "@astrojs/sitemap": "^3.7.4",
+    "@eslint/js": "^10.0.1",
+    "@expressive-code/plugin-collapsible-sections": "^0.44.3",
+    "@expressive-code/plugin-line-numbers": "^0.44.3",
+    "@iconify/json": "^2.2.546",
+    "@types/node": "^24.19.2",
     "@types/nprogress": "^0.2.3",
     "@types/p5": "^1.7.7",
-    "@typescript-eslint/parser": "^8.62.1",
-    "@unocss/astro": "^66.7.4",
-    "@unocss/reset": "^66.7.4",
-    "astro": "^7.0.7",
-    "astro-expressive-code": "^0.44.0",
+    "@typescript-eslint/parser": "^8.72.0",
+    "@unocss/astro": "^66.11.0",
+    "@unocss/reset": "^66.11.0",
+    "astro": "^7.4.2",
+    "astro-expressive-code": "^0.44.3",
     "astro-robots-txt": "^1.0.0",
-    "del-cli": "^7.0.0",
-    "eslint": "^9.39.4",
+    "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-astro": "^1.7.0",
-    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-astro": "^3.2.1",
+    "eslint-plugin-jsx-a11y-x": "^0.2.0",
     "globals": "^16.5.0",
     "html-entities": "^2.6.0",
-    "lint-staged": "^17.0.8",
+    "lint-staged": "^17.6.0",
     "mdast-util-to-string": "^4.0.0",
     "nprogress": "^0.2.0",
     "p5": "^1.11.13",
     "pagefind": "^1.5.2",
-    "prettier": "^3.9.4",
+    "prettier": "^3.9.10",
     "prettier-plugin-astro": "^0.14.1",
     "reading-time": "^1.5.0",
     "rehype-autolink-headings": "^7.1.0",
@@ -66,13 +68,13 @@
     "remark-math": "^6.0.0",
     "satori": "^0.26.0",
     "satori-html": "^0.3.2",
-    "sharp": "^0.35.3",
+    "sharp": "^0.35.5",
     "simple-git-hooks": "2.13.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.62.1",
+    "typescript-eslint": "^8.72.0",
     "unist-util-visit": "^5.1.0",
-    "unocss": "^66.7.4",
-    "viewerjs": "^1.11.7"
+    "unocss": "^66.11.0",
+    "viewerjs": "^1.15.2"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"
@@ -82,7 +84,12 @@
       "eslint"
     ]
   },
+  "pnpm": {
+    "overrides": {
+      "katex@<0.18.2": "0.18.10"
+    }
+  },
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=24.22.1 <25"
   }
 }

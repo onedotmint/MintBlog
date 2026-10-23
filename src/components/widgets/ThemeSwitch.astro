@@ -145,6 +145,8 @@
               : '::view-transition-new(root)',
           }
         )
+      }, () => {
+        // Navigation can cancel an appearance transition before it starts.
       })
     }
 

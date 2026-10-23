@@ -17,7 +17,7 @@ const isMinimal = UI.postView.postMetaStyle === 'minimal'
 {
   isMinimal ? (
     <div class="mt--6! op-50 lt-md:text-sm">
-      <time datetime={pubDate}>{formatDate(pubDate)}</time>
+      <time datetime={pubDate} data-pagefind-meta="date[datetime]">{formatDate(pubDate)}</time>
       {lastModDate && (
         <time datetime={lastModDate}> · Updated {formatDate(lastModDate)}</time>
       )}
@@ -31,7 +31,7 @@ const isMinimal = UI.postView.postMetaStyle === 'minimal'
     >
       <div>
         <span class="i-ri-calendar-line mr-1.2" />
-        <time datetime={pubDate}>{formatDate(pubDate)}</time>
+        <time datetime={pubDate} data-pagefind-meta="date[datetime]">{formatDate(pubDate)}</time>
       </div>
       {lastModDate && (
         <div>

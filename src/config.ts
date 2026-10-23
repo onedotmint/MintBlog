@@ -31,12 +31,6 @@ export const UI: Ui = {
       displayMode: 'alwaysText',
       text: 'Shorts',
     },
-    {
-      path: '/links',
-      title: 'Links',
-      displayMode: 'alwaysText',
-      text: 'Links',
-    },
   ],
   socialLinks: [
     {

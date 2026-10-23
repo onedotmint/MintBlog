@@ -1,0 +1,167 @@
+---
+interface Props {
+  variant: 'breeze' | 'mist'
+}
+
+const { variant } = Astro.props
+---
+
+<soft-atmosphere
+  class:list={['atmosphere', `atmosphere--${variant}`]}
+  aria-hidden="true"></soft-atmosphere>
+
+<script>
+  class SoftAtmosphere extends HTMLElement {
+    private events?: AbortController
+
+    connectedCallback() {
+      this.events?.abort()
+      this.events = new AbortController()
+      const syncVisibility = () => {
+        this.style.setProperty(
+          '--atmosphere-play-state',
+          document.hidden ? 'paused' : 'running'
+        )
+      }
+      document.addEventListener('visibilitychange', syncVisibility, {
+        signal: this.events.signal,
+      })
+      syncVisibility()
+    }
+
+    disconnectedCallback() {
+      this.events?.abort()
+    }
+  }
+
+  if (!customElements.get('soft-atmosphere'))
+    customElements.define('soft-atmosphere', SoftAtmosphere)
+</script>
+
+<style>
+  .atmosphere {
+    --mist-green: rgb(125 156 137 / 0.15);
+    --mist-warm: rgb(188 171 143 / 0.12);
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    contain: strict;
+    /* Keep the reading column quieter than the surrounding whitespace. */
+    mask-image: radial-gradient(
+      ellipse 42% 65% at 50% 40%,
+      rgb(0 0 0 / 0.08) 15%,
+      rgb(0 0 0 / 0.35) 60%,
+      #000 100%
+    );
+  }
+
+  :global(html.dark) .atmosphere {
+    --mist-green: rgb(106 148 125 / 0.14);
+    --mist-warm: rgb(165 153 127 / 0.1);
+  }
+
+  .atmosphere::before,
+  .atmosphere::after {
+    content: '';
+    position: absolute;
+    inset: -12%;
+    background: radial-gradient(
+      ellipse at 12% 68%,
+      var(--mist-green),
+      transparent 58%
+    );
+  }
+
+  .atmosphere::after {
+    background: radial-gradient(
+      ellipse at 94% 24%,
+      var(--mist-warm),
+      transparent 54%
+    );
+  }
+
+  /* Overscan by viewport size so rotated light fields have no hard edges on tall screens. */
+  .atmosphere--breeze::before,
+  .atmosphere--breeze::after {
+    inset: min(-12vw, -18vh);
+  }
+
+  .atmosphere--breeze::before {
+    background:
+      radial-gradient(
+        ellipse 65% 23% at 8% 68%,
+        var(--mist-green),
+        transparent 100%
+      ),
+      radial-gradient(
+        ellipse 48% 16% at 100% 16%,
+        var(--mist-green),
+        transparent 100%
+      );
+    transform: rotate(-14deg);
+  }
+
+  .atmosphere--breeze::after {
+    background: radial-gradient(
+      ellipse 60% 22% at 90% 74%,
+      var(--mist-warm),
+      transparent 100%
+    );
+    transform: rotate(-14deg);
+  }
+
+  @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+    .atmosphere::before,
+    .atmosphere::after {
+      animation: mist-drift 36s ease-in-out infinite alternate;
+      animation-play-state: var(--atmosphere-play-state, running);
+    }
+
+    .atmosphere::after {
+      animation-duration: 44s;
+      animation-direction: alternate-reverse;
+    }
+
+    .atmosphere--breeze::before,
+    .atmosphere--breeze::after {
+      animation-name: breeze-drift;
+      animation-duration: 28s;
+    }
+
+    .atmosphere--breeze::after {
+      animation-duration: 38s;
+    }
+  }
+
+  @keyframes mist-drift {
+    from {
+      transform: translate(-2%, 1%);
+    }
+    to {
+      transform: translate(3%, -2%);
+    }
+  }
+
+  @keyframes breeze-drift {
+    from {
+      transform: translate(-3%, 2%) rotate(-14deg);
+    }
+    to {
+      transform: translate(4%, -2%) rotate(-10deg);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .atmosphere {
+      opacity: 0.7;
+    }
+  }
+
+  @media print {
+    .atmosphere {
+      display: none;
+    }
+  }
+</style>

@@ -9,12 +9,19 @@ export const ogImageMarkup = (
   bgType: BgType
 ) => {
   if (
-    !['plum', 'dot', 'rose', 'particle', 'signal', 'signal-plus'].includes(
-      bgType
-    )
+    ![
+      'plum',
+      'dot',
+      'rose',
+      'particle',
+      'signal',
+      'signal-plus',
+      'breeze',
+      'mist',
+    ].includes(bgType)
   )
     throw new Error(
-      "The value of 'bgType' must be one of the following: 'plum', 'dot', 'rose', 'particle', 'signal', 'signal-plus'."
+      "The value of 'bgType' must be one of the following: 'plum', 'dot', 'rose', 'particle', 'signal', 'signal-plus', 'breeze', 'mist'."
     )
 
   return html`<div

@@ -15,9 +15,11 @@
 
 ## 文章
 
-文章文件放在 `src/content/blog/`，使用 Markdown。文件名会参与生成 URL，例如 `go-tcp-server.md` 对应 `/blog/go-tcp-server/`。
+文章文件放在 `src/content/blog/`，使用 Markdown。可以在 Typora 里直接写正文，不需要 frontmatter：文件名自动成为标题，Git 首次／最近提交自动提供日期，已有手填值不覆盖。完整的简单写作流程见 [writing.md](writing.md)。
 
-最小 frontmatter：
+文件名会参与生成 URL，例如 `go-tcp-server.md` 对应 `/blog/go-tcp-server/`。发布后改名会改变 URL，不自动重定向。
+
+需要手动覆盖默认信息时，才写可选 frontmatter：
 
 ```md
 ---
@@ -29,10 +31,10 @@ description: '用于列表和 SEO 的一句话说明。'
 
 常用字段：
 
-- `title`：必填，最多 60 个字符。
+- `title`：可省略，默认文件名，最多 60 个字符。
 - `description`：简介。省略时使用站点默认描述。
-- `pubDate`：必填，支持可解析的日期格式。
-- `lastModDate`：修改日期；没有时留空或删除。
+- `pubDate`：可省略，默认 Git 首次提交时间；未提交新文件本地暂用修改时间。
+- `lastModDate`：可省略，默认 Git 最近提交日期；填空字符串表示不显示，填日期则覆盖。
 - `tags`：标签数组，例如 `[Astro, Systems]`。
 - `minutesRead`：填数字覆盖阅读时长，填 `true` 自动估算，填 `false` 隐藏。
 - `cover` 和 `coverAlt`：封面及替代文本。
@@ -40,14 +42,15 @@ description: '用于列表和 SEO 的一句话说明。'
 - `draft`：设为 `true` 时不进入生产构建。
 - `redirect`：需要跳转时填写 `http://` 或 `https://` URL。
 - `ogImage`：可填 `true`、`false`、`fallback` 或 `public/og-images/` 下图片的相对路径，例如 `custom.png`。
-- `bgType`：可填 `false`、`plum`、`dot`、`rose`、`particle`、`signal` 或
-  `signal-plus`。
+- `bgType`：可填 `false`、`plum`、`dot`、`rose`、`particle`、`signal`、
+  `signal-plus`、`breeze` 或 `mist`。首页使用 `breeze`，Writing／Shorts 使用 `mist`；
+  两者是轻量 CSS 光影，手机与减少动态模式静止。文章默认不加背景，无须随列表页修改。
 
 文章正文使用 Markdown。图片放在 `public/images/` 时，用根路径引用，例如 `/images/blog/example.svg`。
 
 ## 短记
 
-短记文件放在 `src/content/shorts/`，字段和文章相同。文件名对应 `/shorts/` 下的详情 URL。
+短记文件放在 `src/content/shorts/`，与文章一样可以直接写正文，自动标题和日期规则相同。文件名对应 `/shorts/` 下的详情 URL。
 
 短记适合保存课程、书籍、文档和技术参考的短记录。短记索引页在 `src/pages/shorts/index.mdx`，不要在每条短记里重复修改索引布局。
 
@@ -90,7 +93,7 @@ description: '用于列表和 SEO 的一句话说明。'
 }
 ```
 
-友链页面是 `src/pages/links.mdx`。条目会复用作品页的行样式，点击后在新标签页打开，并带有 `noopener noreferrer`。新增真实友链时直接替换或追加 JSON 条目，不需要修改页面组件。
+Links 页面与导航入口已按要求移除，`/links/` 不再公开，也不做重定向。JSON 及集合校验保留为历史数据；修改它不会生成页面。不要为了编辑数据恢复路由。
 
 ## 页面配置
 
@@ -142,3 +145,12 @@ pnpm build
 ```
 
 如果内容校验失败，先根据错误定位字段，再检查对应集合的 schema：文章和短记使用 `postSchema`，作品使用 `projectSchema`，友链使用 `linkSchema`，页面使用 `pageSchema`。
+
+## 本次原版恢复后的边界
+
+- 页面、字体、样式与原背景以 `ca826e2` 为准；新增 Blog/Shorts 内容仍只需 Markdown/MDX 与原 frontmatter。生产构建不会发布 `draft: true`。
+- 当前真实 Blog、Links 和未公开 Collections/Articles 文件保留；Collections/Articles 没有公开路由，不自动迁移到 Writing。首页及原项目记录恢复历史原文，近期改写与项目长档案完整保存在仓库外备份中。
+- 不再要求项目 slug、media、首次公开日期或档案章节；项目使用原 GroupView 目录。Links 仅保留数据，不再公开页面。
+- 搜索保留原界面，但空索引不会回退全站、请求不存在的 bundle；配置支持原公开 Blog/Shorts。日期按 UTC，避免跨日跨年。
+- `pnpm test` 覆盖日期、私有工具边界与 Pagefind 生成/空索引行为；其它常用检查为 `pnpm check`、`pnpm lint`、`pnpm build`。
+- 恢复与已验证的备份位置见 [restoration.md](restoration.md)。

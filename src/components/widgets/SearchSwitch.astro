@@ -1,7 +1,7 @@
 ---
 import { FEATURES } from '~/config'
 import { withBasePath } from '~/utils/path'
-import { parseTuple } from '~/utils/data'
+import { parseTuple, getFilteredPosts } from '~/utils/data'
 
 const { search } = FEATURES
 if (!search || (Array.isArray(search) && !search[0])) return
@@ -15,6 +15,12 @@ if (includes.length === 0)
 const filterEnabled = filter && includes.length > 1
 const batchSize = parseTuple(batchLoadSize, 'batchLoadSize')
 const maxItems = parseTuple(maxItemsPerPage, 'maxItemsPerPage')
+const searchableGroups = await Promise.all(
+  (['blog', 'shorts'] as const)
+    .filter(collection => includes.includes(collection))
+    .map(collection => getFilteredPosts(collection))
+)
+const hasSearchablePosts = searchableGroups.some(posts => posts.some(({ data }) => !data.draft && data.search))
 ---
 
 <!-- Search Switch -->
@@ -39,6 +45,7 @@ const maxItems = parseTuple(maxItemsPerPage, 'maxItemsPerPage')
   aria-modal="true"
   aria-labelledby="search-label"
   aria-keyshortcuts="ArrowUp,ArrowDown,Enter,Esc"
+  data-empty-index={!hasSearchablePosts}
   data-filter={filterEnabled}
   data-batch-size={batchSize}
   data-max-items={maxItems}
@@ -327,6 +334,11 @@ const maxItems = parseTuple(maxItemsPerPage, 'maxItemsPerPage')
         const requestId = ++this.#activeRequestId
         this.#resetView()
         if (value.length === 0) return
+
+        if (this.dataset.emptyIndex === 'true') {
+          this.#showOnlyNoResult(requestId)
+          return
+        }
 
         // start search
         try {
@@ -678,7 +690,7 @@ const maxItems = parseTuple(maxItemsPerPage, 'maxItemsPerPage')
 </script>
 
 <!-- https://github.com/pagefind/pagefind/blob/production-docs/pagefind_web_js/types/index.d.ts -->
-{import.meta.env.PROD &&
+{import.meta.env.PROD && hasSearchablePosts &&
   <script is:inline define:vars={{scriptUrl: withBasePath('/pagefind/pagefind.js'), navHighlight}}>
     async function loadPagefind() {
       const pagefind = await import(scriptUrl)
@@ -706,7 +718,7 @@ const maxItems = parseTuple(maxItemsPerPage, 'maxItemsPerPage')
     if (!window.pagefind) loadPagefind()
   </script>}
 
-{import.meta.env.PROD && navHighlight &&
+{import.meta.env.PROD && hasSearchablePosts && navHighlight &&
   <script is:inline define:vars={{scriptUrl: withBasePath('/pagefind/pagefind-highlight.js')}}>
     async function loadPagefindHighlight() {
       await import(scriptUrl)
@@ -731,7 +743,7 @@ const maxItems = parseTuple(maxItemsPerPage, 'maxItemsPerPage')
     if (!window.pagefindHighlight) loadPagefindHighlight()
   </script>}
 
-{import.meta.env.PROD && navHighlight &&
+{import.meta.env.PROD && hasSearchablePosts && navHighlight &&
   <script>
     document.addEventListener('astro:page-load', () => {
       const params = new URLSearchParams(location.search)

@@ -1,0 +1,100 @@
+import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { existsSync, readFileSync, statSync } from 'node:fs'
+import { basename, extname, join, relative, resolve, sep } from 'node:path'
+
+interface PostDates {
+  pubDate: string
+  lastModDate: string
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+export function postFileHash(filePath: string) {
+  return createHash('sha256').update(readFileSync(filePath)).digest('hex')
+}
+
+export function getPostDates(root: string, filePath: string): PostDates {
+  const path = relative(root, resolve(filePath)).split(sep).join('/')
+  if (
+    !/^src\/content\/(blog|shorts)\/.+\.(md|mdx)$/.test(path) ||
+    path.split('/').includes('..')
+  )
+    throw new Error(`Post is outside Blog/Shorts: ${path}`)
+
+  if (existsSync(join(root, '.git'))) {
+    const git = (...args: string[]) =>
+      execFileSync('git', ['--literal-pathspecs', '-C', root, ...args], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      }).trim()
+    if (git('rev-parse', '--is-shallow-repository') === 'true')
+      throw new Error(
+        'Automatic post dates need full Git history. Run git fetch --unshallow, or use checkout fetch-depth: 0.'
+      )
+    const dates = git('log', '--follow', '--format=%cI', '--', path)
+      .split('\n')
+      .filter(Boolean)
+    if (dates.length)
+      return {
+        pubDate: new Date(dates.at(-1)!).toISOString(),
+        lastModDate: new Date(dates[0]).toISOString(),
+      }
+    // Uncommitted new files have no publication history; this is a local preview date.
+    const date = statSync(filePath).mtime.toISOString()
+    return { pubDate: date, lastModDate: date }
+  }
+
+  const snapshotPath = join(root, '.post-dates.json')
+  const snapshot: unknown = existsSync(snapshotPath)
+    ? JSON.parse(readFileSync(snapshotPath, 'utf8'))
+    : null
+  const entry =
+    isRecord(snapshot) && snapshot.version === 1 && isRecord(snapshot.posts)
+      ? snapshot.posts[path]
+      : undefined
+  if (
+    isRecord(entry) &&
+    entry.hash === postFileHash(filePath) &&
+    typeof entry.pubDate === 'string' &&
+    Number.isFinite(Date.parse(entry.pubDate)) &&
+    typeof entry.lastModDate === 'string' &&
+    Number.isFinite(Date.parse(entry.lastModDate))
+  )
+    return { pubDate: entry.pubDate, lastModDate: entry.lastModDate }
+
+  throw new Error(
+    `Cannot determine dates for ${path}. Before building without Git (including Docker), run pnpm content:dates in the full Git checkout. The snapshot must match the current Markdown.`
+  )
+}
+
+export function fillPostMetadata(
+  root: string,
+  filePath: string,
+  data: Record<string, unknown>
+): Record<string, unknown> {
+  const result = { ...data }
+  if (result.title === undefined)
+    result.title = basename(filePath, extname(filePath))
+
+  if (result.pubDate === undefined || result.lastModDate === undefined) {
+    const dates = getPostDates(root, filePath)
+    if (result.pubDate === undefined) result.pubDate = dates.pubDate
+    if (result.lastModDate === undefined) {
+      const published =
+        result.pubDate instanceof Date || typeof result.pubDate === 'string'
+          ? new Date(result.pubDate)
+          : new Date(NaN)
+      const updated = new Date(dates.lastModDate)
+      result.lastModDate =
+        updated > published &&
+        updated.toISOString().slice(0, 10) !==
+          published.toISOString().slice(0, 10)
+          ? dates.lastModDate
+          : ''
+    }
+  }
+  return result
+}

@@ -1,9 +1,9 @@
-import { SITE } from '../config'
+import { SITE } from '../config.ts'
 
 /**
  * Formats a given date into a human-readable string.
  */
-export function formatDate(d: Date | string, showYear = true, useUTC = false) {
+export function formatDate(d: Date | string, showYear = true, useUTC = true) {
   const date = typeof d === 'string' ? new Date(d) : d
   if (isNaN(date.getTime())) throw new Error('Invalid Date')
 
@@ -21,7 +21,7 @@ export function formatDate(d: Date | string, showYear = true, useUTC = false) {
  * Gets the year from a given date.
  */
 export function getYear(a: Date | string | number) {
-  return new Date(a).getFullYear()
+  return new Date(a).getUTCFullYear()
 }
 
 /**

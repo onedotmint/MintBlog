@@ -13,7 +13,13 @@ pnpm-debug.log*
 
 .agents
 .codex
-.trellis
 .codegraph
 .VSCodeCounter
 AGENTS.md
+
+# Private experiments, third-party research, evidence and release scratch files.
+.local/
+
+# Generated date snapshot for Git-free container builds; never author this file.
+.post-dates.json
+.post-dates.json.*.tmp

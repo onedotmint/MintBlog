@@ -18,7 +18,7 @@ The MintBlog container serves port `80` inside the Docker network. It does not p
 
 ## Repository Files
 
-- `Dockerfile` builds the site with Node 24 and pnpm, then serves `dist/` with Nginx.
+- `Dockerfile` builds with Node 24.22.1 and pnpm 10.34.7, then serves `dist/` with Nginx 1.30.6-alpine. Base images are digest-pinned; update both the version and digest during security maintenance.
 - `docker-compose.yml` runs the public GHCR image on a configurable external network, defaulting to `npm_default`.
 - `.env.example` is a safe template for the server-side `.env`; the real `.env` remains local and ignored.
 - `.github/workflows/deploy.yml` validates, publishes, and deploys the image without overwriting the server-managed Compose file.
@@ -126,8 +126,9 @@ MINTBLOG_PROXY_NETWORK=another_network docker compose up -d
 ## Daily Publishing
 
 1. Add or update content under `src/content/`.
-2. Push the change to `main`.
-3. GitHub Actions runs validation, builds the image, pushes it to GHCR, and recreates the server-managed Compose service.
+2. Use `nvm use` (Node 24.22.1), then run `pnpm audit`, `pnpm lint`, `pnpm check`, `pnpm test`, `pnpm build`, and inspect `pnpm preview`. Keep `.local/` private and out of commits.
+3. Review the release groups and deployment confirmations in [`release-preparation.md`](release-preparation.md). A push to `main` is the deployment action; do not use it as a harmless backup.
+4. Only after approval, push to `main`. GitHub Actions validates types, lint, tests and the static build, then publishes the image and recreates the server-managed Compose service.
 
 Pull the image before a manual update when using the default `latest` tag. Replace `OWNER/REPOSITORY` with the current GitHub repository:
 
@@ -152,3 +153,9 @@ BLOG_IMAGE=ghcr.io/OWNER/REPOSITORY:sha-<previous-commit> docker compose up -d -
 - Nginx cannot resolve `mintblog`: confirm both containers are attached to `npm_default` with `docker network inspect npm_default`.
 - GHCR pull is denied: change the package visibility to Public or configure a read-only registry credential on the VPS.
 - The site builds but canonical URLs still point to GitHub Pages: update `SITE.website` in `src/config.ts` when the production domain is ready, then redeploy.
+
+## Automatic Post Dates
+
+Blog/Shorts can omit frontmatter. Their dates come from Git, so both validation and image-publishing checkouts fetch full history. The publish job uses Node 24 to export `.post-dates.json` before entering the Git-free Docker build. No Git history or credentials are copied into the image.
+
+Normal `pnpm build` prepares the snapshot automatically. Before a manual `docker build`, run `pnpm content:dates` in the full Git checkout. Keep this generated file in the Docker context but out of commits; it must match the exact article bytes. Without Git and a matching snapshot, automatic-date articles intentionally fail to build rather than acquire deployment-day timestamps. Changes are not published by saving a Typora file; existing release approval and push rules still apply.
