@@ -1,6 +1,5 @@
 import { defineConfig, fontProviders, logHandlers } from 'astro/config'
 import sitemap from '@astrojs/sitemap'
-import robotsTxt from 'astro-robots-txt'
 import unocss from 'unocss/astro'
 import astroExpressiveCode from 'astro-expressive-code'
 import mdx from '@astrojs/mdx'
@@ -39,7 +38,6 @@ export default defineConfig({
   },
   integrations: [
     sitemap(),
-    robotsTxt(),
     unocss({ injectReset: true }),
     astroExpressiveCode(),
     mdx(),

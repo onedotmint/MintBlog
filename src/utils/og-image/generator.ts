@@ -32,16 +32,16 @@ function unescapeHTML(node: ReturnType<typeof html>) {
 }
 
 /**
- * Resolves the URL of the Satori-compatible WOFF font file for `--font-og-sans` style.
+ * Resolves the URL of the Satori-compatible WOFF2 font file for `--font-og-sans` style.
  */
 function resolveSatoriFontUrl(requestUrl: URL) {
   const font = fontData['--font-og-sans']?.find(
-    (item) => item.style === 'normal'
+    (item) => item.style === 'normal',
   )
-  const source = font?.src.find((item) => item.format === 'woff')
+  const source = font?.src.find((item) => item.format === 'woff2')
   if (!source)
     throw new Error(
-      "Unable to find a Satori-compatible WOFF source for '--font-og-sans'."
+      "Unable to find a Satori-compatible WOFF2 source for '--font-og-sans'.",
     )
 
   return experimental_getFontFileURL(source.url, requestUrl)
@@ -73,7 +73,7 @@ export async function generateOgImageBuffer(
   authorOrBrand: string,
   title: string,
   bgType: BgType,
-  requestUrl: URL
+  requestUrl: URL,
 ) {
   const node = ogImageMarkup(authorOrBrand, title, bgType)
   unescapeHTML(node)

@@ -2,10 +2,7 @@
 // inspired by: https://github.com/JulianLaval/canvas-particle-network
 ---
 
-<bg-particle
-  class="z--1 fixed top-0 bottom-0 left-0 right-0 pointer-events-none print:hidden"
->
-</bg-particle>
+<bg-particle class="z--1 fixed top-0 bottom-0 left-0 right-0 pointer-events-none print:hidden"></bg-particle>
 
 <script>
   import p5 from 'p5'
@@ -22,8 +19,14 @@
 
   class BgParticleElement extends HTMLElement {
     p5Instance: P5Instance | null = null
+    lifecycle = Promise.resolve()
 
     connectedCallback() {
+      // Wait for setup before removal: p5 v2 initializes its canvas asynchronously.
+      let finishSetup!: () => void
+      const ready = new Promise<void>((resolve) => {
+        finishSetup = resolve
+      })
       const sketch = (p: P5Instance) => {
         const COLOR = '#88888825'
         const VELOCITY = 0.8
@@ -87,13 +90,14 @@
             p.mouseReleased = function () {
               mouseParticle.velocity = p.createVector(
                 (p.random() - 0.5) * 2,
-                (p.random() - 0.5) * 2
+                (p.random() - 0.5) * 2,
               )
               mouseParticle = createParticle()
               mouseParticle.velocity = p.createVector(0, 0)
               particles.push(mouseParticle)
             }
           }
+          finishSetup()
         }
 
         p.draw = () => {
@@ -117,17 +121,32 @@
         }
       }
 
-      this.p5Instance = new p5(sketch, this)
+      this.lifecycle = this.lifecycle
+        .then(async () => {
+          if (!this.isConnected || this.p5Instance) return
+          this.p5Instance = new p5(sketch, this)
+          await ready
+        })
+        .catch((error) =>
+          console.error('Failed to initialize particle background', error),
+        )
     }
 
     // after switching pages, stop the animation loop
     disconnectedCallback() {
-      if (this.p5Instance) {
-        this.p5Instance.remove()
-        this.p5Instance = null
-      }
+      this.lifecycle = this.lifecycle
+        .then(async () => {
+          const instance = this.p5Instance
+          this.p5Instance = null
+          await Promise.resolve(instance?.remove())
+        })
+        .catch((error) =>
+          console.error('Failed to remove particle background', error),
+        )
     }
   }
 
-  customElements.define('bg-particle', BgParticleElement)
+  if (!customElements.get('bg-particle')) {
+    customElements.define('bg-particle', BgParticleElement)
+  }
 </script>

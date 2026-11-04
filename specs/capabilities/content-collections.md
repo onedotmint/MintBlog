@@ -32,3 +32,7 @@ tags:
 - Search uses only the configured public Blog/Shorts body markers. `scripts/build-search.mjs` clears stale output and skips Pagefind when no marker exists, rather than accidentally indexing every page. Search UI keeps the original visual design and only loads bundles when eligible content exists.
 - HTTP(S), credential and icon validation from the original group schema remain. Project media/schema extensions and computed timeline dates from the redesign are archived, not production content requirements.
 - All pre-restoration content and media are preserved in the verified external worktree backup. Home and the original project/Shorts data are restored to their historical source; current Blog/Links and unpublished collection data remain in the restored source tree.
+
+## Crawl metadata
+
+- `src/pages/robots.txt.ts` generates the public allow-all robots policy and sitemap URL from `SITE.website` / `SITE.base`; no robots integration or separate hand-maintained domain is needed.

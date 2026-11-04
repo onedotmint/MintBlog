@@ -39,9 +39,9 @@ Pre-commit runs `simple-git-hooks` → `lint-staged` → `eslint` on changed fil
 
 ## ENGQ-003 Astro version
 
-The manifest declares Astro as `^7.4.2` — a caret range, not an exact pin. Inspect the lockfile for resolved versions. The security baseline uses Node 24.22.1 (local version files, CI and Docker build) and pnpm 10.34.7. Audit the complete dependency graph with `pnpm audit`, not `--prod`: this static site intentionally lists its build toolchain in devDependencies. Do not hide advisories or lower the severity gate to make CI pass.
+The manifest declares Astro as `^7.4.5` — a caret range, not an exact pin. Inspect the lockfile for resolved versions. The security baseline uses Node 24.22.1 (local version files, CI and Docker build) and pnpm 10.34.7. Audit the complete dependency graph with `pnpm audit`, not `--prod`: this static site intentionally lists its build toolchain in devDependencies. Do not hide advisories or lower the severity gate to make CI pass.
 
-The unused del-cli was removed. The Astro lint toolchain uses supported ESLint 10 / eslint-plugin-astro 3 and its current recommended flat config; keep production lint-boundary tests intact. KaTeX <0.18.2 is overridden to 0.18.10 pending compatible upstream remark/rehype ranges; keep the rendered-math CSS version synchronized and regression-test formulas before changing/removing this override.
+The unused del-cli was removed. The Astro lint toolchain uses supported ESLint 10 / eslint-plugin-astro 3 and its current recommended flat config; keep production lint-boundary tests intact. KaTeX <0.18.2 is overridden to 0.18.10 pending compatible upstream remark/rehype ranges; keep the locally bundled math CSS/fonts version synchronized and regression-test formulas before changing/removing this override. TypeScript is limited to `~6.0.3` because the current check/ESLint tools do not support TypeScript 7. The minimatch override upgrades old toolchain consumers to 11.0.1; preserve matching, ignore-boundary and lint regression tests. Satori pins an affected fflate release upstream, so its scoped fflate override selects 0.7.5 until upstream updates.
 
 ## ENGQ-004 Repository discipline
 
