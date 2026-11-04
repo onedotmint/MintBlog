@@ -7,20 +7,28 @@ applies_to:
   - src/utils/data.ts
   - src/utils/datetime.ts
   - src/pages/blog/**
+  - src/pages/shorts/**
+  - src/utils/short-collections.ts
 tags:
   - content
   - routing
 ---
 
-# Content after original-site restoration
+# Public content collections
 
 - Historical sources are pages, home, blog, projects, links, photos and shorts. Templates were restored from `ca826e2`; subsequent owner-approved atmosphere changes retain their layouts. Links is now data-only: no public route, navigation entry or redirect. No experimental project archive or Connections route is generated.
 - Blog and Shorts keep Markdown/MDX, schema date coercion, frontmatter fields, original rendering plugins and production draft filtering. Never fill an empty article with invented prose.
+- The public display name is Collections (navigation, page title, back links and search category), backed by `shorts` and optional `shortCollections` overrides. This is distinct from the historical `collections` / `articles` data in `src/content/collections/` / `src/content/articles/`, which has no public routes. Collections uses `/shorts/`, not the retired top-level `/collections/` routes.
+- Shorts is for casual short-form writing: thoughts, everyday reflections, discoveries and brief notes, not a learning-resource collection. It has no required topic, structure or word count. `/shorts/` reuses the original CardView/CardItem presentation for one cover-free card per collection (title, optional description and post count, with member tags aggregated for the original filters); `/shorts/collections/<id>/` lists their posts newest first.
+- A Shorts post's first directory segment determines collection membership; the full path relative to `src/content/shorts/`, without its extension, determines its ID and `/shorts/<post-id>/` URL. For example, `生活切片/周末/x.md` belongs to `生活切片` and uses `/shorts/生活切片/周末/x/`. Renaming or moving a file or directory changes its URL; no redirect is generated automatically. A `collection` frontmatter field does not assign membership.
+- `notes` defaults to the display title 「随手记」; do not create a second `随手记/` directory for the same purpose. Root files also join `notes`, so legacy root posts keep their original URLs without moving. `shortCollections` optionally overrides title, description and draft via `src/content/short-collections/<id>.{md,mdx}`. All fields are optional; omitted/empty title uses 「随手记」 for `notes` and the directory name otherwise. No body is needed; cover is not supported. Post IDs using the reserved `collections` route namespace fail instead of colliding.
+- In production, a draft collection hides its page and all its posts, including direct post routes, sitemap and search. Post drafts are excluded before collection counts; development previews both levels with draft labels. Empty public collections remain visible with zero posts. Collection names sort alphabetically; posts sort by UTC publication timestamp descending, with ID as tie-breaker.
+- The original Shorts example remains at `src/content/shorts/astro-content-collections.md`, implicitly in `notes` (随手记), with its body and `/shorts/astro-content-collections/` URL preserved. This does not publish or migrate historical `collections` / `articles` records.
 - Blog/Shorts use the native glob loader with a pre-schema metadata wrapper. Missing title uses the filename; missing publication/update dates use first/latest Git committer timestamps (following recognized renames). Explicit values, including empty lastModDate, win; invalid values still fail schema validation. No author file is rewritten.
 - New uncommitted files temporarily use mtime locally; Git-free builds need an exact SHA-256-matched `.post-dates.json` exported from the Git checkout, not Docker checkout/file times. Shallow history is rejected. `pnpm build` automatically exports; CI uses full history and exports before Docker. The snapshot is not authored or committed and never served.
 - Complete loader startup clears only its Blog/Shorts store to invalidate dates even when Markdown bytes have not changed. Ordinary saves keep native watcher/digest/render/image behavior; history-only changes in a running dev service require a restart.
 - UTC date formatting/year grouping remains fixed and covered by tests, independent of build timezone. Automatic Updated is hidden until a later UTC date; manually supplied dates retain their original behavior.
-- Preserve the existing Collections/Articles Markdown files and typed schemas as data only. They still have no public routes and do not enter sitemap, RSS or search. No copy of those entries is automatically published into Blog.
+- Preserve the existing historical `src/content/collections/` and `src/content/articles/` Markdown files and typed schemas as data only. They have no public routes and do not enter sitemap, RSS or search. No copy of those entries is automatically published into Blog or the current Collections section.
 - Search uses only the configured public Blog/Shorts body markers. `scripts/build-search.mjs` clears stale output and skips Pagefind when no marker exists, rather than accidentally indexing every page. Search UI keeps the original visual design and only loads bundles when eligible content exists.
 - HTTP(S), credential and icon validation from the original group schema remain. Project media/schema extensions and computed timeline dates from the redesign are archived, not production content requirements.
 - All pre-restoration content and media are preserved in the verified external worktree backup. Home and the original project/Shorts data are restored to their historical source; current Blog/Links and unpublished collection data remain in the restored source tree.

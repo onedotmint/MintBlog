@@ -23,3 +23,6 @@ AGENTS.md
 # Generated date snapshot for Git-free container builds; never author this file.
 .post-dates.json
 .post-dates.json.*.tmp
+
+# Server-side manual deployment lock.
+.mintblog-deploy.lock

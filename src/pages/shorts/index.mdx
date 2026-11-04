@@ -1,6 +1,6 @@
 ---
-title: Shorts
-description: 课程、书籍、文档和技术参考的简短记录
+title: Collections
+description: 随笔与随手记，记录片刻想法、日常感受和偶然发现
 bgType: mist
 ogImage: true
 ---
@@ -15,10 +15,9 @@ import CardView from '~/components/views/CardView.astro'
   bgType={frontmatter.bgType}
   ogImage={frontmatter.ogImage}
 >
-  <StandardLayout
-    title={frontmatter.title}
-    isCentered={true}
-  >
-    <CardView collectionType="shorts" pageTag={true} />
+  <StandardLayout title={frontmatter.title} isCentered={true}>
+    <div class="pt-16">
+      <CardView pageTag={true} />
+    </div>
   </StandardLayout>
 </BaseLayout>

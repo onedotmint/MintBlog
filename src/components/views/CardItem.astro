@@ -42,6 +42,8 @@ interface QuoteData {
 export interface CardItemData {
   date?: Date | string
   text?: string
+  description?: string
+  footer?: string
   html?: string
   link?: string
   images?: ImageData[]
@@ -70,6 +72,8 @@ const MAX_CARD_TAGS = 3
 const {
   date,
   text,
+  description,
+  footer,
   html,
   link,
   images,
@@ -254,6 +258,7 @@ if (images && images.length > 0) {
         )
       }
       {text && <p class="prose">{text}</p>}
+      {description && <p class="mt-2 text-sm op-60 break-words">{description}</p>}
       {
         tags && tags.length > 0 && (
           <>
@@ -263,6 +268,7 @@ if (images && images.length > 0) {
                 {formatDate(date)}
               </p>
             )}
+            {footer && <p class="text-sm color-[var(--c-text)] op-85">{footer}</p>}
             <div
               role="none"
               class="w-[calc(100%+2rem)] h-[1px] my-3.5 ml--4 bg-[#8884]"
@@ -318,6 +324,7 @@ if (images && images.length > 0) {
           </div>
         )
       }
+      {(!tags || tags.length === 0) && footer && <p class="mt-auto pt-3 text-sm op-60">{footer}</p>}
       {
         (!tags || tags.length === 0) && date && (
           <div class="flex justify-between items-center pt-3 text-sm">

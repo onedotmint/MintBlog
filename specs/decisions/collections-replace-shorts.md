@@ -1,6 +1,6 @@
 # Collections replaces Shorts without legacy redirects
 
-> Historical decision, superseded by the explicit original-site restoration. Public Shorts and its original navigation/templates are restored from `ca826e2`; Collections/Articles data remains preserved without public routes. See `../capabilities/content-collections.md`. The decision below is retained only as historical rationale.
+> **Status: Superseded / 已废止。** This decision describes a retired `/collections/` + Articles design, not today's Collections section. The current [content specification](../capabilities/content-collections.md) keeps `/shorts/`, derives membership from the first directory segment, and uses optional `shortCollections` overrides; historical `src/content/collections/` and `src/content/articles/` remain data-only. The text below is historical rationale, not implementation guidance.
 
 ## Context
 
@@ -16,6 +16,6 @@ Replace Shorts as a user-facing section with Collections. Use `/collections/`, `
 - The nested URL hierarchy makes the editorial structure legible and lets Collection/Article pages reuse the Blog list/detail presentation instead of building a parallel visual system.
 - A redirect layer for a low-traffic, one-entry section would add permanent surface area for no real compatibility value; the section was replaced, not moved.
 
-## Revisit when
+## Historical revisit condition (no longer active)
 
 Real external inbound traffic to `/shorts/...` appears and the owner wants it preserved. Then add explicit redirects as a deliberate, separately scoped change — do not silently reintroduce a `shorts` collection or route.

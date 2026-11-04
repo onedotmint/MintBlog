@@ -2,6 +2,19 @@ import { z } from 'astro/zod'
 import { reference } from 'astro:content'
 import type { SchemaContext } from 'astro:content'
 
+const httpUrlSchema = z.url().refine(
+  (value) => {
+    const url = URL.parse(value)
+    return (
+      url !== null &&
+      (url.protocol === 'http:' || url.protocol === 'https:') &&
+      !url.username &&
+      !url.password
+    )
+  },
+  'Link must use HTTP(S) and must not contain credentials.'
+)
+
 /* Pages */
 export const pageSchema = z.object({
   title: z
@@ -176,10 +189,10 @@ export const postSchema = ({ image }: SchemaContext) =>
         'Controls whether search is available for the post. If `true`, search will be enabled; otherwise, it will be disabled.'
       ),
     redirect: z
-      .union([z.url(), z.literal('')])
+      .union([httpUrlSchema, z.literal('')])
       .default('')
       .describe(
-        'Defines a URL to redirect the post. If not needed, leave the field as an empty string or delete it.'
+        'Defines a credential-free HTTP(S) URL for the post link. If not needed, leave it empty or omit the field.'
       ),
     draft: z
       .boolean()
@@ -189,23 +202,17 @@ export const postSchema = ({ image }: SchemaContext) =>
       ),
   })
 
+/* Optional override for a folder-named Shorts collection; the title falls back to the folder name. */
+export const shortCollectionSchema = z.object({
+  title: z.string().trim().max(60).default(''),
+  description: z.string().trim().default(''),
+  draft: z.boolean().default(false),
+})
+
 /* Projects and links share one display item contract. */
 const groupItemSchema = {
   id: z.string().describe('**Required**. Name of the item to be displayed.'),
-  link: z
-    .url()
-    .refine(
-      (value) => {
-        const url = new URL(value)
-        return (
-          (url.protocol === 'http:' || url.protocol === 'https:') &&
-          !url.username &&
-          !url.password
-        )
-      },
-      'Link must use HTTP(S) and must not contain credentials.'
-    )
-    .describe('**Required**. URL linking to the item.'),
+  link: httpUrlSchema.describe('**Required**. URL linking to the item.'),
   desc: z
     .string()
     .describe('**Required**. A brief description summarizing the item.'),

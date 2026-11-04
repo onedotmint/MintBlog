@@ -1,43 +1,92 @@
-# 恢复原版后的检查与发布边界
+# 发布准备检查清单
 
-恢复基准为 `ca826e2`，历史验收见 [restoration.md](restoration.md)。后续经确认的轻量风雾与作品内容融合见 [atmosphere-blend.md](atmosphere-blend.md)，仍保留原排版和导航。旧时间轮、Connections、作品档案及视觉实验不在正式源码中；完整成果与工作区已在仓库外验证备份，`.local/` 仍保留。不要为运行旧 Lab 将新引擎重新接回恢复后的站点。
+本页是待执行的发布检查清单，不是本轮验收结果，也不授予提交、推送、触发工作流或部署权限。每次发布都应针对同一候选版本重新核对、记录结果；下方历史记录不能代替当前验收。当前方案为 GitHub 只做 CI 与 GHCR 打包，服务器由操作者手动拉取指定 SHA 版本；不再由 Actions SSH 部署。该边界须在修改后的 workflow 提交并推送后才生效，不能把本地文档修改当作远端已切换；迁移前先停止旧部署 workflow 的运行。
 
-## 检查
+## 1. 确定完整发布快照
 
-```sh
-pnpm install --frozen-lockfile --ignore-scripts
-pnpm sync
-pnpm check
-pnpm lint
-pnpm test
-pnpm build
-pnpm preview
-```
+- [ ] 明确本次发布范围与授权，审阅工作树、暂存区、重命名、删除和未跟踪文件。不能只看已跟踪文件的 diff：发布快照必须包含所需新文件的完整内容及关联修改，避免本地可用、干净检出缺文件。
+- [ ] 按功能组核对源码、内容、测试、配置、文档和规格的一致性：恢复与风雾融合、自动写作与日期导出、安全升级，以及当前 Collections 展示与 Shorts 分集变更。以候选版本实际内容为准，不把历史记录当作发布文件清单。
+- [ ] 对 Shorts 分集变更，尤其核对 `src/utils/short-collections.ts`、`src/pages/shorts/collections/[id].astro`、`src/content/short-collections/`、`src/content/shorts/` 中的完整新文件及原文件去向、`tests/content-safety.test.ts`、`tests/short-collections.test.ts`、`tests/collection-view.test.ts` 等配套测试，以及关联 schema、loader、路由、组件、配置和文档；确认既有文章 URL 与正文按预期保留。
+- [ ] 发布提交排除 `.local/` 私有实验和证据、真实 `.env`、密钥、依赖、生成日期快照 `.post-dates.json`、`.astro/` 与 `dist/`。确认私有文件与本地生成目录不进入 Docker 上下文，不把本地备份当作生产依赖；例外是从完整 Git 历史为候选版本导出的 `.post-dates.json`，它必须供 Git-free Docker 构建使用，但不提交也不对外提供。
+- [ ] 候选版本具备完整 Git 历史；自动文章日期依赖历史与文章字节。最终提交形成后，用该确切 SHA 的干净检出重新验证，不能将未提交工作树的 mtime 日期结果当作正式镜像结果。手动 Docker 构建所需日期快照见运维文档。
 
-- CI 保留 `test` 与 `build` 门禁，Node 24.22.1、pnpm 10.34.7、部署镜像命名与健康检查合同不降级。
-- `.local/` 完整排除于 Git、Docker、ESLint、Prettier、TypeScript。正式 src、scripts、tests 仍受检查。
-- Pagefind 构建后处理保留修复：没有正文标记时删除旧索引并正常跳过，不索引全站。原版公开 Shorts 与 Blog 的可搜索正文按配置进入索引；空源文件不生成编造正文。
-- `pnpm format` 是独立检查；恢复不等于对历史文件做全仓重排版。
-- Docker/VPS 的网络、Secrets、域名、镜像访问权限仍需维护者单独确认，详见 [deployment.md](deployment.md)。
+## 2. 本地检查与生产预览
 
-## 不自动发布
+Node 支持范围以 `package.json` 的 `engines.node` 为准（当前 `>=24.22.1 <25`），pnpm 版本以 `packageManager` 为准（当前 `pnpm@10.34.7`）。同时核对本地版本、CI 和 Dockerfile 的固定版本是否一致；升级时不要只改文档中的版本号。
 
-本轮没有暂存、commit、push、部署、触发工作流或 SSH 操作。当前 HEAD 与真实 Git index 不移动；恢复是可审阅的工作树修改。main 推送或相应手动工作流可能发布，必须由用户确认后自行执行。
+以下命令是发布时的执行说明，**本页没有宣称本轮已运行或通过**。记录候选 SHA、环境、命令、结果及失败原因；修改后重跑受影响检查。
 
-## 自动文章信息验收
+| 分类 | 命令 | 检查内容与边界 |
+| --- | --- | --- |
+| 冻结安装 | `pnpm install --frozen-lockfile` | 从锁文件安装，与 CI/Docker 保持一致；锁文件不匹配时停止，不临时更新依赖掩盖问题。 |
+| 类型生成 | `pnpm sync` | 生成 Astro 内容及类型信息，不代替类型检查。 |
+| 依赖安全 | `pnpm audit` | 审计全部依赖，包括构建工具链；不能仅审计 production 依赖。 |
+| 类型检查 | `pnpm check` | Astro 与 TypeScript 检查。 |
+| 静态规则 | `pnpm lint` | ESLint，保持零警告门禁。 |
+| 自动测试 | `pnpm test` | 运行仓库测试；不等于 Docker 或公网验收。 |
+| 格式检查 | `pnpm format` | 独立只读格式检查，不是 `format:write`；不要借发布重排无关历史文件。当前构建发布 workflow 未包含此项。 |
+| 生产构建 | `pnpm build` | 包含自动日期导出、静态站点及 Pagefind 后处理；检查产物，不只看退出码。 |
+| 人工预览 | `pnpm preview` | 预览上一项生产产物，不用 dev 服务替代生产草稿、路由和搜索验收；完成后停止本次启动的进程。 |
 
-后续支持 Typora 直接保存纯 Markdown／MDX 到 Blog／Shorts，见 [writing.md](writing.md)。本轮检查：`pnpm check`（91 文件，0 errors/warnings/hints）、`pnpm lint`、`pnpm test`（12/12）、`pnpm build`（清理后仍为 8 个 HTML 页面）、`git diff --check` 均通过。
+- [ ] 上述各类检查针对候选快照执行并留存结果；阻塞项解决后再发布。CI 当前运行冻结安装、audit、sync、check、lint、test、build；本地格式检查和人工预览仍需单独完成，不能因 CI 未包含而省略。
+- [ ] 在生产预览中完成第 5 节同类页面、草稿隔离和搜索检查。Pagefind 只索引配置允许的公开 Blog/Shorts 正文；没有正文标记时应清除旧索引并跳过，不能回退到全站索引，空源文件不能编造正文。
 
-`.local/release-evidence/automatic-writing/` 保留端到端自检脚本、日志、结果和手机实拍：已实际验证中文文件名、纯 Markdown、MDX 表达式、相对图片、保存热更新、显式配置覆盖、草稿／下划线文件隔离、RSS／sitemap 与真实 Pagefind；无 `.git` 的独立源码及依赖目录也成功完成生产构建，文章日期与 Git 构建一致。8 个临时文件全部清理，3 个既有 Blog／Shorts 文件哈希未变。开发服务已重启以启用新 loader，继续使用 4321。
+## 3. 生产配置与部署前提
 
-没有提交、推送或触发工作流；没有 Docker 引擎／VPS 实机验收。CI 已接入完整 Git 历史及自动日期导出，但线上首次执行仍需维护者确认。
+- [ ] 明确正式 HTTPS 域名，并核对 `src/config.ts` 的 `SITE.website` 是正确的生产地址（当前源码为 `https://onedotmint.github.io/`，不能默认它就是 VPS 的正式域名）；确认 base、canonical、RSS、sitemap 和资源 URL 与生产入口一致。静态配置变更需要重新构建与发布。
+- [ ] 验证候选版本的 Docker 构建、镜像启动和内部健康检查；基础镜像版本与 digest、容器内 Nginx 配置及外层代理版本均需独立核对。本地无 Docker 时明确记为未验证，不以静态构建替代。
+- [ ] 确认 GHCR 镜像路径为实际小写仓库路径，Actions 有发布权限，VPS 能拉取镜像（公开包或只读凭据）；首次发布时特别检查包可见性。记录本次 `sha-<40 位小写十六进制完整提交 SHA>` 镜像；不发布或使用 `latest`。
+- [ ] 确认操作者可手动登录 VPS，并具有 Docker 权限及部署目录所需的读写、进入权限；服务器具备 Bash、`flock` 与支持 `up --wait` 的 Docker Compose。首次复制 `docker-compose.yml`、`.env.example` 和 `scripts/deploy.sh`（服务器名为 `deploy.sh`），由维护者管理 Compose、`.env` 和脚本，workflow 不访问 VPS。具体步骤见 [deployment.md](deployment.md)。
+- [ ] 新 workflow 已推送且旧 SSH 部署运行已停止后，删除不再有其它用途的 GitHub `DEPLOY_*` secrets，以及 VPS `authorized_keys` 中对应的 Actions 专用授权（如果曾配置）；保留操作者正常登录权限。记录实际清理结果，不能假定本地改动已远程撤权。
+- [ ] 确认外部 Docker network 存在，站点与反向代理都在同一网络，代理目标为 `mintblog:80`；站点不发布宿主机端口。确认容器重建后代理仍能访问新容器，不能只检查重建前的连通性。
+- [ ] 确认公网 DNS 指向预期入口、HTTPS 证书与域名匹配且有效、HTTP/HTTPS 跳转符合预期。容器 `/healthz` 仅说明内部存活，不证明网络、DNS、HTTPS 或公网页面正常。
+- [ ] 在部署前记录当前运行镜像、完整 SHA 与精确本地镜像 ID、上次已验收版本、可拉取的回滚镜像、服务器 Compose/环境配置的受控备份（妥善保护凭据，不提交或公开）、回滚命令、负责人及验收入口。不要在确认新版本前清理唯一可用的旧镜像。
 
-## 安全升级后的发布边界
+## 4. 发布触发边界
 
-2026-10-23 本地安全升级见 [security-upgrade.md](security-upgrade.md)：Node 24.22.1 / pnpm 10.34.7、Astro 7.4.2、Sharp 0.35.5、Vite 8.3.5，Docker Node/Nginx 版本和 digest 已更新；完整依赖审计零已知漏洞，冻结锁文件严格 peer 安装、92 文件类型检查、Lint、14 项测试、生产构建、自动写作和 30 状态浏览器回归通过。未降低 CI 门禁；现在 CI 审计包含全部构建依赖。
+- [ ] 获得明确发布授权后才执行发布操作。`.github/workflows/deploy.yml` 保留原路径，显示名为 **Build and publish MintBlog**；push 到 `main`，以及选择 `main` 的手动 `workflow_dispatch`，只在检查通过后发布 GHCR SHA 镜像，不连接或更新 VPS。
+- [ ] PR 和非 `main` 分支的手动运行仅验证，不发布镜像。执行前确认事件、分支与候选 SHA；`main` 工作流仍有发布镜像的副作用，但不等于服务器部署授权。
+- [ ] 记录 workflow run、完整 SHA 与镜像标签。另获服务器部署授权后，由操作者手动登录 VPS，在含 `docker-compose.yml` 的部署目录运行 `bash deploy.sh 'ghcr.io/owner/repository:sha-<完整SHA>'`（替换为 40 位小写十六进制 SHA），记录操作者、时间、所选版本和结果。
+- [ ] 确认脚本先拉取再 `up --wait`，用锁防止同目录并发部署；启动或内部健康失败时恢复旧容器精确本地镜像 ID 并确认健康，无旧容器则停止 `web`。脚本运行期间以参数覆盖 `.env` 的 `BLOG_IMAGE`，不自动改 `.env` 或执行公网验收。
 
-当前只是本地待发布代码，不代表线上组件已更新。本机没有 Docker 引擎，后续正式发布前仍需 Docker 构建、容器健康检查及外层反向代理／VPS 的独立版本核验。没有暂存、commit、push、触发工作流或部署。全部验收预览服务已关闭。
+## 5. 部署后公网验收与回滚收尾
 
-## 本地汇总提交授权
+以下必须从正式公网 HTTPS 入口检查，不只访问本地 preview 或容器 `/healthz`。
 
-以上“未暂存／未提交”等表述记录的是各阶段验收完成时的历史状态。用户随后明确授权把当前恢复、风雾融合、写作自动化和安全升级整理为**一个本地汇总提交**；该授权不包含 push、触发工作流、镜像发布或部署。私有实验、生成日期快照、依赖、构建输出和真实环境配置仍不进入提交。
+- [ ] 检查首页、Writing（`/blog/`）及公开文章、Projects（`/projects/`）、Collections（`/shorts/`）、公开分集（`/shorts/collections/<id>/`）与既有 Shorts 文章 URL；检查导航、返回链接、图片及静态资源、桌面和移动端交互，以及不存在路径的 404。
+- [ ] 检查 canonical、RSS（`/rss.xml`）、sitemap 及其中链接指向正式生产域名；不以页面能打开代替元数据验收。
+- [ ] 确认草稿文章、草稿分集及其成员、下划线文件等非公开内容不出现在直接路由、列表、计数、RSS、sitemap 或搜索中；保留的历史 Collections/Articles 不因本次变更意外公开。
+- [ ] 实际打开搜索，用公开 Blog/Shorts 的已知正文词检索并访问结果，确认中文、分类、链接和 Pagefind 资源加载正常；草稿及历史私有内容无命中，无可索引正文时无陈旧索引或全站兜底。
+- [ ] 确认外层代理在站点容器重建后访问正常，无因旧容器地址缓存导致的 502；必要时按代理运维流程处理并重新验收，不改变现有运行架构。
+- [ ] 公网验收失败时按 [Rollback](deployment.md#rollback) 由操作者恢复已知版本；回滚（包括脚本自动恢复）后仍需复查公网、代理、关键页面及搜索，记录操作者、最终运行的镜像、SHA、结果和遗留问题，不能仅以回滚命令成功收尾。
+- [ ] 公网验收通过后，手动将服务器 `.env` 的 `BLOG_IMAGE` 同步为最终已验收版本（包括回滚后的版本），防止以后不带参数的 Compose 命令恢复旧默认值；发布记录不能只写 workflow 成功。
+
+## 历史记录（非当前结果、非发布授权）
+
+以下保留原有阶段验收与授权边界，仅描述当时情况；文件数、测试数、端口及进程状态均为历史信息，不表示当前版本已通过检查、服务仍在运行或允许再次提交/部署。
+
+### 恢复与风雾融合
+
+恢复基准为 `ca826e2`，历史验收见 [restoration.md](restoration.md)。后续经确认的轻量风雾与作品内容融合见 [atmosphere-blend.md](atmosphere-blend.md)，保留了原排版和导航。旧时间轮、Connections、作品档案及视觉实验不在当时的正式源码中；完整成果与工作区曾在仓库外验证备份，`.local/` 当时仍保留。不要为运行旧 Lab 将新引擎重新接回恢复后的站点。
+
+当时 CI 保留了 `test` 与 `build` 门禁，Node 24.22.1、pnpm 10.34.7、部署镜像命名与健康检查合同未降级。`.local/` 完整排除于 Git、Docker、ESLint、Prettier、TypeScript，正式 src、scripts、tests 仍受检查。Pagefind 无正文标记时删除旧索引并跳过的修复得以保留；`pnpm format` 为独立检查，恢复未意味着全仓历史重排版。
+
+该阶段没有暂存、commit、push、部署、触发工作流或 SSH 操作；当时 HEAD 与真实 Git index 未移动，恢复为可审阅的工作树修改。
+
+### 自动文章信息验收
+
+当时已支持 Typora 直接保存纯 Markdown／MDX 到 Blog／Shorts，见 [writing.md](writing.md)。该阶段记录的检查为：`pnpm check`（91 文件，0 errors/warnings/hints）、`pnpm lint`、`pnpm test`（12/12）、`pnpm build`（清理后仍为 8 个 HTML 页面）、`git diff --check` 均通过。
+
+`.local/release-evidence/automatic-writing/` 当时保留了端到端自检脚本、日志、结果和手机实拍：曾实际验证中文文件名、纯 Markdown、MDX 表达式、相对图片、保存热更新、显式配置覆盖、草稿／下划线文件隔离、RSS／sitemap 与真实 Pagefind；无 `.git` 的独立源码及依赖目录也曾成功完成生产构建，文章日期与 Git 构建一致。8 个临时文件当时全部清理，3 个既有 Blog／Shorts 文件哈希未变。开发服务当时曾重启以启用新 loader，并使用 4321 端口；这不是当前进程或端口状态。
+
+该阶段没有提交、推送或触发工作流，也没有 Docker 引擎／VPS 实机验收。CI 当时已接入完整 Git 历史及自动日期导出，线上首次执行仍需维护者确认。
+
+### 安全升级后的验收与发布边界
+
+2026-10-23 本地安全升级见 [security-upgrade.md](security-upgrade.md)：Node 24.22.1 / pnpm 10.34.7、Astro 7.4.2、Sharp 0.35.5、Vite 8.3.5，Docker Node/Nginx 版本和 digest 当时已更新。该阶段记录了完整依赖审计零已知漏洞、冻结锁文件严格 peer 安装、92 文件类型检查、Lint、14 项测试、生产构建、自动写作和 30 状态浏览器回归通过；未降低 CI 门禁，CI 审计当时已包含全部构建依赖。
+
+当时仅为本地待发布代码，不代表线上组件已更新。本机当时没有 Docker 引擎，正式发布前仍需 Docker 构建、容器健康检查及外层反向代理／VPS 的独立版本核验。该阶段没有暂存、commit、push、触发工作流或部署；全部验收预览服务当时已关闭。这不说明当前服务状态。
+
+### 历史本地汇总提交授权
+
+此前“未暂存／未提交”等表述记录的是各阶段验收完成时的历史状态。用户随后曾明确授权把恢复、风雾融合、写作自动化和安全升级整理为**一个本地汇总提交**；该历史授权不包含 push、触发工作流、镜像发布或部署，也不构成本次或未来操作的授权。私有实验、生成日期快照、依赖、构建输出和真实环境配置当时仍不进入提交。

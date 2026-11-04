@@ -48,3 +48,18 @@ test('local, CI and container tool versions stay aligned and audit includes buil
   assert.match(ci, /run: pnpm audit\s*\n/)
   assert.doesNotMatch(ci, /pnpm audit --prod|audit-level|ignore-advisories|continue-on-error/)
 })
+
+test('CI only validates and publishes versioned images without server access', () => {
+  const ci = readFileSync(
+    new URL('../.github/workflows/deploy.yml', import.meta.url),
+    'utf8'
+  )
+  assert.doesNotMatch(ci, /^ {2}deploy:|DEPLOY_|\bssh\b|type=raw,value=latest/m)
+  assert.match(ci, /type=sha,format=long,prefix=sha-/)
+  assert.match(ci, /needs: validate/)
+  assert.ok(ci.includes("if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'"))
+  assert.ok(ci.includes('group: mintblog-${{ github.ref }}'))
+  assert.ok(
+    ci.includes("cancel-in-progress: ${{ github.event_name == 'pull_request' }}")
+  )
+})

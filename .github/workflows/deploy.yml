@@ -1,4 +1,4 @@
-name: Deploy MintBlog
+name: Build and publish MintBlog
 
 on:
   push:
@@ -11,8 +11,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: mintblog-production
-  cancel-in-progress: true
+  group: mintblog-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}
@@ -101,7 +101,6 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest
             type=sha,format=long,prefix=sha-
 
       - name: Build and push image
@@ -113,110 +112,3 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-  deploy:
-    name: Deploy to VPS
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: publish
-    runs-on: ubuntu-latest
-    env:
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
-      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-      BLOG_IMAGE: ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
-
-    steps:
-      - name: Prepare SSH credentials
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
-        run: |
-          set -euo pipefail
-          test -n "$DEPLOY_SSH_KEY"
-          test -n "$DEPLOY_KNOWN_HOSTS"
-          install -m 700 -d "$HOME/.ssh"
-          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/deploy_key"
-          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
-          chmod 600 "$HOME/.ssh/deploy_key" "$HOME/.ssh/known_hosts"
-
-      - name: Validate deployment settings
-        run: |
-          set -euo pipefail
-          test -n "$DEPLOY_HOST"
-          test -n "$DEPLOY_USER"
-          test -n "$DEPLOY_PATH"
-          case "$DEPLOY_PATH" in
-            /*) ;;
-            *) echo "DEPLOY_PATH must be an absolute path" >&2; exit 1 ;;
-          esac
-
-      - name: Pull, start, and health-check the new image
-        run: |
-          set -euo pipefail
-          BLOG_IMAGE="$(printf '%s' "$BLOG_IMAGE" | tr '[:upper:]' '[:lower:]')"
-          ssh -i "$HOME/.ssh/deploy_key" \
-            -p "$DEPLOY_PORT" \
-            -o IdentitiesOnly=yes \
-            "$DEPLOY_USER@$DEPLOY_HOST" \
-            "cd '$DEPLOY_PATH' && BLOG_IMAGE='$BLOG_IMAGE' bash -s" <<'REMOTE_SCRIPT'
-          set -euo pipefail
-
-          test -f docker-compose.yml
-          test -n "${BLOG_IMAGE:-}"
-
-          previous_container="$(docker compose ps -q web || true)"
-          previous_image=""
-          if [ -n "$previous_container" ]; then
-            previous_image="$(docker inspect --format '{{.Config.Image}}' "$previous_container")"
-          fi
-
-          rollback() {
-            if [ -n "$previous_image" ]; then
-              echo "Rolling back to $previous_image" >&2
-              BLOG_IMAGE="$previous_image" docker compose up -d --remove-orphans
-            else
-              echo "Stopping the unhealthy first deployment" >&2
-              docker compose down
-            fi
-          }
-
-          if ! docker compose pull; then
-            echo "Unable to pull $BLOG_IMAGE" >&2
-            exit 1
-          fi
-
-          if ! docker compose up -d --remove-orphans; then
-            echo "Unable to start $BLOG_IMAGE" >&2
-            rollback
-            exit 1
-          fi
-
-          container_id="$(docker compose ps -q web)"
-          if [ -z "$container_id" ]; then
-            echo "MintBlog container was not created" >&2
-            rollback
-            exit 1
-          fi
-
-          health_status=""
-          for attempt in $(seq 1 30); do
-            health_status="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$container_id")"
-            case "$health_status" in
-              healthy)
-                docker compose ps
-                exit 0
-                ;;
-              unhealthy)
-                break
-                ;;
-            esac
-            sleep 2
-          done
-
-          echo "MintBlog container health check failed: $health_status" >&2
-          docker compose logs --tail=100 web >&2 || true
-
-          rollback
-          exit 1
-          REMOTE_SCRIPT

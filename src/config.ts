@@ -27,9 +27,9 @@ export const UI: Ui = {
     },
     {
       path: '/shorts',
-      title: 'Shorts',
+      title: 'Collections',
       displayMode: 'alwaysText',
-      text: 'Shorts',
+      text: 'Collections',
     },
   ],
   socialLinks: [

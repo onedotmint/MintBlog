@@ -1,0 +1,79 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import StandardLayout from '~/layouts/StandardLayout.astro'
+import Link from '~/components/base/Link.astro'
+import { getShortCollections } from '~/utils/data'
+import { formatDate } from '~/utils/datetime'
+import { withBasePath } from '~/utils/path'
+
+export async function getStaticPaths() {
+  return (await getShortCollections()).map((group) => ({
+    params: { id: group.id },
+    props: { group },
+  }))
+}
+
+const { group } = Astro.props
+const { title, description, draft, posts } = group
+---
+
+<BaseLayout
+  title={title}
+  {description}
+  bgType="mist"
+  backHref={withBasePath('/shorts/')}
+>
+  <nav class="mx-auto mb-6 max-w-65ch text-sm" aria-label="返回合集目录">
+    <Link href={withBasePath('/shorts/')}>← Collections</Link>
+  </nav>
+  <StandardLayout {title}>
+    <div slot="head">
+      {description && <p class="op-60">{description}</p>}
+      <p class="text-sm op-50">
+        {posts.length} 篇{draft ? ' · 草稿合集，不会公开' : ''}
+      </p>
+    </div>
+    <div class="mx-auto max-w-65ch">
+      {
+        posts.length === 0 ? (
+          <p class="op-60">还没有随笔。</p>
+        ) : (
+          <ul
+            class="m-0 list-none p-0 divide-y divide-gray-500/15"
+            aria-label="合集篇目"
+          >
+            {posts.map((post) => (
+              <li>
+                <Link
+                  href={
+                    post.data.redirect ||
+                    withBasePath(`/shorts/${post.id}/`)
+                  }
+                  external={!!post.data.redirect}
+                  enableNewTabWarning={!!post.data.redirect}
+                  class="flex items-baseline gap-5 py-5 op-100! focus-visible:(outline-2 outline-offset-4 outline-current) lt-sm:(flex-wrap gap-x-3 gap-y-1)"
+                >
+                  <time
+                    datetime={post.data.pubDate.toISOString()}
+                    class="shrink-0 text-xs font-mono op-50"
+                  >
+                    {formatDate(post.data.pubDate)}
+                  </time>
+                  <span class="min-w-0 flex-1 break-words">
+                    {post.data.title}
+                    {post.data.draft && (
+                      <span class="ml-2 text-xs op-60">草稿</span>
+                    )}
+                  </span>
+                  <span class="shrink-0 op-50" aria-hidden="true">
+                    →
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </StandardLayout>
+</BaseLayout>

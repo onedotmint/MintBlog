@@ -1,6 +1,8 @@
 # 本地安全升级 · 2026-10-23
 
-## 边界
+## 历史边界
+
+本页保留 2026-10-23 当时的升级与验收记录，不代表当前工作树、进程或线上状态，也不是本次发布授权。当前发布步骤以 [发布清单](release-preparation.md) 和 [部署说明](deployment.md) 为准。
 
 本轮只升级本地工具、项目依赖和待发布配置，**没有 commit、push、触发 GitHub Actions、SSH、镜像发布或部署**。工作区同时保留之前的恢复、视觉和自动写作修改，不能把整份工作树差异误当成本轮安全更新。
 
@@ -47,7 +49,7 @@ pnpm --version
 
 这些版本配置和锁文件需要随代码进入发布流程，**本机升级不等于线上升级**。之后经用户批准发布时，CI 会使用指定 Node/pnpm、冻结锁文件安装、完整审计、检查和构建，再以新的 Node/Nginx 基础镜像生成站点镜像。
 
-本地回归成功只是待发布依据，不能替代 Docker 构建、GHCR 权限、域名、Secrets、外层反向代理和 VPS 健康检查。不要现在推送 main；现有工作流的 main push 可能自动发布。
+本地回归成功只是待发布依据，不能替代 Docker 构建、GHCR 拉取权限、域名、外层反向代理和 VPS 健康检查。当前决定是 GitHub 只检查并发布 GHCR SHA 镜像，不再持有 VPS SSH 私钥或部署；操作者另行登录服务器，运行 `bash deploy.sh` 拉取选定的完整 SHA 版本，公网验收后手动同步 `.env` 的 `BLOG_IMAGE`。新边界仅在修改后的 workflow 提交并推送后生效；旧 SSH 部署运行停止后，仍需手动清理无其它用途的 `DEPLOY_*` secrets 和专用 `authorized_keys` 授权。本记录不表示这些远程操作已完成，也不授予 push 或部署权限。
 
 ## 验证与保留限制
 
@@ -65,7 +67,7 @@ pnpm --version
 - [pnpm 10.34.5 修复说明](https://github.com/pnpm/pnpm/releases/tag/v10.34.5)
 - [Nginx 官方版本](https://nginx.org/en/download.html)
 
-## 最终验收结果
+## 历史最终验收结果
 
 - 使用 Node 24.22.1 / pnpm 10.34.7。空目录重新解析锁文件后，以 `pnpm install --frozen-lockfile --strict-peer-dependencies` 成功安装，移除旧无障碍插件的可选 peer 残留，无未满足 peer 警告。完整审计 0 项已知漏洞。
 - `pnpm check`：92 文件，0 errors/warnings/hints；`pnpm lint`、`pnpm test`（14/14）、`pnpm build`（8 个 HTML 页面）、`git diff --check` 全通过。

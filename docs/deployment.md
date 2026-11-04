@@ -1,17 +1,21 @@
 # Docker Deployment
 
-MintBlog is built as a static Astro site and published as a Docker image. GitHub Actions validates the repository, pushes the image to the current repository's GitHub Container Registry package, and updates the VPS over SSH. The VPS only needs Docker and Docker Compose.
+MintBlog is built as a static Astro site and published as a Docker image. GitHub Actions only validates the repository and publishes SHA-tagged images to the current repository's GitHub Container Registry package. An operator logs in to the VPS and manually pulls a chosen version with `deploy.sh`; Actions never connects to the VPS.
+
+This describes the new workflow once committed and pushed, not a claim that GitHub or the VPS has already changed. Before switching, stop any old SSH-deployment workflow runs and verify the workflow revision in use.
 
 ## Runtime Layout
 
 ```text
-GitHub Actions
-    -> ghcr.io/OWNER/REPOSITORY
-    -> SSH to the VPS
-    -> docker compose pull
-    -> docker compose up -d
-    -> MintBlog container on npm_default
-    -> external Nginx container
+GitHub Actions -> validate -> ghcr.io/owner/repository:sha-<full-commit>
+                                  |
+                   operator logs in to the VPS
+                                  |
+                   bash deploy.sh <chosen-SHA-image>
+                     -> docker compose pull
+                     -> docker compose up -d --wait
+                     -> MintBlog container on npm_default
+                     -> external Nginx container
 ```
 
 The MintBlog container serves port `80` inside the Docker network. It does not publish a host port. The external Nginx container must join the same Docker network and proxy to `mintblog:80`.
@@ -21,30 +25,32 @@ The MintBlog container serves port `80` inside the Docker network. It does not p
 - `Dockerfile` builds with Node 24.22.1 and pnpm 10.34.7, then serves `dist/` with Nginx 1.30.6-alpine. Base images are digest-pinned; update both the version and digest during security maintenance.
 - `docker-compose.yml` runs the public GHCR image on a configurable external network, defaulting to `npm_default`.
 - `.env.example` is a safe template for the server-side `.env`; the real `.env` remains local and ignored.
-- `.github/workflows/deploy.yml` validates, publishes, and deploys the image without overwriting the server-managed Compose file.
+- `.github/workflows/deploy.yml` (display name **Build and publish MintBlog**) validates and publishes the image; it does not deploy or access the VPS.
+- `scripts/deploy.sh` is copied to the server as `deploy.sh` for manual, locked image updates and internal-health recovery.
 - `docker/nginx.conf` is the internal static-file server configuration. It is separate from the external reverse-proxy configuration.
 
 ## VPS Prerequisites
 
-Install Docker Engine and the Docker Compose plugin. The deployment user must be able to run Docker without interactive `sudo`.
+Install Docker Engine, a Docker Compose plugin supporting `up --wait`, Bash and `flock`. The deployment user must be able to run Docker without interactive `sudo`. Use your normal manual server login; do not give Actions an SSH private key.
 
-Create the shared network once:
+Create the shared network once on the VPS:
 
 ```bash
 docker network inspect npm_default >/dev/null 2>&1 || docker network create npm_default
 ```
 
-Copy `docker-compose.yml` and `.env.example` to the VPS once and keep them in the deployment directory. The deployment user must own this directory or have permission to read it:
+Copy `docker-compose.yml`, `.env.example` and `scripts/deploy.sh` to the VPS once, with the script named `deploy.sh` in the deployment directory. The directory must exist **on the VPS**, not just on your local machine. The deployment user needs write permission to manage these files and the deployment lock, read permission for Compose, `.env` and the script, and execute (traverse) permission on the directory and its parents. If that user cannot create `/opt/mintblog`, have an administrator create it and grant the required ownership/permissions first; the commands below assume this access is already available:
 
 ```bash
-mkdir -p /opt/mintblog
+ssh deploy@example.com 'mkdir -p /opt/mintblog'
 scp docker-compose.yml .env.example deploy@example.com:/opt/mintblog/
+scp scripts/deploy.sh deploy@example.com:/opt/mintblog/deploy.sh
 ssh deploy@example.com 'cd /opt/mintblog && cp .env.example .env'
 ```
 
-Edit `/opt/mintblog/.env` and replace `OWNER/REPOSITORY` with the GitHub owner and repository that will publish the image. Keep the `MINTBLOG_PROXY_NETWORK` value aligned with the Nginx network. The `.env.example` file contains no credentials and can be committed.
+Edit `/opt/mintblog/.env`: replace the image placeholder with the actual lowercase GHCR owner/repository and a published `sha-` tag containing the full 40-character lowercase hexadecimal commit SHA. No `latest` tag is published. Keep `MINTBLOG_PROXY_NETWORK` aligned with the Nginx network. The `.env.example` file contains no credentials and can be committed.
 
-The workflow does not upload or overwrite this Compose file or `.env`. Keep local and server-side changes to the Compose contract deliberate.
+The workflow does not upload or overwrite Compose, `.env` or the server script. Keep local and server-side changes deliberate; copy script updates to the VPS yourself.
 
 The Nginx service must join this external network:
 
@@ -72,85 +78,66 @@ server {
 }
 ```
 
-Configure HTTPS and the domain in the Nginx stack. They are outside this repository's Compose file.
+Configure HTTPS and the domain in the Nginx stack. They are outside this repository's Compose file. Public DNS must resolve to that entry point, and its certificate must cover the production hostname.
 
-## GitHub Secrets
+After every MintBlog container recreation, verify that the external proxy can reach the replacement container and that the public HTTPS site works. The container IP may change; a proxy holding a stale upstream address can return 502 even when MintBlog is healthy. If needed, refresh name resolution or reload the proxy according to its existing operating procedure, then repeat public acceptance. This does not require changing the runtime layout.
 
-Add these repository secrets under **Settings -> Secrets and variables -> Actions**:
+## GitHub Credentials and Migration
 
-- `DEPLOY_HOST` (required): VPS hostname or IP address.
-- `DEPLOY_PORT` (optional): SSH port; defaults to `22`.
-- `DEPLOY_USER` (required): deployment user with Docker access.
-- `DEPLOY_PATH` (required): absolute path such as `/opt/mintblog`.
-- `DEPLOY_SSH_KEY` (required): private Ed25519 key for the deployment user.
-- `DEPLOY_KNOWN_HOSTS` (required): verified `ssh-keyscan -H` output for the VPS.
+Publishing uses the workflow's `GITHUB_TOKEN` with package-write permission; no VPS SSH secrets are needed. Operators keep their manual login credentials outside Actions. If the GHCR package is private, configure read-only pull credentials on the VPS instead.
 
-Generate a dedicated key locally and install only its public key for the deployment user:
-
-```bash
-ssh-keygen -t ed25519 -C github-actions-mintblog -f ~/.ssh/mintblog_deploy
-ssh-keyscan -H your-domain.example >> ~/.ssh/mintblog_known_hosts
-```
-
-Paste the private key into `DEPLOY_SSH_KEY` and the verified known-host entry into `DEPLOY_KNOWN_HOSTS`. Do not commit either file or paste it into an issue or chat.
+After the new workflow is pushed and all old SSH-deployment runs have stopped, delete the old repository `DEPLOY_*` secrets (`DEPLOY_HOST`, `DEPLOY_PORT`, `DEPLOY_USER`, `DEPLOY_PATH`, `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`) if configured and no longer used elsewhere. Remove the corresponding dedicated Actions public-key entry from the VPS user's `authorized_keys` only if it has no other use; preserve normal operator access. These are manual migration steps, not actions already performed by this documentation change.
 
 ## Forking
 
-The workflow derives the image path from the full GitHub repository name, so a fork publishes to its own GHCR package instead of the original repository. Configure the same deployment secrets in the fork, make the package public if the VPS pulls without registry credentials, and update the server-side `.env` image path to match the fork.
+The workflow derives the image path from the full GitHub repository name, so a fork publishes to its own GHCR package instead of the original repository. No deployment secrets are required. Make the package public if the VPS pulls without registry credentials, and update the server-side `.env` image path to match the fork.
 
 ## First Deployment
 
-The first push to `main` builds the image and creates the GHCR package at `ghcr.io/OWNER/REPOSITORY`. GitHub may create the package as private initially, so the publish job can succeed while the deploy job fails to pull the image. Open the package settings, change its visibility to **Public**, and rerun the workflow before relying on automatic deployment.
+A push to `main` or a manual `workflow_dispatch` run selecting `main` validates and publishes a SHA-tagged GHCR image when the checks succeed; neither touches the VPS. Pull requests and manual runs on other branches only validate. Image publishing is still a side effect requiring authorization, but is separate from server deployment approval. The workflow does not publish `latest`.
 
-After replacing the placeholder, the server-side `.env` provides the default image for manual `docker compose up -d`. During an automated deployment, the workflow injects an immutable commit image into the remote `docker compose pull` and `docker compose up` commands without changing `.env`:
+Workflow runs use separate concurrency groups per Git ref. A PR can replace its own obsolete validation run; new `main` runs wait rather than interrupt active publishing. Server deployment concurrency is handled separately by `deploy.sh` using `flock`.
 
-```text
-BLOG_IMAGE=ghcr.io/OWNER/REPOSITORY:sha-<commit>
-```
+The first publishing run creates the GHCR package at `ghcr.io/owner/repository`. GitHub may create the package as private initially, so publishing can succeed while a later server pull is denied. Make the package **Public** or configure read-only pull credentials on the VPS before deploying.
 
-After the workflow succeeds, verify the service on the VPS:
+Complete the [release checklist](release-preparation.md), obtain deployment approval, then manually log in to the VPS. Run the following **from the deployment directory containing `docker-compose.yml`**, replacing the quoted image placeholder with the published version. The tag must be `sha-` followed by exactly 40 lowercase hexadecimal characters; short SHAs and `latest` are not accepted:
 
 ```bash
 cd /opt/mintblog
-docker compose config
+bash deploy.sh 'ghcr.io/owner/repository:sha-<40-lowercase-hex>'
 docker compose ps
 docker compose logs --tail=100 web
 ```
 
-The Compose file defaults to the `npm_default` network. Override it only when the Nginx network has a different name:
+The script locks deployments in this directory, pulls the selected image before updating, then uses Compose `up --wait` to check internal health. The image argument overrides `.env`'s `BLOG_IMAGE` during execution; the script never edits `.env` and never performs public acceptance.
 
-```bash
-MINTBLOG_PROXY_NETWORK=another_network docker compose up -d
-```
+The Docker/Compose health check only requests `http://127.0.0.1/healthz` inside the container. A `healthy` result establishes internal liveness, not public reachability or correct content; it does not test the external proxy, DNS, TLS, public routes or search. After deployment, perform the [public acceptance checks](release-preparation.md#5-部署后公网验收与回滚收尾), including proxy access after container recreation, and record the deployed image and full commit SHA. Workflow or script success alone is not release acceptance.
+
+After public acceptance succeeds, manually set the server-side `.env` `BLOG_IMAGE` to the accepted image. Otherwise later unqualified Compose commands can revert to its older default. Keep `MINTBLOG_PROXY_NETWORK` in that file aligned with the actual external proxy network (default `npm_default`).
 
 ## Daily Publishing
 
-1. Add or update content under `src/content/`.
-2. Use `nvm use` (Node 24.22.1), then run `pnpm audit`, `pnpm lint`, `pnpm check`, `pnpm test`, `pnpm build`, and inspect `pnpm preview`. Keep `.local/` private and out of commits.
-3. Review the release groups and deployment confirmations in [`release-preparation.md`](release-preparation.md). A push to `main` is the deployment action; do not use it as a harmless backup.
-4. Only after approval, push to `main`. GitHub Actions validates types, lint, tests and the static build, then publishes the image and recreates the server-managed Compose service.
-
-Pull the image before a manual update when using the default `latest` tag. Replace `OWNER/REPOSITORY` with the current GitHub repository:
-
-```bash
-BLOG_IMAGE=ghcr.io/OWNER/REPOSITORY:latest docker compose pull
-BLOG_IMAGE=ghcr.io/OWNER/REPOSITORY:latest docker compose up -d --remove-orphans
-```
+Use the [release checklist](release-preparation.md) as the single place for source-snapshot review, toolchain versions, frozen installation, quality checks, production configuration, authorization and public acceptance. Publishing an image does not update the site. With deployment approval, log in to the VPS and run `bash deploy.sh` with the selected published full-SHA image as above, perform public acceptance, then synchronize `.env` yourself.
 
 ## Rollback
 
-Use a previously published commit image to roll back, then pull and recreate the service:
+Before updating, record the running image reference, full commit SHA and exact local image ID, and retain that local image plus a pullable known-good commit image and matching server-side Compose/environment configuration. Do not prune the previous image before acceptance.
+
+If startup or `up --wait` fails after the update begins, `deploy.sh` restores the previous container's **exact local image ID**, not a potentially changed tag, and waits for its health check. With no previous container it stops `web`. A pull failure leaves the existing service alone. Inspect any recovery error; automatic recovery does not prove public access or successful release acceptance.
+
+For an operator-requested rollback (including public acceptance failure), run the script from the VPS deployment directory with the full SHA of a previously published, accepted commit:
 
 ```bash
-BLOG_IMAGE=ghcr.io/OWNER/REPOSITORY:sha-<previous-commit> docker compose pull
-BLOG_IMAGE=ghcr.io/OWNER/REPOSITORY:sha-<previous-commit> docker compose up -d --remove-orphans
+bash deploy.sh 'ghcr.io/owner/repository:sha-<previous-40-lowercase-hex>'
 ```
+
+After any rollback, inspect health and logs, verify proxy access to the recreated container, and repeat the [public acceptance checks](release-preparation.md#5-部署后公网验收与回滚收尾) over the production HTTPS domain. Record the image reference/full SHA actually running, the reason for rollback, the acceptance results and any unresolved issue. After acceptance, synchronize `.env` `BLOG_IMAGE` to the final accepted version; the script does not persist its image override.
 
 ## Troubleshooting
 
 - `network npm_default not found`: create the external network or check `MINTBLOG_PROXY_NETWORK`.
 - `BLOG_IMAGE must be set`: create the server-side `.env` or pass `BLOG_IMAGE` for the command.
-- Nginx cannot resolve `mintblog`: confirm both containers are attached to `npm_default` with `docker network inspect npm_default`.
+- Nginx cannot resolve `mintblog`: confirm both containers are attached to the configured network with `docker network inspect npm_default` (substitute the actual network name). After a container recreation, also check for a stale upstream IP in the proxy and recheck public HTTPS after any proxy reload.
 - GHCR pull is denied: change the package visibility to Public or configure a read-only registry credential on the VPS.
 - The site builds but canonical URLs still point to GitHub Pages: update `SITE.website` in `src/config.ts` when the production domain is ready, then redeploy.
 

@@ -1,10 +1,7 @@
 import { getCollection } from 'astro:content'
-import { SITE } from '../config'
+import { groupShorts } from './short-collections'
 
-import type { CollectionEntry, CollectionKey } from 'astro:content'
-
-type CollectionEntryList<K extends CollectionKey = CollectionKey> =
-  CollectionEntry<K>[]
+import type { CollectionEntry } from 'astro:content'
 
 /**
  * Ensures that a value is a positive integer.
@@ -41,13 +38,19 @@ export function getMinutesRead(
       : computedMinutesRead
 }
 
-/**
- * Retrieves filtered posts from the specified content collection.
- * In production, it filters out draft posts.
- */
-export async function getFilteredPosts(
-  collection: 'blog' | 'shorts'
-) {
+export async function getShortCollections() {
+  return groupShorts(
+    await getCollection('shortCollections'),
+    await getCollection('shorts'),
+    import.meta.env.PROD
+  )
+}
+
+/** Filters production drafts, including posts inside draft Shorts collections. */
+export async function getFilteredPosts(collection: 'blog' | 'shorts') {
+  if (collection === 'shorts') {
+    return (await getShortCollections()).flatMap((group) => group.posts)
+  }
   return await getCollection(collection, ({ data }) => {
     return import.meta.env.PROD ? !data.draft : true
   })
@@ -56,33 +59,10 @@ export async function getFilteredPosts(
 /**
  * Sorts an array of posts by their publication date in descending order.
  */
-export function getSortedPosts(
-  posts: CollectionEntryList<'blog' | 'shorts'>
-) {
+export function getSortedPosts(posts: CollectionEntry<'blog' | 'shorts'>[]) {
   return posts.sort(
     (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
   )
-}
-
-export function sortPostsByField(
-  posts: CollectionEntryList<'blog' | 'shorts'>,
-  field: 'pubDate' | 'lastModDate' | 'title'
-) {
-  return posts.sort((a, b) => {
-    if (field === 'title') {
-      return a.data.title.localeCompare(b.data.title, SITE.lang, {
-        sensitivity: 'base',
-      })
-    }
-
-    if (field === 'pubDate' || field === 'lastModDate') {
-      const aTime = (a.data[field] as Date).getTime()
-      const bTime = (b.data[field] as Date).getTime()
-      return bTime - aTime
-    }
-
-    return 0
-  })
 }
 
 /**

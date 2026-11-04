@@ -1,4 +1,5 @@
 import { getCollection } from 'astro:content'
+import { getFilteredPosts } from '~/utils/data'
 
 import {
   OG_IMAGE_DIR,
@@ -242,7 +243,9 @@ export async function getOgImageManifest() {
     addPageManifestItem(manifest, page, authorOrBrand, fallbackBgType)
 
   for (const collection of collections) {
-    const posts = await getCollection(collection.collection)
+    const posts = collection.collection === 'shorts'
+      ? await getFilteredPosts('shorts')
+      : await getCollection(collection.collection)
     for (const post of posts)
       addPostManifestItem(
         manifest,

@@ -5,6 +5,7 @@ import { postLoader } from './utils/post-loader'
 import {
   pageSchema,
   postSchema,
+  shortCollectionSchema,
   projectSchema,
   linkSchema,
   photoSchema,
@@ -41,6 +42,14 @@ const photos = defineCollection({
   schema: photoSchema,
 })
 
+const shortCollections = defineCollection({
+  loader: glob({
+    base: './src/content/short-collections',
+    pattern: '[^_]*.{md,mdx}',
+  }),
+  schema: shortCollectionSchema,
+})
+
 const shorts = defineCollection({
   loader: postLoader('./src/content/shorts'),
   schema: postSchema,
@@ -64,6 +73,7 @@ export const collections = {
   links,
   photos,
   shorts,
+  shortCollections,
   collections: collectionRecords,
   articles,
 }

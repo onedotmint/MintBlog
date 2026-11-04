@@ -24,9 +24,10 @@ interface Props {
   bgType?: BgType | false
   pubDate?: string
   lastModDate?: string
+  backHref?: string
 }
 
-const { title, description, ogImage, bgType, pubDate, lastModDate } =
+const { title, description, ogImage, bgType, pubDate, lastModDate, backHref } =
   Astro.props
 
 let style: Record<string, string> = {}
@@ -80,7 +81,7 @@ if (hasCustomCursor) style['--external-link-cursor'] = cursorType
           <footer class="slide-enter animate-delay-1000! prose mx-auto mt-8 print:hidden">
             <slot name="share" />
             <br />
-            <BackLink />
+            <BackLink href={backHref} />
           </footer>
         )
       }

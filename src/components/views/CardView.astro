@@ -4,67 +4,40 @@ import Warning from '~/components/base/Warning.astro'
 import DesktopAside from '~/components/base/DesktopAside.astro'
 import MobileControl from '~/components/base/MobileControl.astro'
 
-import {
-  getFilteredPosts,
-  sortPostsByField,
-} from '~/utils/data'
+import { getShortCollections } from '~/utils/data'
 import { withBasePath } from '~/utils/path'
 import { FEATURES } from '~/config'
 
-import type { CollectionKey } from 'astro:content'
 import type { CardItemData } from '~/components/views/CardItem.astro'
 
 interface Props {
-  collectionType: CollectionKey
   gap?: number
   minCardWidth?: number
   maxCardWidth?: number
   pageTag?: boolean
 }
 
-const {
-  collectionType,
-  gap = 16,
-  minCardWidth,
-  maxCardWidth,
-  pageTag = false,
-} = Astro.props
+const { gap = 16, minCardWidth, maxCardWidth, pageTag = false } = Astro.props
 
 const WARNING = `No content available for display.
   Please review and modify <code>CardView.astro</code> as needed.`
 
-let isEmpty = false
-let dataForGrid: CardItemData[] = []
+const dataForGrid: CardItemData[] = (await getShortCollections()).map((group) => ({
+  link: withBasePath(`/shorts/collections/${group.id}/`),
+  text: group.title,
+  description: group.description,
+  footer: `${group.posts.length} 篇${group.draft ? ' · 草稿合集，不会公开' : ''}`,
+  tags: [...new Set(group.posts.flatMap((post) => post.data.tags))],
+}))
+const isEmpty = dataForGrid.length === 0
 
 /* Tag */
 const { tag } = FEATURES
 const tagEnabled = Array.isArray(tag) && tag[0] && pageTag
-let tags: string[][] = []
-let haveTags = false
-
-/* /shorts */
-if (collectionType === 'shorts') {
-  const items = await getFilteredPosts(collectionType)
-  const sorted = sortPostsByField(items, 'title')
-  dataForGrid = sorted.map((item) => ({
-    link: item.data.redirect || withBasePath(`/${collectionType}/${item.id}/`),
-    text: item.data.title,
-    date: item.data.pubDate,
-    tags: item.data.tags,
-  }))
-
-  if (tagEnabled) {
-    for (const item of sorted) {
-      const tag = item.data.tags
-      if (tag.length === 0) continue
-      tags.push(tag)
-    }
-  }
-
-  haveTags = tagEnabled && tags.length > 0
-}
-
-if (dataForGrid.length === 0) isEmpty = true
+const tags = tagEnabled
+  ? dataForGrid.map((item) => item.tags ?? []).filter((tags) => tags.length > 0)
+  : []
+const haveTags = tagEnabled && tags.length > 0
 ---
 
 {

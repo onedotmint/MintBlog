@@ -17,10 +17,12 @@ const batchSize = parseTuple(batchLoadSize, 'batchLoadSize')
 const maxItems = parseTuple(maxItemsPerPage, 'maxItemsPerPage')
 const searchableGroups = await Promise.all(
   (['blog', 'shorts'] as const)
-    .filter(collection => includes.includes(collection))
-    .map(collection => getFilteredPosts(collection))
+    .filter((collection) => includes.includes(collection))
+    .map((collection) => getFilteredPosts(collection))
 )
-const hasSearchablePosts = searchableGroups.some(posts => posts.some(({ data }) => !data.draft && data.search))
+const hasSearchablePosts = searchableGroups.some((posts) =>
+  posts.some(({ data }) => !data.draft && data.search)
+)
 ---
 
 <!-- Search Switch -->
@@ -69,7 +71,9 @@ const hasSearchablePosts = searchableGroups.some(posts => posts.some(({ data }) 
                 aria-[selected=false]:hover:op-70 op-transition cursor-pointer"
               data-type={item.toLowerCase()}
             >
-              {item.charAt(0).toUpperCase() + item.slice(1)}
+              {item === 'shorts'
+                ? 'Collections'
+                : item.charAt(0).toUpperCase() + item.slice(1)}
             </button>
           ))}
         </div>
@@ -541,9 +545,13 @@ const hasSearchablePosts = searchableGroups.some(posts => posts.some(({ data }) 
               a.setAttribute('aria-selected', 'false')
             }
 
-            a.innerHTML = `
-              <div class="search-result-title">${subResults[s].title}</div>
-              <div class="search-result-excerpt">${subResults[s].excerpt}</div>`
+            const title = document.createElement('div')
+            title.className = 'search-result-title'
+            title.textContent = subResults[s].title
+            const excerpt = document.createElement('div')
+            excerpt.className = 'search-result-excerpt'
+            excerpt.innerHTML = subResults[s].excerpt
+            a.append(title, excerpt)
             frag.appendChild(a)
           }
         }

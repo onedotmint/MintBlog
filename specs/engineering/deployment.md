@@ -4,6 +4,7 @@ applies_to:
   - Dockerfile
   - docker-compose.yml
   - docker/**
+  - scripts/deploy.sh
   - .env.example
   - .github/workflows/**
 tags:
@@ -14,13 +15,14 @@ tags:
 
 # Deployment
 
-MintBlog is built as a static Astro site and published as a Docker image. GitHub Actions validates the repository, publishes to the current repository's GHCR package, and deploys to the VPS over SSH.
+MintBlog is built as a static Astro site and published as a Docker image. GitHub Actions validates the repository and publishes to its GHCR package. An operator deploys a chosen version from the VPS; Actions has no server access.
 
 ## DEP-001 Runtime layout
 
 ```text
-GitHub Actions -> ghcr.io/OWNER/REPOSITORY -> SSH to VPS
-  -> docker compose pull && up -d -> MintBlog container on the proxy network
+GitHub Actions -> ghcr.io/owner/repository:sha-<commit> (no server update)
+Operator on VPS -> bash deploy.sh <chosen-image>
+  -> docker compose pull && up --wait -> MintBlog container on the proxy network
   -> external Nginx container -> domain
 ```
 
@@ -31,15 +33,17 @@ GitHub Actions -> ghcr.io/OWNER/REPOSITORY -> SSH to VPS
 
 ## DEP-002 Workflow boundary
 
-- `.github/workflows/deploy.yml` validates, publishes, and deploys the image **without overwriting the server-managed Compose file or `.env`**.
+- `.github/workflows/deploy.yml` only validates and publishes images. Pushes to `main` and manual runs on `main` publish after validation; PRs and manual runs on other branches only validate. No event in this workflow updates the VPS.
+- Workflow concurrency is isolated by Git ref. New PR runs cancel obsolete checks for the same PR; `main` image builds queue rather than cancel an active run.
 - The workflow derives the image path from the full GitHub repository name, so a fork publishes to its own GHCR package.
-- Deployments inject an immutable commit image (`ghcr.io/OWNER/REPOSITORY:sha-<commit>`); the server-side `.env` provides only the default image for manual `docker compose up -d`.
-- GitHub may create a new package as private: the publish job can succeed while the deploy job fails to pull. Make the package public (or configure registry credentials on the VPS) before relying on automatic deployment.
-- Rollback uses a previously published commit image with `docker compose pull` + `up -d --remove-orphans`.
+- CI publishes full-SHA image tags, not `latest`. From the server deployment directory, an operator runs `bash deploy.sh ghcr.io/owner/repository:sha-<40 lowercase hex characters>` using `scripts/deploy.sh`. The script requires Bash, `flock` and Docker Compose with `up --wait --wait-timeout` support; it never builds source or executes SSH.
+- Manual updates are locked per deployment directory. A failed pull leaves the existing service untouched. Startup/health failures restore the previous local image ID and wait for its health; failed first deployments stop only `web`. Recovery failure remains a nonzero error requiring operator action.
+- The script does not edit `.env`: after public acceptance the operator pins its `BLOG_IMAGE` to the selected version. Unqualified Compose commands otherwise use the value already in `.env`. Public acceptance is separate from container liveness.
+- GitHub may create a new package as private. Make it public or configure read-only GHCR pull credentials on the VPS. A deliberate rollback uses the same manual script with a previously accepted full-SHA image.
 
 ## DEP-003 Credentials
 
-Deployment secrets are repository secrets: `DEPLOY_HOST`, `DEPLOY_PORT` (optional, default 22), `DEPLOY_USER`, `DEPLOY_PATH`, `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`. `.env.example` is a safe template and may be committed; the real server-side `.env` stays local and ignored. Never commit or paste deployment keys.
+Actions only uses its scoped `GITHUB_TOKEN` to publish GHCR images; no VPS credentials belong in this workflow. Operators keep personal SSH credentials locally and any private-registry pull credentials on the VPS. After the new workflow is effective and old deployment runs have stopped, remove obsolete `DEPLOY_*` repository secrets and revoke the old dedicated server key if unused elsewhere. `.env.example` is a safe template; the real server-side `.env` remains ignored. Never commit or paste keys.
 
 ## DEP-004 Domain
 

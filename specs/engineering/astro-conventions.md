@@ -19,7 +19,7 @@ tags:
 
 | Path                    | Ownership                                                                                                                                                |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/pages/`            | File-based routes and route-specific composition; Blog keeps `[...slug].astro`; the public Collections route tree is retired (see `content.collections`) |
+| `src/pages/`            | File-based routes and route composition; Blog/Shorts keep `[...slug].astro`; current Collections uses `/shorts/`, not retired `/collections/`               |
 | `src/layouts/`          | `BaseLayout` (shell) and `StandardLayout` (page/article wrapper)                                                                                         |
 | `src/components/`       | Focused presentation units with typed props; never redefine collection schemas                                                                           |
 | `src/content/`          | Markdown/JSON collection data                                                                                                                            |
@@ -51,4 +51,4 @@ tags:
 
 ## ENGA-004 Forbidden legacy paths
 
-`src/data/`, `src/features/`, `src/hooks/`, domain-adapter layers, `src/data/site.ts`, `src/data/profile.ts`, `src/data/now.ts`, `src/utils/articles.ts`, `src/utils/reading.ts`, `src/utils/projects.ts`, and `src/layouts/Layout.astro` are not part of this project. Referencing `/writing/`, `/works/`, or `/shorts/` routes is an error.
+`src/data/`, `src/features/`, `src/hooks/`, domain-adapter layers, `src/data/site.ts`, `src/data/profile.ts`, `src/data/now.ts`, `src/utils/articles.ts`, `src/utils/reading.ts`, `src/utils/projects.ts`, and `src/layouts/Layout.astro` are not part of this project. Referencing retired `/writing/` or `/works/` routes is an error. The current Collections section uses `/shorts/`, backed by `src/content/shorts/` and optional `src/content/short-collections/` overrides. Do not confuse it with the historical data-only `src/content/collections/` and `src/content/articles/` or restore their retired top-level `/collections/` routes. See [content.collections](../capabilities/content-collections.md).
