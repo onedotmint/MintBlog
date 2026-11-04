@@ -24,7 +24,7 @@ Writing 文章不需要 YAML 头、标题配置、日期、阅读时长或目录
 
 ## 写随笔与新建合集
 
-Collections 是随笔栏目的显示名，网址和内容目录仍使用 `/shorts/`、`src/content/shorts/`，与历史 `src/content/collections/` 数据无关。
+Collections 是随笔栏目的显示名，网址和内容目录仍使用 `/shorts/`、`src/content/shorts/`，与已删除的历史 `src/content/collections/` 无关。
 
 **首段目录决定合集。** 直接建文件就行，不用写任何 frontmatter：
 

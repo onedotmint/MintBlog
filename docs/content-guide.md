@@ -40,14 +40,13 @@ description: '用于列表和 SEO 的一句话说明。'
 - `redirect`：可省略或填空字符串；需要跳转时填写不含用户名、密码的 `http://` 或 `https://` URL。
 - `ogImage`：可填 `true`、`false`、`fallback` 或 `public/og-images/` 下图片的相对路径，例如 `custom.png`。
 - `bgType`：可填 `false`、`plum`、`dot`、`rose`、`particle`、`signal`、
-  `signal-plus`、`breeze` 或 `mist`。首页使用 `breeze`，Writing／Collections 列表页使用 `mist`；
-  两者是轻量 CSS 光影，手机与减少动态模式静止。文章默认不加背景，无须随列表页修改。
+  `signal-plus`、`breeze` 或 `mist`。当前实际用法：首页 `breeze`，Writing／Collections 列表页（含合集篇目页）`mist`，Projects `signal`，404 与 Photos `false`；`breeze`、`mist` 是轻量 CSS 光影，手机与减少动态模式静止。文章默认不加背景，无须随列表页修改。
 
 文章正文使用 Markdown。图片放在 `public/images/` 时，用根路径引用，例如 `/images/blog/example.svg`。
 
 ## 随笔（Collections）
 
-Collections 是随笔栏目的显示名，网址和内容目录仍使用 `/shorts/`、`src/content/shorts/`。它与未公开的历史 `src/content/collections/`、`src/content/articles/` 数据无关；后两者不会自动发布。
+Collections 是随笔栏目的显示名，网址和内容目录仍使用 `/shorts/`、`src/content/shorts/`。它已与已删除的历史 `src/content/collections/`、`src/content/articles/` 数据无关。
 
 随笔适合片刻想法、日常感受、偶然发现或简短的踩坑记录，不限定主题、结构或字数。与 Writing 的完整文章不同，随笔按路径的首段目录归入合集。
 
@@ -102,23 +101,6 @@ draft: false
 
 作品显示顺序以 JSON 数组顺序为准。修改分类时同时检查作品页的分组标题和描述是否仍然准确。
 
-## 友链
-
-友链数据放在 `src/content/links/data.json`。这里只放第三方个人站点，不放自己的项目、资料索引或其他资源。
-
-每项使用以下字段：
-
-```json
-{
-  "id": "站点名称",
-  "link": "https://example.com/",
-  "desc": "站点内容的一句话简介。",
-  "icon": "i-ri-global-line"
-}
-```
-
-Links 页面与导航入口已按要求移除，`/links/` 不再公开，也不做重定向。JSON 及集合校验保留为历史数据；修改它不会生成页面。不要为了编辑数据恢复路由。
-
 ## 页面配置
 
 静态页面放在 `src/pages/`，常用页面 frontmatter 如下：
@@ -136,7 +118,7 @@ ogImage: true
 - `title` 显示在页面标题和文档元数据中。
 - `subtitle` 显示在页面标题下方。
 - `description` 用于 SEO 和分享描述。
-- `bgType` 选择页面背景，设为 `false` 可关闭背景。
+- `bgType` 选择页面背景，设为 `false` 可关闭背景；完整可选值与各页面当前用法见上文[文章](#文章)的 `bgType` 说明（Projects 使用 `signal`）。
 - `ogImage` 控制 Open Graph 图片；具体生成规则由 `FEATURES.ogImage` 控制。
 
 页面结构优先复用 `BaseLayout`、`StandardLayout` 和现有 View 组件。只有页面组成方式确实不同，才新增页面组件。
@@ -157,12 +139,12 @@ ogImage: true
 - `mist`
 - `false`
 
-首页使用 `breeze`，Writing 与 Collections 的列表页（含合集篇目页）使用 `mist`，Projects 使用 `signal`。`breeze`、`mist` 是轻量 CSS 光影，移动端与减少动态模式静止。文章和随笔正文默认 `false`（无背景）；其余类型仍可选，`signal-plus` 当前不用于首页。
+首页使用 `breeze`，Writing 与 Collections 的列表页（含合集篇目页）使用 `mist`，Projects 使用 `signal`，404 与 Photos 使用 `false`。`breeze`、`mist` 是轻量 CSS 光影，移动端与减少动态模式静止。文章和随笔正文默认 `false`（无背景）；`plum`、`dot`、`rose`、`particle`、`signal-plus` 当前没有页面使用，保留为可选值。
 
 ## 提交前检查
 
-完整检查步骤见 [release-preparation.md](release-preparation.md)。如果内容校验失败，先根据错误定位字段，再检查对应集合的 schema：文章和随笔使用 `postSchema`，随笔合集的可选覆盖文件使用 `shortCollectionSchema`，作品使用 `projectSchema`，友链使用 `linkSchema`，页面使用 `pageSchema`。
+完整检查步骤见 [release-preparation.md](release-preparation.md)。如果内容校验失败，先根据错误定位字段，再检查对应集合的 schema：文章和随笔使用 `postSchema`，随笔合集的可选覆盖文件使用 `shortCollectionSchema`，作品使用 `projectSchema`，页面使用 `pageSchema`。
 
 ## 历史记录
 
-原版恢复与备份记录见 [restoration.md](restoration.md)，背景调整记录见 [atmosphere-blend.md](atmosphere-blend.md)。这些文档保留历史过程，当前内容规则以本手册和[内容规范](../specs/capabilities/content-collections.md)为准。
+原版恢复与备份记录见 [history.md](history.md)。该文档保留历史过程，当前内容规则以本手册和[内容规范](../specs/capabilities/content-collections.md)为准。

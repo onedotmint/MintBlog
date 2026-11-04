@@ -11,7 +11,7 @@ Repo-wide rules already established by the code, configuration, and workflows.
 ## Sources of truth
 
 - `src/config.ts` is the single source for site identity, navigation, UI behavior, and `FEATURES` switches. Do not create a second site-identity module.
-- `src/schema.ts` owns runtime content schemas; `src/content.config.ts` registers `pages`, `home`, `blog`, `projects`, `links`, `photos`, `shorts`, public `shortCollections`, plus preserved non-public `collections` and `articles` and connects those schemas.
+- `src/schema.ts` owns runtime content schemas; `src/content.config.ts` registers `pages`, `home`, `blog`, `projects`, `photos`, `shorts`, public `shortCollections`, plus preserved non-public `collections` and `articles` and connects those schemas.
 - `src/utils/data.ts` owns shared draft filtering, ordering, slug, and URL transformations for content; `src/utils/path.ts` owns base-aware and trailing-slash path handling.
 - `package.json` is the source of truth for supported commands.
 

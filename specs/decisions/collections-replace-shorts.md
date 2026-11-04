@@ -1,6 +1,6 @@
 # Collections replaces Shorts without legacy redirects
 
-> **Status: Superseded / 已废止。** This decision describes a retired `/collections/` + Articles design, not today's Collections section. The current [content specification](../capabilities/content-collections.md) keeps `/shorts/`, derives membership from the first directory segment, and uses optional `shortCollections` overrides; historical `src/content/collections/` and `src/content/articles/` remain data-only. The text below is historical rationale, not implementation guidance.
+> **Status: Superseded / 已废止。** This decision describes a retired `/collections/` + Articles design, not today's Collections section. The current [content specification](../capabilities/content-collections.md) keeps `/shorts/`, derives membership from the first directory segment, and uses optional `shortCollections` overrides; historical `src/content/collections/` and `src/content/articles/` were removed in 2026-11. The text below is historical rationale, not implementation guidance.
 
 ## Context
 

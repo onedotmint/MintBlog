@@ -1,6 +1,6 @@
 # MintBlog
 
-一点薄荷的个人博客，使用 AntfuStyle 主题承载站点内容。
+一点薄荷的个人博客，使用 Astro 静态站构建。
 
 ## 开发
 
@@ -29,6 +29,6 @@ Docker 部署说明见 [`docs/deployment.md`](docs/deployment.md)。当前依赖
 
 ## 原版恢复
 
-正式界面的布局与字体以 Git `ca826e2` 为基线，不保留重设计时间轮、Connections 或独立作品档案；当前导航将 Shorts 显示为 Collections，首页与列表背景按后续要求调整。历史恢复与备份记录见 [`docs/restoration.md`](docs/restoration.md)，背景调整记录见 [`docs/atmosphere-blend.md`](docs/atmosphere-blend.md)。
+正式界面的布局与字体以 Git `ca826e2` 为基线，不保留重设计时间轮、Connections 或独立作品档案；当前导航将 Shorts 显示为 Collections，首页与列表背景按后续要求调整。历史恢复、背景调整与 Links／Collections 删除记录见 [`docs/history.md`](docs/history.md)。
 
 `.local/` 完整保留并排除于 Git、工具检查和 Docker。需要运行依赖重设计组件的旧 Lab 时，使用仓库外完整备份的 worktree，而不是把它接回正式网站。

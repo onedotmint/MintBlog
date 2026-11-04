@@ -55,7 +55,7 @@ export default defineConfig<PresetWind3Theme>({
       },
       fontFamily: {
         ...theme.fontFamily,
-        sans: 'var(--font-sans)',
+        sans: 'var(--font-sans), var(--font-han)',
         mono: 'var(--font-mono)',
         condensed: 'var(--font-condensed)',
       },

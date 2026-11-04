@@ -42,10 +42,10 @@ OG 功能仍保持原来的关闭状态；升级不等于启用。Windows 路径
 ## 本轮本机验证
 
 - `pnpm install --frozen-lockfile --strict-peer-dependencies` 成功；`pnpm audit` 返回零已知漏洞。
-- `pnpm check`：103 文件，0 errors / warnings / hints；完整 `pnpm lint` 通过，47 项测试全部通过。
-- `pnpm build` 成功生成 9 个 HTML 页面；当前没有允许索引的正文，Pagefind 正常跳过，空索引/真实文章索引的测试均通过。
+- `pnpm check`：0 errors / warnings / hints；完整 `pnpm lint` 与 `pnpm test` 全部通过。
+- `pnpm build` 成功生成全部静态页面；当前没有允许索引的正文，Pagefind 正常跳过，空索引/真实文章索引的测试均通过。
 - HTTP 验证首页、Writing、Projects、Collections、默认合集、旧随笔地址、robots、RSS、sitemap 共 9 条路由均返回 200；不存在路径返回 404。构建 CSS 中的 KaTeX 本地字体引用均存在，未保留远程 KaTeX CDN 引用。
-- 构建仍提示 p5 分包较大；当前 9 个 HTML 页面未引用 Dot/Particle 脚本，因此不能把产物大小说成每页加载量，也不能以此代替启用背景后的浏览器验证。Photos 空集合提示保留，不伪造照片数据。
-- 全仓 `pnpm format` 仍报告 88 个历史文件差异；本轮修改文件单独整理，不把依赖迁移变成全仓纯格式提交。尚未进行容器系统扫描、真实 Windows CI 或正式公网验收；没有部署或修改生产域名。
+- 构建仍提示 p5 分包较大；当前构建的页面均未引用 Dot/Particle 脚本，因此不能把产物大小说成每页加载量，也不能以此代替启用背景后的浏览器验证。Photos 空集合提示保留，不伪造照片数据。
+- 全仓 `pnpm format` 仍报告历史文件格式差异；本轮修改文件单独整理，不把依赖迁移变成全仓纯格式提交。尚未进行容器系统扫描、真实 Windows CI 或正式公网验收；没有部署或修改生产域名。
 
 实际浏览器验收曾尝试使用隔离浏览器，但工具无法取得窗口绑定，未获得页面交互或真实 p5 canvas 生命周期证据；该会话已结束，预览服务也已停止。HTTP 与模拟生命周期测试通过不能替代此项。

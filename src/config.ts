@@ -1,7 +1,7 @@
 import type { Site, Ui, Features } from './types'
 
 export const SITE: Site = {
-  website: 'https://onedotmint.github.io/',
+  website: 'https://onedotmint.com/',
   base: '/',
   title: '一点薄荷',
   description: '一个安静的技术笔记本，记录文章、学习笔记、系统实验和小作品。',
