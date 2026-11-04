@@ -40,26 +40,32 @@ const { variant } = Astro.props
 
 <style>
   .atmosphere {
-    --mist-green: rgb(125 156 137 / 0.15);
-    --mist-warm: rgb(188 171 143 / 0.12);
+    --mist-green: rgb(150 168 158 / 0.5);
+    --mist-warm: rgb(198 186 170 / 0.4);
     position: fixed;
     inset: 0;
     z-index: -1;
     overflow: hidden;
     pointer-events: none;
     contain: strict;
-    /* Keep the reading column quieter than the surrounding whitespace. */
+    /* Keep the reading column completely clean: light only at the page edges. */
     mask-image: radial-gradient(
-      ellipse 42% 65% at 50% 40%,
-      rgb(0 0 0 / 0.08) 15%,
-      rgb(0 0 0 / 0.35) 60%,
+      ellipse 38% 58% at 50% 40%,
+      transparent 30%,
+      rgb(0 0 0 / 0.55) 62%,
+      #000 100%
+    );
+    -webkit-mask-image: radial-gradient(
+      ellipse 38% 58% at 50% 40%,
+      transparent 30%,
+      rgb(0 0 0 / 0.55) 62%,
       #000 100%
     );
   }
 
   :global(html.dark) .atmosphere {
-    --mist-green: rgb(106 148 125 / 0.14);
-    --mist-warm: rgb(165 153 127 / 0.1);
+    --mist-green: rgb(128 150 138 / 0.45);
+    --mist-warm: rgb(172 161 147 / 0.32);
   }
 
   .atmosphere::before,
