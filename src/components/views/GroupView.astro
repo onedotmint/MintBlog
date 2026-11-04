@@ -42,7 +42,7 @@ if (collectionType === 'projects') {
 
   // Projects with a matching detail page link internally; the rest keep their external URL.
   const detailSlugs = new Map(
-    (await getCollection('projectPosts')).map((post) => [
+    (await getCollection('projectPosts', ({ data }) => !data.draft)).map((post) => [
       post.data.title,
       post.id,
     ])

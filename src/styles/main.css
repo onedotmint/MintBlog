@@ -5,11 +5,6 @@
   --c-scrollbar: #ddd;
   --c-scrollbar-hover: #bbb;
   --c-text: #000;
-  /* Han glyphs come from the locally bundled Noto Sans SC slices, which load
-     only the unicode-range pieces a page uses. System CJK faces stay as a
-     fallback for the brief moment before those slices arrive. */
-  --font-han: 'Noto Sans SC Variable', 'PingFang SC', 'Microsoft YaHei',
-    'Noto Sans SC', sans-serif;
 }
 
 :root.dark {

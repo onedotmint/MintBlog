@@ -58,7 +58,7 @@ export default defineConfig({
       styles: ['normal'],
       subsets: ['latin'],
       formats: ['woff2'],
-      fallbacks: sansFallbacks,
+      fallbacks: ['Noto Sans SC Variable', ...sansFallbacks],
     },
     {
       provider: fontProviders.fontsource(),

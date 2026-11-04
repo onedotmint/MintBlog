@@ -33,6 +33,7 @@ function fixture(
   try {
     mkdirSync(join(root, 'src/content/blog'), { recursive: true })
     mkdirSync(join(root, 'src/content/shorts'), { recursive: true })
+    mkdirSync(join(root, 'src/content/projects/posts'), { recursive: true })
     git('init', '-q')
     git('config', 'user.name', 'Metadata Test')
     git('config', 'user.email', 'metadata@example.invalid')
@@ -135,35 +136,37 @@ test('new local notes use mtime temporarily, but committed dates ignore filesyst
   })
 })
 
-test('Git-free builds require an exact date snapshot, never invent a deployment date', () => {
-  fixture((root) => {
-    const path = join(root, 'src/content/blog/offline.md')
-    writeFileSync(path, 'Content for a container.\n')
-    commit(root, first)
-    const expected = fillPostMetadata(root, path, {})
-    execFileSync(process.execPath, ['--experimental-strip-types', exporter], {
-      cwd: root,
-      stdio: 'pipe',
+for (const collection of ['blog', 'shorts', 'projects/posts']) {
+  test(`Git-free ${collection} builds require an exact date snapshot, never invent a deployment date`, () => {
+    fixture((root) => {
+      const path = join(root, 'src/content', collection, 'offline.md')
+      writeFileSync(path, 'Content for a container.\n')
+      commit(root, first)
+      const expected = fillPostMetadata(root, path, {})
+      execFileSync(process.execPath, ['--experimental-strip-types', exporter], {
+        cwd: root,
+        stdio: 'pipe',
+      })
+      const snapshot = readFileSync(join(root, '.post-dates.json'))
+      execFileSync(process.execPath, ['--experimental-strip-types', exporter], {
+        cwd: root,
+        stdio: 'pipe',
+      })
+      assert.deepEqual(readFileSync(join(root, '.post-dates.json')), snapshot)
+      renameSync(join(root, '.git'), join(root, '.saved-git'))
+      utimesSync(path, new Date('2040-01-01'), new Date('2040-01-01'))
+      assert.deepEqual(fillPostMetadata(root, path, {}), expected)
+      writeFileSync(path, 'Changed after snapshot.\n')
+      assert.throws(() => fillPostMetadata(root, path, {}), /snapshot must match/)
+      rmSync(join(root, '.post-dates.json'))
+      assert.throws(() => fillPostMetadata(root, path, {}), /pnpm content:dates/)
+      assert.deepEqual(
+        fillPostMetadata(root, path, { pubDate: '2020-01-01', lastModDate: '' }),
+        { title: 'offline', pubDate: '2020-01-01', lastModDate: '' }
+      )
     })
-    const snapshot = readFileSync(join(root, '.post-dates.json'))
-    execFileSync(process.execPath, ['--experimental-strip-types', exporter], {
-      cwd: root,
-      stdio: 'pipe',
-    })
-    assert.deepEqual(readFileSync(join(root, '.post-dates.json')), snapshot)
-    renameSync(join(root, '.git'), join(root, '.saved-git'))
-    utimesSync(path, new Date('2040-01-01'), new Date('2040-01-01'))
-    assert.deepEqual(fillPostMetadata(root, path, {}), expected)
-    writeFileSync(path, 'Changed after snapshot.\n')
-    assert.throws(() => fillPostMetadata(root, path, {}), /snapshot must match/)
-    rmSync(join(root, '.post-dates.json'))
-    assert.throws(() => fillPostMetadata(root, path, {}), /pnpm content:dates/)
-    assert.deepEqual(
-      fillPostMetadata(root, path, { pubDate: '2020-01-01', lastModDate: '' }),
-      { title: 'offline', pubDate: '2020-01-01', lastModDate: '' }
-    )
   })
-})
+}
 
 test('shallow history is rejected rather than silently assigning the wrong first date', () => {
   fixture((root, git) => {

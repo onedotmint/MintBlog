@@ -51,3 +51,19 @@ test('OG font configuration and generator agree on WOFF2', () => {
   )
   assert.match(generator, /item\.format === 'woff2'/)
 })
+
+test('the body font stack puts bundled Chinese glyphs before system fallbacks', () => {
+  const config = readFileSync(
+    new URL('../astro.config.ts', import.meta.url),
+    'utf8',
+  )
+  const uno = readFileSync(
+    new URL('../unocss.config.ts', import.meta.url),
+    'utf8',
+  )
+  assert.match(
+    config,
+    /cssVariable: '--font-sans',[\s\S]*?fallbacks: \['Noto Sans SC Variable', \.\.\.sansFallbacks\]/,
+  )
+  assert.match(uno, /sans: 'var\(--font-sans\)'/)
+})

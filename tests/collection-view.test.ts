@@ -74,3 +74,29 @@ test('post and collection draft previews independently explain both publishing s
     /override file in <code>src\/content\/short-collections\//
   )
 })
+
+test('project detail links exclude drafts and keep published detail slugs', async () => {
+  const source = readSource('src/components/views/GroupView.astro')
+  const expression = source.match(
+    /const detailSlugs = ([\s\S]*?)\n\s*const projectOrder/,
+  )
+  assert.ok(expression)
+  const posts = [
+    { id: 'reroute', data: { title: 'Reroute', draft: false } },
+    { id: 'siftpath', data: { title: 'Siftpath', draft: true } },
+  ]
+  const slugs: Map<string, string> = await runInNewContext(
+    `(async () => { return ${expression[1]} })()`,
+    {
+      async getCollection(
+        collection: string,
+        filter?: (post: (typeof posts)[number]) => boolean,
+      ) {
+        assert.equal(collection, 'projectPosts')
+        return posts.filter(filter ?? (() => true))
+      },
+    },
+  )
+  assert.equal(slugs.get('Reroute'), 'reroute')
+  assert.equal(slugs.has('Siftpath'), false)
+})

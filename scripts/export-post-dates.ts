@@ -29,7 +29,7 @@ if (existsSync(join(root, '.git'))) {
       }
     }
   }
-  for (const collection of ['blog', 'shorts'])
+  for (const collection of ['blog', 'shorts', 'projects/posts'])
     collect(join(root, 'src/content', collection))
   const path = join(root, '.post-dates.json')
   const snapshot = JSON.stringify({ version: 1, posts }, null, 2) + '\n'
