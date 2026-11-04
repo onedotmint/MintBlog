@@ -768,8 +768,7 @@ interface TagConfig {
 
 export interface Features {
   /**
-   * Whether to enable slide-in animation on each page
-   * except the `/photos` and `/shorts` pages.
+   * Whether to enable slide-in animation on each page.
    */
   slideEnterAnim: FeatureConfig<slideEnterAnimConfig>
 
@@ -794,8 +793,6 @@ export interface Features {
    *
    * To disable for a specific post, set the `toc` field in the frontmatter to `false`.
    * For list/group/custom content pages, pass `pageToc={false}` to the view component.
-   *
-   * Note: The feature is not supported on the `/photos` and `/shorts` pages.
    */
   toc: FeatureConfig<TocConfig>
 

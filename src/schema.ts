@@ -1,5 +1,4 @@
 import { z } from 'astro/zod'
-import { reference } from 'astro:content'
 import type { SchemaContext } from 'astro:content'
 
 const httpUrlSchema = z.url().refine(
@@ -209,7 +208,7 @@ export const shortCollectionSchema = z.object({
   draft: z.boolean().default(false),
 })
 
-/* Projects and links share one display item contract. */
+/* Shared display item contract for the Projects collection. */
 const groupItemSchema = {
   id: z.string().describe('**Required**. Name of the item to be displayed.'),
   link: httpUrlSchema.describe('**Required**. URL linking to the item.'),
@@ -232,32 +231,3 @@ export const projectSchema = z.object({
   category: z.string().describe('**Required**. Category of the project.'),
 })
 
-export const linkSchema = z.object(groupItemSchema)
-
-/* Photos */
-export const photoSchema = z.object({
-  id: z
-    .string()
-    .describe(
-      '**Required**. File (name/path) of the image in the `src/content/photos/` directory or a remote image URL.'
-    ),
-  desc: z
-    .string()
-    .default('')
-    .describe(
-      'Optional description for the image. If not needed, leave the field as an empty string or delete it.'
-    ),
-})
-
-// Preserve authored Collections/Articles as data only; no public routes are restored for them.
-export const collectionSchema = ({ image }: SchemaContext) =>
-  z.object({
-    title: z.string().trim().min(1).max(60),
-    description: z.string().trim().min(1),
-    cover: z.union([image(), z.url()]).default(''),
-    order: z.number().int(),
-    draft: z.boolean().default(false),
-  })
-
-export const articleSchema = ({ image }: SchemaContext) =>
-  postSchema({ image }).extend({ collection: reference('collections') })

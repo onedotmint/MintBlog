@@ -7,10 +7,6 @@ import {
   postSchema,
   shortCollectionSchema,
   projectSchema,
-  linkSchema,
-  photoSchema,
-  collectionSchema,
-  articleSchema,
 } from '~/schema'
 
 const pages = defineCollection({
@@ -32,16 +28,6 @@ const projects = defineCollection({
   schema: projectSchema,
 })
 
-const links = defineCollection({
-  loader: file('./src/content/links/data.json'),
-  schema: linkSchema,
-})
-
-const photos = defineCollection({
-  loader: file('src/content/photos/data.json'),
-  schema: photoSchema,
-})
-
 const shortCollections = defineCollection({
   loader: glob({
     base: './src/content/short-collections',
@@ -55,25 +41,11 @@ const shorts = defineCollection({
   schema: postSchema,
 })
 
-const collectionRecords = defineCollection({
-  loader: glob({ base: './src/content/collections', pattern: '[^_]*.{md,mdx}' }),
-  schema: collectionSchema,
-})
-
-const articles = defineCollection({
-  loader: glob({ base: './src/content/articles', pattern: '[^_]*.{md,mdx}' }),
-  schema: articleSchema,
-})
-
 export const collections = {
   pages,
   home,
   blog,
   projects,
-  links,
-  photos,
   shorts,
   shortCollections,
-  collections: collectionRecords,
-  articles,
 }
