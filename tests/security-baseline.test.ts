@@ -90,3 +90,34 @@ test('CI only validates and publishes versioned images without server access', (
     ),
   )
 })
+
+test('workflow pins verified Node 24 Actions with exact version labels and a stable runner', () => {
+  const ci = readFileSync(
+    new URL('../.github/workflows/deploy.yml', import.meta.url),
+    'utf8',
+  )
+  // These releases declare runs.using: node24 in their upstream action.yml.
+  const versions = new Map([
+    ['actions/checkout', 'v7.0.1'],
+    ['actions/setup-node', 'v7.1.0'],
+    ['pnpm/action-setup', 'v6.1.1'],
+    ['docker/setup-buildx-action', 'v4.4.1'],
+    ['docker/login-action', 'v4.7.0'],
+    ['docker/metadata-action', 'v6.2.0'],
+    ['docker/build-push-action', 'v7.4.0'],
+  ])
+  const actions = [
+    ...ci.matchAll(/^\s+uses: ([\w/-]+)@([a-f0-9]{40}) # (v\d+\.\d+\.\d+)$/gm),
+  ]
+  assert.equal(actions.length, [...ci.matchAll(/^\s+uses:/gm)].length)
+  assert.equal(new Set(actions.map(([, name]) => name)).size, versions.size)
+  for (const [, name, sha, version] of actions) {
+    assert.equal(version, versions.get(name), name)
+    assert.equal(sha.length, 40)
+  }
+  assert.equal([...ci.matchAll(/runs-on: ubuntu-24\.04/g)].length, 2)
+  assert.doesNotMatch(
+    ci,
+    /ubuntu-latest|FORCE_JAVASCRIPT_ACTIONS_TO_NODE|ACTIONS_ALLOW_USE_UNSECURE_NODE/,
+  )
+})

@@ -34,6 +34,7 @@ Operator on VPS -> bash deploy.sh <chosen-image>
 ## DEP-002 Workflow boundary
 
 - `.github/workflows/deploy.yml` only validates and publishes images. Pushes to `main` and manual runs on `main` publish after validation; PRs and manual runs on other branches only validate. No event in this workflow updates the VPS.
+- Both jobs use `ubuntu-24.04` rather than the rolling `ubuntu-latest` label. External Actions are pinned to full commit SHAs with exact release comments; their own JavaScript runtime is Node 24, separate from the project Node version installed by setup-node. Do not hide deprecation notices using runtime override environment variables.
 - Workflow concurrency is isolated by Git ref. New PR runs cancel obsolete checks for the same PR; `main` image builds queue rather than cancel an active run.
 - The workflow derives the image path from the full GitHub repository name, so a fork publishes to its own GHCR package.
 - CI publishes full-SHA image tags, not `latest`. From the server deployment directory, an operator runs `bash deploy.sh ghcr.io/owner/repository:sha-<40 lowercase hex characters>` using `scripts/deploy.sh`. The script requires Bash, `flock` and Docker Compose with `up --wait --wait-timeout` support; it never builds source or executes SSH.
