@@ -1,0 +1,86 @@
+---
+import { render } from 'astro:content'
+
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import StandardLayout from '~/layouts/StandardLayout.astro'
+import PostMeta from '~/components/base/PostMeta.astro'
+import Link from '~/components/base/Link.astro'
+import Warning from '~/components/base/Warning.astro'
+import DesktopAside from '~/components/base/DesktopAside.astro'
+import MobileControl from '~/components/base/MobileControl.astro'
+
+import { getMinutesRead } from '~/utils/data'
+import { FEATURES } from '~/config'
+import { withBasePath } from '~/utils/path'
+
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  post: CollectionEntry<'projectPosts'>
+}
+
+const { post } = Astro.props
+const { toc } = FEATURES
+
+const { data: frontmatter } = post
+const { Content, headings, remarkPluginFrontmatter } = await render(post)
+
+const minutesRead = getMinutesRead(
+  frontmatter.minutesRead,
+  remarkPluginFrontmatter.minutesRead as number
+)
+
+const tocEnabled = Array.isArray(toc) && toc[0] && frontmatter.toc
+const haveHeadings = tocEnabled && headings.length > 0
+
+const lastModDate =
+  frontmatter.lastModDate && frontmatter.lastModDate.toISOString()
+
+const WARNING = `This is a draft project page that will not be published in production.`
+---
+
+<BaseLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  ogImage={frontmatter.ogImage}
+  pubDate={frontmatter.pubDate.toISOString()}
+  {lastModDate}
+  backHref={withBasePath('/projects/')}
+>
+  <StandardLayout title={frontmatter.title} subtitle={frontmatter.subtitle}>
+    <Fragment slot="head">
+      <PostMeta
+        pubDate={frontmatter.pubDate.toISOString()}
+        {lastModDate}
+        {minutesRead}
+        tags={frontmatter.tags}
+      />
+    </Fragment>
+    <Fragment slot="article">
+      {frontmatter.draft && <Warning html={WARNING} />}
+      {
+        haveHeadings && (
+          <>
+            <DesktopAside {headings} />
+            <MobileControl {headings} />
+          </>
+        )
+      }
+      <Content />
+      {
+        frontmatter.repo && (
+          <p class="mt-12 not-prose">
+            <Link
+              class="inline-flex items-center gap-2 rounded-md border border-[#8883] px-4 py-2 text-sm no-underline transition-colors hover:bg-[#8881]"
+              href={frontmatter.repo}
+              external={true}
+            >
+              <span class="i-ri-github-fill" />
+              查看仓库
+            </Link>
+          </p>
+        )
+      }
+    </Fragment>
+  </StandardLayout>
+</BaseLayout>

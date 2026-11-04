@@ -4,6 +4,8 @@ import { UI } from '~/config'
 
 export interface GroupItemData {
   id: string
+  /** Internal detail page path; falls back to `link` when absent. */
+  href?: string
   link: string
   desc: string
   icon: string
@@ -30,10 +32,10 @@ const { maxGroupColumns, showGroupItemColorOnHover } = UI.groupView
           px-3.5 pt-2 pb-3.5 rounded-md
           bg-transparent hover:bg-[#88888811]
           text-4.4 op-100! transition-all duration-300`}
-        href={item.link}
-        external={true}
-        target={openInNewTab ? '_blank' : undefined}
-        rel={openInNewTab ? 'noopener noreferrer' : undefined}
+        href={item.href ?? item.link}
+        external={!item.href}
+        target={!item.href && openInNewTab ? '_blank' : undefined}
+        rel={!item.href && openInNewTab ? 'noopener noreferrer' : undefined}
       >
         <div class="pt-2 pr-5">
           <div

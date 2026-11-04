@@ -231,3 +231,11 @@ export const projectSchema = z.object({
   category: z.string().describe('**Required**. Category of the project.'),
 })
 
+/* Project detail pages: Markdown intro with an optional repository link. */
+export const projectPostSchema = ({ image }: SchemaContext) =>
+  postSchema({ image }).extend({
+    repo: httpUrlSchema
+      .optional()
+      .describe('Repository URL shown at the end of the project page.'),
+    category: z.string().trim().default(''),
+  })

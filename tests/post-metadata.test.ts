@@ -188,7 +188,7 @@ test('post filenames are literal Git paths, not pathspec patterns', () => {
     )
     assert.throws(
       () => getPostDates(root, join(root, '../outside.md')),
-      /outside Blog\/Shorts/
+      /outside a dated content collection/
     )
   })
 })

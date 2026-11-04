@@ -19,10 +19,10 @@ export function postFileHash(filePath: string) {
 export function getPostDates(root: string, filePath: string): PostDates {
   const path = relative(root, resolve(filePath)).split(sep).join('/')
   if (
-    !/^src\/content\/(blog|shorts)\/.+\.(md|mdx)$/.test(path) ||
+    !/^src\/content\/(blog|shorts|projects\/posts)\/.+\.(md|mdx)$/.test(path) ||
     path.split('/').includes('..')
   )
-    throw new Error(`Post is outside Blog/Shorts: ${path}`)
+    throw new Error(`Post is outside a dated content collection: ${path}`)
 
   if (existsSync(join(root, '.git'))) {
     const git = (...args: string[]) =>

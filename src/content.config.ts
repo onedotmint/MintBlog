@@ -7,6 +7,7 @@ import {
   postSchema,
   shortCollectionSchema,
   projectSchema,
+  projectPostSchema,
 } from '~/schema'
 
 const pages = defineCollection({
@@ -28,6 +29,11 @@ const projects = defineCollection({
   schema: projectSchema,
 })
 
+const projectPosts = defineCollection({
+  loader: postLoader('./src/content/projects/posts'),
+  schema: projectPostSchema,
+})
+
 const shortCollections = defineCollection({
   loader: glob({
     base: './src/content/short-collections',
@@ -46,6 +52,7 @@ export const collections = {
   home,
   blog,
   projects,
+  projectPosts,
   shorts,
   shortCollections,
 }
