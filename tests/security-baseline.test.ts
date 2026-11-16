@@ -3,6 +3,7 @@ import { createRequire } from 'node:module'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
+import rss from '@astrojs/rss'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 
@@ -120,4 +121,85 @@ test('workflow pins verified Node 24 Actions with exact version labels and a sta
     ci,
     /ubuntu-latest|FORCE_JAVASCRIPT_ACTIONS_TO_NODE|ACTIONS_ALLOW_USE_UNSECURE_NODE/,
   )
+})
+
+test('Astro and the RSS parser retain the compatible security patch baseline', () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+  )
+  assert.equal(manifest.devDependencies.astro, '^7.4.7')
+  assert.equal(
+    manifest.pnpm.overrides['@astrojs/rss>fast-xml-parser'],
+    '5.12.0',
+  )
+  const astro = JSON.parse(
+    readFileSync(new URL(import.meta.resolve('astro/package.json')), 'utf8'),
+  )
+  assert.match(astro.version, /^7\.\d+\.\d+$/)
+  const [, minor, patch] = astro.version.split('.').map(Number)
+  assert.ok(minor > 4 || (minor === 4 && patch >= 7), astro.version)
+})
+
+test('the patched RSS XML parser preserves Chinese, escaping and custom XML', async () => {
+  const requireRss = createRequire(import.meta.resolve('@astrojs/rss'))
+  const { XMLParser, XMLValidator } = requireRss('fast-xml-parser')
+  const response = await rss({
+    title: '一点薄荷 & MintBlog',
+    description: 'RSS security patch compatibility',
+    site: 'https://example.invalid/',
+    customData: '<language>zh-CN</language>',
+    items: [
+      {
+        title: '中文 & <Astro>',
+        description: 'A & B < C',
+        link: '/blog/security/',
+        pubDate: new Date('2026-11-14T00:00:00Z'),
+        customData: '<category>安全补丁</category>',
+      },
+    ],
+  })
+  const xml = await response.text()
+  assert.equal(XMLValidator.validate(xml), true)
+  const channel = new XMLParser().parse(xml).rss.channel
+  assert.equal(channel.title, '一点薄荷 & MintBlog')
+  assert.equal(channel.language, 'zh-CN')
+  assert.equal(channel.item.title, '中文 & <Astro>')
+  assert.equal(channel.item.description, 'A & B < C')
+  assert.equal(channel.item.category, '安全补丁')
+  assert.equal(channel.item.link, 'https://example.invalid/blog/security/')
+})
+
+test('WASM runtime overrides keep Astro and Rolldown on compatible generations', () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+  )
+  const overrides = manifest.pnpm.overrides
+  assert.equal(overrides['@napi-rs/wasm-runtime@1.2.4>@emnapi/runtime'], '1.11.3')
+  assert.equal(Object.hasOwn(overrides, '@emnapi/runtime'), false)
+  assert.equal(Object.hasOwn(overrides, '@napi-rs/wasm-runtime>@emnapi/runtime'), false)
+
+  const lock = readFileSync(new URL('../pnpm-lock.yaml', import.meta.url), 'utf8')
+  const snapshots = lock.split('\nsnapshots:\n')[1]
+  assert.ok(snapshots)
+  assert.ok(snapshots.includes(
+    "  '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':",
+  ))
+  for (const version of ['1.2.19', '1.3.2']) {
+    const binding = snapshots
+      .split(`  '@rolldown/binding-wasm32-wasi@${version}':\n`)[1]
+      ?.split('\n\n')[0]
+    assert.ok(binding, `Missing Rolldown ${version} WASM binding`)
+    assert.match(binding, /'@emnapi\/core': 2\.0\.0-beta\.2/)
+    assert.match(binding, /'@emnapi\/runtime': 2\.0\.0-beta\.2/)
+    assert.ok(binding.includes(
+      "'@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)",
+    ))
+  }
+  const pairs = [...snapshots.matchAll(
+    /^ {2}'@napi-rs\/wasm-runtime@[^('\s]+\(@emnapi\/core@([^)]+)\)\(@emnapi\/runtime@([^)]+)\)':/gm,
+  )]
+  assert.ok(pairs.length > 0)
+  for (const [, core, runtime] of pairs) {
+    assert.equal(core.split('.')[0], runtime.split('.')[0], `${core} / ${runtime}`)
+  }
 })
