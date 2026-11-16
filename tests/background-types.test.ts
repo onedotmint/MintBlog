@@ -70,4 +70,3 @@ test('the shared background guard accepts every background and rejects other val
     assert.equal(isBgType(value), false)
   }
 })
-

@@ -10,7 +10,14 @@ You can find me on [Bilibili](https://space.bilibili.com/413283792) , [X](https:
 
 Contact me with hi@onedotmint.com.
 
-<img src="https://image.onedotmint.com/image-blog/img/2026/07/ed4d90b5c42f8f3496a73466a6c96c3f.webp" style="zoom: 50%;" />
+<img
+  src="https://image.onedotmint.com/image-blog/img/2026/07/ed4d90b5c42f8f3496a73466a6c96c3f.webp"
+  alt="斜光中的长发人物、红线与花朵"
+  width="1024"
+  height="509"
+  class="no-zoom"
+  style="width: 512px; max-width: 100%; height: auto;"
+/>
 
 
 
