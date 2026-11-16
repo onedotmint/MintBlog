@@ -34,7 +34,7 @@ const tocEnabled = Array.isArray(toc) && toc[0] && frontmatter.toc
 const haveHeadings = tocEnabled && headings.length > 0
 
 const lastModDate =
-  frontmatter.lastModDate && frontmatter.lastModDate.toISOString()
+  (frontmatter.lastModDate || frontmatter.pubDate).toISOString()
 
 const WARNING = `This is a draft project page that will not be published in production.`
 ---

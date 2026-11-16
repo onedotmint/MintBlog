@@ -480,15 +480,22 @@ export interface Ui {
 }
 
 /* FEATURES */
-export type BgType =
-  | 'plum'
-  | 'dot'
-  | 'rose'
-  | 'particle'
-  | 'signal'
-  | 'signal-plus'
-  | 'breeze'
-  | 'mist'
+export const BG_TYPES = [
+  'plum',
+  'dot',
+  'rose',
+  'particle',
+  'signal',
+  'signal-plus',
+  'breeze',
+  'mist',
+] as const
+
+export type BgType = (typeof BG_TYPES)[number]
+
+export function isBgType(value: unknown): value is BgType {
+  return typeof value === 'string' && BG_TYPES.includes(value as BgType)
+}
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6
 type Mentioned = `@${string}` | `@${string}@${string}` | ''
 type FeatureConfig<T> = false | [boolean, T]

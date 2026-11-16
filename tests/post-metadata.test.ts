@@ -62,7 +62,7 @@ test('pure Markdown gets filename and Git dates, keeps source intact, and follow
     assert.deepEqual(fillPostMetadata(root, original, {}), {
       title: '第一篇笔记',
       pubDate: new Date(first).toISOString(),
-      lastModDate: '',
+      lastModDate: new Date(first).toISOString(),
     })
     assert.deepEqual(readFileSync(original), bytes)
     writeFileSync(original, bytes + '\n新的一段。\n')
@@ -86,7 +86,7 @@ test('pure Markdown gets filename and Git dates, keeps source intact, and follow
   })
 })
 
-test('explicit metadata wins, including empty lastModDate, drafts and invalid fields', () => {
+test('explicit non-empty metadata wins, including drafts and invalid fields', () => {
   fixture((root) => {
     const path = join(root, 'src/content/shorts/a.mdx')
     writeFileSync(path, 'An MDX note: {2 + 2}.\n')
@@ -94,7 +94,7 @@ test('explicit metadata wins, including empty lastModDate, drafts and invalid fi
     const explicit = {
       title: 'Custom',
       pubDate: '2020-01-02',
-      lastModDate: '',
+      lastModDate: '2020-02-03',
       draft: true,
       search: false,
     }
@@ -113,7 +113,7 @@ test('explicit metadata wins, including empty lastModDate, drafts and invalid fi
     )
     assert.equal(
       fillPostMetadata(root, path, { pubDate: '2030-01-01' }).lastModDate,
-      ''
+      '2030-01-01T00:00:00.000Z'
     )
   })
 })
@@ -127,12 +127,17 @@ test('new local notes use mtime temporarily, but committed dates ignore filesyst
       getPostDates(root, path).pubDate,
       new Date(first).toISOString()
     )
+    assert.equal(
+      fillPostMetadata(root, path, { lastModDate: '' }).lastModDate,
+      new Date(first).toISOString()
+    )
     commit(root, second)
     utimesSync(path, new Date('2040-01-01'), new Date('2040-01-01'))
     assert.equal(
       getPostDates(root, path).pubDate,
       new Date(second).toISOString()
     )
+    assert.equal(fillPostMetadata(root, path, {}).lastModDate, new Date(second).toISOString())
   })
 })
 
@@ -156,13 +161,18 @@ for (const collection of ['blog', 'shorts', 'projects/posts']) {
       renameSync(join(root, '.git'), join(root, '.saved-git'))
       utimesSync(path, new Date('2040-01-01'), new Date('2040-01-01'))
       assert.deepEqual(fillPostMetadata(root, path, {}), expected)
+      assert.deepEqual(fillPostMetadata(root, path, { lastModDate: '' }), expected)
       writeFileSync(path, 'Changed after snapshot.\n')
       assert.throws(() => fillPostMetadata(root, path, {}), /snapshot must match/)
       rmSync(join(root, '.post-dates.json'))
       assert.throws(() => fillPostMetadata(root, path, {}), /pnpm content:dates/)
+      assert.throws(
+        () => fillPostMetadata(root, path, { pubDate: '2020-01-01', lastModDate: '' }),
+        /pnpm content:dates/
+      )
       assert.deepEqual(
-        fillPostMetadata(root, path, { pubDate: '2020-01-01', lastModDate: '' }),
-        { title: 'offline', pubDate: '2020-01-01', lastModDate: '' }
+        fillPostMetadata(root, path, { pubDate: '2020-01-01', lastModDate: '2020-02-03' }),
+        { title: 'offline', pubDate: '2020-01-01', lastModDate: '2020-02-03' }
       )
     })
   })
@@ -192,6 +202,61 @@ test('post filenames are literal Git paths, not pathspec patterns', () => {
     assert.throws(
       () => getPostDates(root, join(root, '../outside.md')),
       /outside a dated content collection/
+    )
+  })
+})
+
+
+for (const collection of ['blog', 'shorts', 'projects/posts']) {
+  test(`${collection} shows modification on first publication, restores empty values, and keeps same-day updates`, () => {
+    fixture((root) => {
+      const path = join(root, 'src/content', collection, 'dates.md')
+      writeFileSync(path, 'An article with automatic dates.\n')
+      commit(root, first)
+      const bytes = readFileSync(path)
+      const firstDate = new Date(first).toISOString()
+      assert.equal(fillPostMetadata(root, path, {}).lastModDate, firstDate)
+      assert.equal(fillPostMetadata(root, path, { lastModDate: '' }).lastModDate, firstDate)
+      assert.deepEqual(readFileSync(path), bytes, 'computed dates never rewrite author files')
+
+      const sameDay = '2025-12-31T23:45:00Z'
+      writeFileSync(path, 'An article updated on the same UTC date.\n')
+      commit(root, sameDay)
+      assert.equal(fillPostMetadata(root, path, {}).lastModDate, new Date(sameDay).toISOString())
+      assert.equal(fillPostMetadata(root, path, { lastModDate: '' }).lastModDate, new Date(sameDay).toISOString())
+
+      const future = new Date('2030-01-01T00:00:00Z')
+      assert.equal(fillPostMetadata(root, path, { pubDate: future, lastModDate: '' }).lastModDate, future.toISOString())
+      assert.equal(
+        fillPostMetadata(root, path, { pubDate: future, lastModDate: '2029-01-01' }).lastModDate,
+        '2029-01-01',
+        'manual dates are retained instead of silently corrected',
+      )
+    })
+  })
+}
+
+
+test('numeric publication timestamps bound automatic modification dates without replacing manual dates', () => {
+  fixture((root) => {
+    const path = join(root, 'src/content/blog/timestamp.md')
+    writeFileSync(path, 'An article with a numeric publication timestamp.\n')
+    commit(root, first)
+    const future = Date.parse('2030-01-01T00:00:00Z')
+    for (const lastModDate of [undefined, '']) {
+      const data = { pubDate: future, lastModDate }
+      const filled = fillPostMetadata(root, path, data)
+      assert.equal(filled.pubDate, future)
+      assert.equal(filled.lastModDate, new Date(future).toISOString())
+      assert.deepEqual(data, { pubDate: future, lastModDate })
+      assert.equal(
+        fillPostMetadata(root, path, { pubDate: 0, lastModDate }).lastModDate,
+        new Date(first).toISOString(),
+      )
+    }
+    assert.equal(
+      fillPostMetadata(root, path, { pubDate: future, lastModDate: '2020-01-01' }).lastModDate,
+      '2020-01-01',
     )
   })
 })

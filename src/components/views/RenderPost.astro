@@ -47,7 +47,7 @@ const description = frontmatter.description
 const ogImage = frontmatter.ogImage
 const pubDate = frontmatter.pubDate.toISOString()
 const lastModDate =
-  frontmatter.lastModDate && frontmatter.lastModDate.toISOString()
+  (frontmatter.lastModDate || frontmatter.pubDate).toISOString()
 const bgType = frontmatter.bgType
 const subtitle = frontmatter.subtitle
 const minutesRead = getMinutesRead(

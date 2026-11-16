@@ -79,21 +79,20 @@ export function fillPostMetadata(
   if (result.title === undefined)
     result.title = basename(filePath, extname(filePath))
 
-  if (result.pubDate === undefined || result.lastModDate === undefined) {
+  if (result.pubDate === undefined || result.lastModDate === undefined || result.lastModDate === '') {
     const dates = getPostDates(root, filePath)
     if (result.pubDate === undefined) result.pubDate = dates.pubDate
-    if (result.lastModDate === undefined) {
+    if (result.lastModDate === undefined || result.lastModDate === '') {
       const published =
-        result.pubDate instanceof Date || typeof result.pubDate === 'string'
+        result.pubDate instanceof Date ||
+        typeof result.pubDate === 'string' ||
+        typeof result.pubDate === 'number'
           ? new Date(result.pubDate)
           : new Date(NaN)
       const updated = new Date(dates.lastModDate)
-      result.lastModDate =
-        updated > published &&
-        updated.toISOString().slice(0, 10) !==
-          published.toISOString().slice(0, 10)
-          ? dates.lastModDate
-          : ''
+      result.lastModDate = published > updated
+        ? published.toISOString()
+        : dates.lastModDate
     }
   }
   return result
