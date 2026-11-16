@@ -31,6 +31,7 @@ const { filterMode } = tag[1]
     #mode = this.dataset.filterMode || 'OR'
 
     #suppressBroadcast = false
+    #cancelIdle: (() => void) | null = null
 
     #items: HTMLElement[] = []
     #buttons: HTMLButtonElement[] = []
@@ -43,16 +44,28 @@ const { filterMode } = tag[1]
     }
 
     connectedCallback() {
-      this.#onIdle(() => this.#init())
+      this.#onIdle(() => {
+        if (this.isConnected) this.#init()
+      })
     }
 
     disconnectedCallback() {
+      this.#cancelIdle?.()
+      this.#cancelIdle = null
+      this.#filterSeq++
       this.removeEventListener('click', this.#handleClick)
       document.removeEventListener(SYNC_EVENT, this.#handleSyncEvent)
+      this.#selected.clear()
+      this.#graph.clear()
+      this.#items = []
       this.#buttons = []
+      this.#yearSections = []
+      this.#yearTocMap.clear()
     }
 
     #init = () => {
+      this.#selector = this.dataset.itemSelector || '[data-tags]'
+      this.#mode = this.dataset.filterMode || 'OR'
       this.#items = Array.from(document.querySelectorAll(this.#selector))
       this.#buttons = Array.from(this.querySelectorAll('button[data-tag]'))
       this.#yearSections = Array.from(
@@ -61,13 +74,34 @@ const { filterMode } = tag[1]
 
       this.#buildYearTocMap()
       this.#getTagGraph()
+      this.removeEventListener('click', this.#handleClick)
+      document.removeEventListener(SYNC_EVENT, this.#handleSyncEvent)
       this.addEventListener('click', this.#handleClick)
       document.addEventListener(SYNC_EVENT, this.#handleSyncEvent)
+      this.#syncButtons()
       this.#restoreFromStorage()
     }
 
-    #onIdle = (cb: IdleRequestCallback) =>
-      (window.requestIdleCallback || ((cb) => setTimeout(cb, 1)))(cb)
+    #onIdle = (cb: IdleRequestCallback) => {
+      this.#cancelIdle?.()
+
+      const run: IdleRequestCallback = (deadline) => {
+        this.#cancelIdle = null
+        cb(deadline)
+      }
+
+      if (typeof window.requestIdleCallback === 'function') {
+        const id = window.requestIdleCallback(run)
+        this.#cancelIdle = () => window.cancelIdleCallback?.(id)
+        return
+      }
+
+      const id = setTimeout(
+        () => run({ didTimeout: false, timeRemaining: () => 0 }),
+        1
+      )
+      this.#cancelIdle = () => clearTimeout(id)
+    }
 
     #buildYearTocMap() {
       const map = new Map<string, HTMLLIElement[]>()
@@ -96,21 +130,31 @@ const { filterMode } = tag[1]
       this.#yearTocMap = map
     }
 
+    #parseTags(raw: string | undefined) {
+      return new Set(
+        (raw || '')
+          .split(',')
+          .map((value) => value.trim())
+          .filter(Boolean)
+      )
+    }
+
+    #normalizeSelected(values: unknown[]) {
+      return new Set(
+        values
+          .filter((t): t is string => typeof t === 'string')
+          .map((t) => t.trim())
+          .filter((t) => Boolean(t) && this.#graph.has(t))
+      )
+    }
+
     #getTagGraph = () => {
+      this.#graph.clear()
       for (const btn of this.#buttons) {
         const tag = btn.dataset.tag
         if (!tag) continue
 
-        const related = btn.dataset.related
-        this.#graph.set(
-          tag,
-          new Set(
-            (related || '')
-              .split(',')
-              .map((value) => value.trim())
-              .filter(Boolean)
-          )
-        )
+        this.#graph.set(tag, this.#parseTags(btn.dataset.related))
       }
     }
 
@@ -140,9 +184,7 @@ const { filterMode } = tag[1]
       if (payload.sourceId === this.#instanceId) return
       if (!Array.isArray(payload.selected)) return
 
-      const next = new Set(
-        payload.selected.filter((t) => typeof t === 'string')
-      )
+      const next = this.#normalizeSelected(payload.selected)
       if (this.#isSameSet(this.#selected, next)) return
 
       console.debug('[tag-filter] sync from other instance', {
@@ -157,7 +199,7 @@ const { filterMode } = tag[1]
       this.#suppressBroadcast = false
     }
 
-    #renderStates = (isSync = false) => {
+    #syncButtons() {
       const available = this.#getAvailable()
 
       for (const btn of this.#buttons) {
@@ -175,7 +217,10 @@ const { filterMode } = tag[1]
           btn.disabled = true
         }
       }
+    }
 
+    #renderStates = (isSync = false) => {
+      this.#syncButtons()
       this.#syncItemTagHighlights()
       if (!isSync) this.#applyFilter()
       if (!this.#suppressBroadcast) this.#broadcastSelection()
@@ -217,12 +262,7 @@ const { filterMode } = tag[1]
       }
       if (!Array.isArray(parsed)) return
 
-      const next = new Set(
-        parsed
-          .filter((t) => typeof t === 'string')
-          .map((t) => t.trim())
-          .filter(Boolean)
-      )
+      const next = this.#normalizeSelected(parsed)
 
       if (this.#isSameSet(this.#selected, next)) return
 
@@ -255,20 +295,20 @@ const { filterMode } = tag[1]
         return union
       }
 
-      // AND mode: intersection of related sets for all selected
-      let intersection: Set<string> | null = null
-      for (const sel of this.#selected) {
-        const related = this.#graph.get(sel)
-        if (!related) continue
-        intersection = intersection
-          ? new Set(
-              Array.from<string>(intersection).filter((tag) => related.has(tag))
-            )
-          : new Set(related)
+      // AND mode: tags that co-occur on at least one item matching all selected tags
+      const available = new Set<string>()
+      const selected = Array.from(this.#selected)
+      for (const item of this.#items) {
+        const itemTags = this.#parseTags(item.dataset.tags)
+        if (!selected.every((tag) => itemTags.has(tag))) continue
+
+        for (const tag of itemTags) {
+          if (!this.#selected.has(tag) && this.#graph.has(tag)) {
+            available.add(tag)
+          }
+        }
       }
-      intersection = intersection ?? new Set()
-      for (const s of this.#selected) intersection.delete(s)
-      return intersection
+      return available
     }
 
     #syncItemTagHighlights() {
@@ -301,7 +341,7 @@ const { filterMode } = tag[1]
       })
 
       requestAnimationFrame(() => {
-        if (seq !== this.#filterSeq) return
+        if (!this.isConnected || seq !== this.#filterSeq) return
 
         if (sel.length === 0) {
           for (const i of this.#items) i.classList.remove('hidden')
@@ -310,13 +350,7 @@ const { filterMode } = tag[1]
         }
 
         for (const i of this.#items) {
-          const raw = i.dataset.tags || ''
-          const itemTags = new Set(
-            raw
-              .split(',')
-              .map((t) => t.trim())
-              .filter(Boolean)
-          )
+          const itemTags = this.#parseTags(i.dataset.tags)
           const match =
             this.#mode === 'OR'
               ? sel.some((t) => itemTags.has(t))

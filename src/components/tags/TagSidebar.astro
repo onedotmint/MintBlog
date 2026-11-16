@@ -21,7 +21,7 @@ const { unique, relations } = buildTagRelations(tags)
 <div
   id="tag-sidebar"
   class="flex flex-col gap-3 w-15.625rem max-h-[70vh] overflow-hidden
-    op-0 op-transition-700 text-sm color-[var(--c-text)]
+    op-0 focus-within:op-60 op-transition-700 text-sm color-[var(--c-text)]
     data-[display-mode=always]:op-60
     [.prose:hover_&[data-display-mode=content]]:op-60
     group-hover/content:data-[display-mode=content]:op-60
@@ -33,7 +33,7 @@ const { unique, relations } = buildTagRelations(tags)
 >
   <Link
     href="#skip-tags"
-    class="sr-only focus:(not-sr-only fixed start-1 top-1.5 op-20)"
+    class="sr-only focus:(not-sr-only fixed z-300 start-1 top-1.5 op-100 bg-[var(--c-bg)] px-2 py-1 rounded)"
   >
     Skip tags
   </Link>
@@ -47,6 +47,6 @@ const { unique, relations } = buildTagRelations(tags)
         <Tag tag={tag} relations={relations} interactive={true} />
       ))
     }
-    <div id="skip-tags" class="hidden"></div>
   </div>
+  <div id="skip-tags" class="sr-only" tabindex="-1"></div>
 </div>
