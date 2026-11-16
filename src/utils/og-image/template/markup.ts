@@ -1,27 +1,17 @@
 import { html } from 'satori-html'
-import backgroundBase64 from './base64'
+import backgroundBase64 from './base64.ts'
+import { BG_TYPES, isBgType } from '../../../types.ts'
 
-import type { BgType } from '~/types'
+import type { BgType } from '../../../types.ts'
 
 export const ogImageMarkup = (
   authorOrBrand: string,
   title: string,
   bgType: BgType
 ) => {
-  if (
-    ![
-      'plum',
-      'dot',
-      'rose',
-      'particle',
-      'signal',
-      'signal-plus',
-      'breeze',
-      'mist',
-    ].includes(bgType)
-  )
+  if (!isBgType(bgType))
     throw new Error(
-      "The value of 'bgType' must be one of the following: 'plum', 'dot', 'rose', 'particle', 'signal', 'signal-plus', 'breeze', 'mist'."
+      `The value of 'bgType' must be one of the following: ${BG_TYPES.map((type) => `'${type}'`).join(', ')}.`
     )
 
   return html`<div

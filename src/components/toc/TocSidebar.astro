@@ -31,7 +31,7 @@ const specHeadings = generateToc(headings, minHeadingLevel, maxHeadingLevel)
 <nav
   id="toc-sidebar"
   class="flex flex-col w-15.625rem max-h-[70vh] overflow-hidden
-    op-0 op-transition-700 text-sm
+    op-0 focus-within:op-60 op-transition-700 text-sm
     data-[display-mode=always]:op-60
     [.prose:hover_&[data-display-mode=content]]:op-60
     group-hover/content:data-[display-mode=content]:op-60
@@ -43,7 +43,7 @@ const specHeadings = generateToc(headings, minHeadingLevel, maxHeadingLevel)
 >
   <Link
     href="#skip-toc"
-    class="sr-only focus:(not-sr-only fixed start-1 top-1.5 op-20)"
+    class="sr-only focus:(not-sr-only fixed z-300 start-1 top-1.5 op-100 bg-[var(--c-bg)] px-2 py-1 rounded)"
   >
     Skip toc
   </Link>
@@ -54,5 +54,5 @@ const specHeadings = generateToc(headings, minHeadingLevel, maxHeadingLevel)
     }
     {!!anchors.length && <TocItem {anchors} />}
   </ul>
-  <div id="skip-toc" class="hidden"></div>
+  <div id="skip-toc" class="sr-only" tabindex="-1"></div>
 </nav>

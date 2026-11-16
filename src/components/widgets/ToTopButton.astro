@@ -3,13 +3,15 @@
 ---
 
 <button
+  type="button"
   id="to-top-button"
   class="z-50 fixed right-5 bottom-6
     w-10 h-10 rounded-full
-    op-0 pointer-events-none op-transition
-    lt-lgp:(op-50! bg-#8883 dark:bg-#8886 pointer-events-auto!)
+    invisible op-0 pointer-events-none op-transition
+    lt-lgp:(visible! op-50! bg-#8883 dark:bg-#8886 pointer-events-auto!)
     hover:(op-100! bg-#8883) print:hidden"
   title="Scroll to top"
+  aria-label="Scroll to top"
 >
   <div u-i-ri-arrow-up-line></div>
 </button>
@@ -21,22 +23,26 @@
     }
     const toTopButton = document.getElementById('to-top-button')
     toTopButton?.addEventListener('click', handleClick)
+    handleScroll()
   })
 
   const handleScroll = () => {
     const scrollThreshold = 300
     const toTopButton = document.getElementById('to-top-button')
 
-    if (toTopButton && window.matchMedia('(min-width: 1024px)').matches) {
+    if (toTopButton && window.matchMedia('(min-width: 1128px)').matches) {
       const scrollY = window.scrollY || document.documentElement.scrollTop
       if (scrollY <= scrollThreshold) {
+        toTopButton.style.visibility = 'hidden'
         toTopButton.style.opacity = '0'
         toTopButton.style.pointerEvents = 'none'
       } else {
+        toTopButton.style.visibility = 'visible'
         toTopButton.style.opacity = '0.3'
         toTopButton.style.pointerEvents = 'auto'
       }
     }
   }
-  window.addEventListener('scroll', handleScroll)
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  window.addEventListener('resize', handleScroll)
 </script>

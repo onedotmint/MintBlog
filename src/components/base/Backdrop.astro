@@ -10,53 +10,73 @@
 </div>
 
 <script>
-  import { toggleFadeEffect } from '~/utils/misc'
+  import { finishPendingFadeEffects, toggleFadeEffect, unlockScroll } from '~/utils/misc'
 
   const PANELS = [
-    { id: 'nav-panel', button: 'nav-open-button', hiddenClass: 'hidden!' },
-    { id: 'toc-panel', button: 'toc-open-button', hiddenClass: 'hidden!' },
-    { id: 'tag-panel', button: 'tag-open-button', hiddenClass: 'hidden!' },
-    { id: 'search-panel', button: 'search-switch', hiddenClass: 'hidden' },
+    { id: 'nav-panel', hiddenClass: 'hidden!' },
+    { id: 'toc-panel', hiddenClass: 'hidden!' },
+    { id: 'tag-panel', hiddenClass: 'hidden!' },
+    { id: 'search-panel', hiddenClass: 'hidden' },
   ]
 
-  /* Close panel when user click on backdrop */
-  document.addEventListener('astro:page-load', () => {
-    const handleClick = () => {
-      for (const { id, hiddenClass } of PANELS) {
-        const panel = document.getElementById(id)
-        if (panel && !panel.classList.contains(hiddenClass)) {
-          toggleFadeEffect(id, false, hiddenClass)
-          break
-        }
+  const getOpenPanel = () => {
+    for (const { id, hiddenClass } of PANELS) {
+      const panel = document.getElementById(id)
+      if (panel && !panel.inert && !panel.classList.contains(hiddenClass)) {
+        return { panel, hiddenClass }
       }
-      toggleFadeEffect('backdrop', false, 'hidden')
     }
-    const backdrop = document.getElementById('backdrop')
-    backdrop?.addEventListener('click', handleClick)
+    return null
+  }
+
+  const closePanel = () => {
+    const open = getOpenPanel()
+    if (!open) return
+    toggleFadeEffect(open.panel.id, false, open.hiddenClass)
+    toggleFadeEffect('backdrop', false, 'hidden')
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    document.getElementById('backdrop')?.addEventListener('click', closePanel)
+    document.querySelectorAll<HTMLButtonElement>('[data-panel-close]').forEach((button) => {
+      button.addEventListener('click', closePanel)
+    })
   })
 
-  /* Close panel and backdrop when 'Tab' shifts focus outside the panel
-    or 'Escape' is pressed, if backdrop is present */
-  const handleKeyUp = (event: KeyboardEvent) => {
-    if (event.key !== 'Tab' && event.key !== 'Escape') return
+  document.addEventListener('keydown', (event) => {
+    if (event.isComposing || (event.key !== 'Tab' && event.key !== 'Escape')) return
+    const open = getOpenPanel()
+    if (!open) return
 
-    const focusEl = document.activeElement
-    PANELS.forEach(({ id, button, hiddenClass }) => {
-      const panel = document.getElementById(id)
-      const isFocusOutside = !panel?.contains(focusEl) && focusEl?.id !== button
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      closePanel()
+      return
+    }
 
-      if (
-        panel &&
-        !panel.classList.contains(hiddenClass) &&
-        (isFocusOutside || event.key === 'Escape')
-      ) {
-        toggleFadeEffect(id, false, hiddenClass)
-        toggleFadeEffect('backdrop', false, 'hidden')
-        if (panel.contains(focusEl)) {
-          document.getElementById(button)?.focus()
-        }
-      }
-    })
-  }
-  document.addEventListener('keyup', handleKeyUp)
+    const { panel } = open
+    const focusable = Array.from(panel.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter((element) => element.tabIndex >= 0 && element.getClientRects().length > 0)
+    const first = focusable[0]
+    const last = focusable.at(-1)
+    const active = document.activeElement
+    const outside = !panel.contains(active) || active === panel
+
+    if (!first || !last) {
+      event.preventDefault()
+      panel.focus()
+    } else if (event.shiftKey && (active === first || outside)) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && (active === last || outside)) {
+      event.preventDefault()
+      first.focus()
+    }
+  })
+
+  document.addEventListener('astro:before-swap', () => {
+    finishPendingFadeEffects()
+    unlockScroll()
+  })
 </script>

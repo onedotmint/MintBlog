@@ -48,6 +48,7 @@ if (tocPosition === 'right' && tagPosition === 'right') asidePosition = 'right'
   asidePosition !== 'both' ? (
     <aside
       id="desktop-aside"
+      data-desktop-aside
       class="group/aside fixed top-8.875rem z-100 lt-lgp:hidden
         data-[position=left]:(left-2rem right-auto)
         data-[position=right]:(left-[calc(100vw-15.625rem-3.2rem)] right-auto)"
@@ -114,7 +115,8 @@ if (tocPosition === 'right' && tagPosition === 'right') asidePosition = 'right'
     <>
       {(anchors.length > 0 || headings.length > 0) && (
         <aside
-          id="desktop-aside"
+          id="desktop-aside-toc"
+          data-desktop-aside
           class="group/aside fixed top-8.875rem z-100 lt-lgp:hidden
             data-[position=left]:(left-2rem right-auto)
             data-[position=right]:(left-[calc(100vw-15.625rem-3.2rem)] right-auto)
@@ -154,7 +156,8 @@ if (tocPosition === 'right' && tagPosition === 'right') asidePosition = 'right'
       )}
       {tags.length > 0 && (
         <aside
-          id="desktop-aside"
+          id="desktop-aside-tag"
+          data-desktop-aside
           class="group/aside fixed top-8.875rem z-100 lt-lgp:hidden
             data-[position=left]:(left-2rem right-auto)
             data-[position=right]:(left-[calc(100vw-15.625rem-3.2rem)] right-auto)

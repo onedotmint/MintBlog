@@ -12,7 +12,7 @@
 
 ## 文章
 
-文章文件放在 `src/content/blog/`，使用 Markdown。可以在 Typora 里直接写正文，不需要 frontmatter：文件名自动成为标题，Git 首次／最近提交自动提供日期，已有手填值不覆盖。完整的简单写作流程见 [writing.md](writing.md)。
+文章文件放在 `src/content/blog/`，使用 Markdown。新建文章推荐复制静态通用模板 [`docs/templates/post.md`](templates/post.md) 到 `src/content/blog/` 并手填 `title` 与 `pubDate`（模板中的 `2026-11-14` 仅作示例，不会自动变成今天）。该模板只是可复制的静态起点，**不是自动插入器，不会在保存或构建时改写文件**；无 frontmatter 的写法也继续支持（由文件名提供标题，Git 首次／最近提交自动提供日期，且不回写用户文章）。完整的日常写作流程见 [writing.md](writing.md)。
 
 相对于 `src/content/blog/` 的完整路径（去扩展名）决定 URL，例如 `go-tcp-server.md` 对应 `/blog/go-tcp-server/`，`systems/go-tcp-server.md` 对应 `/blog/systems/go-tcp-server/`。发布后改文件名、移动文件或改目录名都会改变 URL，不自动重定向。
 
@@ -30,11 +30,11 @@ description: '用于列表和 SEO 的一句话说明。'
 
 - `title`：可省略，默认文件名，最多 60 个字符。
 - `description`：简介。省略时使用站点默认描述。
-- `pubDate`：可省略，默认 Git 首次提交时间；未提交新文件本地暂用修改时间。
-- `lastModDate`：可省略，默认 Git 最近提交日期；填空字符串表示不显示，填日期则覆盖。
+- `pubDate`：可省略，默认 Git 首次提交时间；未提交新文件本地暂用 `mtime` 预览（Git-free 构建需匹配 `.post-dates.json` 快照，不能编造日期）。从 [`docs/templates/post.md`](templates/post.md) 复制起稿时，需把示例日期 `2026-11-14` 手填改成实际发布日期（不会自动填今天）；Git 提交不等于真正发布日期，必要时可手动覆盖。显式值只接受有效日期／日期字符串或毫秒时间戳，不接受数组、布尔值或 `null`。
+- `lastModDate`：只在 Writing、Shorts、Projects 文章详情页每篇显示（列表、卡片与搜索结果不增加日期）。有效手填日期优先；缺失或留空字符串（`''`）时自动取 Git 最近提交日期，且自动值不早于 `pubDate`，首次同日也会显示；未提交新文件本地暂用 `mtime` 预览。手填后今后修改正文需自己更新；想恢复自动取 Git 最近提交，只需填写空字符串（`''`）或删掉该字段。非空值只接受有效日期／日期字符串或毫秒时间戳；裸写 `lastModDate:` 是 `null`，会报错，不等同于空字符串。
 - `tags`：标签数组，例如 `[Astro, Systems]`。
 - `minutesRead`：填数字覆盖阅读时长，填 `true` 自动估算，填 `false` 隐藏。
-- `cover` 和 `coverAlt`：封面及替代文本。
+- `cover` 和 `coverAlt`：封面及替代文本。`cover` 可留空，或使用本地相对图片路径（如 `./cover.png`、`../images/cover.webp`、`cover.jpg`），或不含用户名、密码的 HTTP(S) URL；本地路径使用 `/` 分隔，不使用根路径或 Windows 绝对路径。支持 Astro 的 PNG、JPEG、APNG、TIFF、WebP、GIF、SVG、AVIF 图片格式。
 - `toc`、`share`、`giscus`、`search`：分别控制目录、分享、评论和搜索。
 - `draft`：设为 `true` 时不进入生产构建。
 - `redirect`：可省略或填空字符串；需要跳转时填写不含用户名、密码的 `http://` 或 `https://` URL。
@@ -52,14 +52,14 @@ Collections 是随笔栏目的显示名，网址和内容目录仍使用 `/short
 
 页面结构为：`/shorts/` 合集目录 → `/shorts/collections/<合集ID>/` 篇目列表 → `/shorts/<随笔完整相对路径（去扩展名）>/` 正文。合集卡片显示名称、可选介绍和篇数，不用封面；标签汇总自合集中随笔。合集按显示名排列，篇目按 UTC 发布日期倒序，同一时间按 ID 排列。
 
-**首段目录决定合集，随笔不用写 frontmatter。** 例如：
+**首段目录决定合集。** 推荐复制 [`docs/templates/post.md`](templates/post.md) 到 `src/content/shorts/notes/`（或其他合集目录）并手填标题与发布日期，也继续支持不写 frontmatter。例如：
 
 ```
 src/content/shorts/notes/下雨的周末.md
 src/content/shorts/生活切片/周末/散步.md
 ```
 
-第一篇归入 `notes`，默认显示「随手记」，无需另建「随手记」目录；第二篇归入「生活切片」，不是「周末」。标题均取文件名。
+第一篇归入 `notes`，默认显示「随手记」，无需另建「随手记」目录；第二篇归入「生活切片」，不是「周末」。未填写 `title` 时，标题均取文件名。
 
 正文 URL 使用相对于 `src/content/shorts/` 的完整路径（去扩展名），上述两篇分别为 `/shorts/notes/下雨的周末/`、`/shorts/生活切片/周末/散步/`。移动文件或改目录名会改变 URL，不自动重定向。根目录文件也归入 `notes`；旧文章留在根目录即可保持 `/shorts/<文件名>/` 旧地址，不必移动。
 
@@ -100,6 +100,8 @@ draft: false
 - `category`：分组标题。当前使用 `Lab`、`Now`、`Foundations`。
 
 作品显示顺序以 JSON 数组顺序为准。修改分类时同时检查作品页的分组标题和描述是否仍然准确。
+
+项目详情 Markdown 放在 `src/content/projects/posts/`（使用 `projectPostSchema`，在 `postSchema` 基础上额外支持可选 `repo` 和 `category` 字段）。新增项目详情同样推荐复制 [`docs/templates/post.md`](templates/post.md) 并手填 `title` 与 `pubDate`（也继续支持无 frontmatter 写法）；最后修改日期仅在每篇项目详情页显示，不向作品列表、卡片或搜索增加日期。
 
 ## 页面配置
 

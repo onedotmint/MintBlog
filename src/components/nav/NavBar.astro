@@ -135,3 +135,15 @@ for (const item of new Set(left)) {
     }
   </nav>
 </header>
+
+{mergeOnMobile && (
+  <nav
+    id="mobile-nav-fallback"
+    class="flex flex-wrap gap-x-6 gap-y-2 px-7 pb-4 md:hidden print:hidden"
+    aria-label="Main menu"
+  >
+    {internalNavs.map((item) => (
+      <NavItem type="internal" {item} mergeOnMobile={false} />
+    ))}
+  </nav>
+)}

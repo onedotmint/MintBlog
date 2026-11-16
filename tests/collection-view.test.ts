@@ -100,3 +100,27 @@ test('project detail links exclude drafts and keep published detail slugs', asyn
   assert.equal(slugs.get('Reroute'), 'reroute')
   assert.equal(slugs.has('Siftpath'), false)
 })
+
+
+test('project draft detail routes are available in development but excluded from production', async () => {
+  const source = readSource('src/pages/projects/[...id].astro')
+  const route = source.match(/export async function getStaticPaths\(\) \{([\s\S]*?)\n\}/)
+  assert.ok(route)
+  const posts = [
+    { id: 'notes/published', data: { draft: false } },
+    { id: 'draft', data: { draft: true } },
+  ]
+  for (const production of [false, true]) {
+    const paths: Array<{ params: { id: string }; props: { post: (typeof posts)[number] } }> =
+      await runInNewContext(`(async () => { ${route[1].replaceAll('import.meta.env.PROD', 'production')} })()`, {
+        production,
+        async getCollection(collection: string, filter: (post: (typeof posts)[number]) => boolean) {
+          assert.equal(collection, 'projectPosts')
+          return posts.filter(filter)
+        },
+      })
+    assert.deepEqual(Array.from(paths, (path) => path.params.id), production ? ['notes/published'] : ['notes/published', 'draft'])
+    assert.equal(paths[0].props.post, posts[0])
+    if (!production) assert.equal(paths[1].props.post, posts[1])
+  }
+})

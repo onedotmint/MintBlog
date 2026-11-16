@@ -99,7 +99,7 @@ body {
   body:not([data-no-sliding]) .slide-enter,
   body:not([data-no-sliding])
     .slide-enter-content
-    > *:not(#desktop-aside):not(#mobile-control) {
+    > *:not([data-desktop-aside]):not(#mobile-control) {
     --enter-initial: 0ms;
     --enter-stage: 0;
     animation: slide-enter 1s both 1;

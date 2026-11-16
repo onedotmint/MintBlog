@@ -4,7 +4,7 @@ import { UI } from '~/config'
 
 interface Props {
   pubDate: string
-  lastModDate: string | undefined
+  lastModDate: string
   minutesRead: number
   tags: string[]
 }
@@ -18,9 +18,7 @@ const isMinimal = UI.postView.postMetaStyle === 'minimal'
   isMinimal ? (
     <div class="mt-2! op-50 lt-md:text-sm">
       <time datetime={pubDate} data-pagefind-meta="date[datetime]">{formatDate(pubDate)}</time>
-      {lastModDate && (
-        <time datetime={lastModDate}> · Updated {formatDate(lastModDate)}</time>
-      )}
+      <time datetime={lastModDate}> · 最后修改 {formatDate(lastModDate)}</time>
       {minutesRead > 0 && <span> · {minutesRead} min</span>}
       {tags.length > 0 && <span> · {tags.join(' / ')}</span>}
     </div>
@@ -33,12 +31,10 @@ const isMinimal = UI.postView.postMetaStyle === 'minimal'
         <span class="i-ri-calendar-line mr-1.2" />
         <time datetime={pubDate} data-pagefind-meta="date[datetime]">{formatDate(pubDate)}</time>
       </div>
-      {lastModDate && (
-        <div>
-          <span class="i-ri-history-fill mr-1.2" />
-          <time datetime={lastModDate}>{formatDate(lastModDate)}</time>
-        </div>
-      )}
+      <div>
+        <span class="i-ri-history-fill mr-1.2" aria-hidden="true" />
+        最后修改 <time datetime={lastModDate}>{formatDate(lastModDate)}</time>
+      </div>
       <div>
         <span class="i-ri-timer-line mr-1.2 ml--0.6" />
         {minutesRead > 0 && <span>{minutesRead} min read</span>}

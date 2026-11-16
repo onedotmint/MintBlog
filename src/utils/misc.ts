@@ -21,6 +21,17 @@ export function unlockScroll() {
   bodyEl.style.removeProperty('padding-right')
 }
 
+interface PendingFadeOut {
+  cancel: () => void
+  finalize: () => void
+}
+
+const pendingFadeOuts = new Map<HTMLElement, PendingFadeOut>()
+
+export function finishPendingFadeEffects() {
+  for (const pending of pendingFadeOuts.values()) pending.finalize()
+}
+
 /**
  * Controls the fading animation of an element,
  * showing or hiding it based on visibility.
@@ -33,28 +44,70 @@ export function toggleFadeEffect(
   const element = document.getElementById(elementId)
   if (!element) return
 
+  pendingFadeOuts.get(element)?.cancel()
+
+  const trigger = element.dataset.panelTrigger
+    ? document.getElementById(element.dataset.panelTrigger)
+    : null
+  if (trigger) {
+    trigger.setAttribute('aria-expanded', String(visible))
+    if (!visible && (element.contains(document.activeElement) || document.activeElement === document.body)) {
+      trigger.focus()
+    }
+    element.inert = !visible
+  }
+
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion)'
+  ).matches
+
   if (visible) {
-    element.classList.remove(hiddenClass)
+    element.classList.remove(hiddenClass, 'fade-out')
+    if (trigger) {
+      const target =
+        element.querySelector<HTMLElement>('[data-panel-autofocus]') ??
+        element.querySelector<HTMLElement>('a[href], button:not([disabled]), input:not([disabled])') ??
+        element
+      target.focus()
+    }
     if (elementId === 'backdrop') lockScroll()
-    if (window.matchMedia('(prefers-reduced-motion)').matches) return
-    element.classList.add('fade-in')
-  } else {
-    if (window.matchMedia('(prefers-reduced-motion)').matches) {
-      element.classList.add(hiddenClass)
-      if (elementId === 'backdrop') unlockScroll()
+    if (prefersReducedMotion) {
+      element.classList.remove('fade-in')
       return
     }
-    element.classList.add('fade-out')
-    element.addEventListener(
-      'animationend',
-      () => {
-        element.classList.remove('fade-in', 'fade-out')
-        element.classList.add(hiddenClass)
-        if (elementId === 'backdrop') unlockScroll()
-      },
-      { once: true }
-    )
+    element.classList.add('fade-in')
+    return
   }
+
+  if (prefersReducedMotion || element.classList.contains(hiddenClass)) {
+    element.classList.remove('fade-in', 'fade-out')
+    element.classList.add(hiddenClass)
+    if (elementId === 'backdrop') unlockScroll()
+    return
+  }
+
+  element.classList.remove('fade-in')
+  element.classList.add('fade-out')
+
+  const cancel = () => {
+    element.removeEventListener('animationend', handleAnimationEnd)
+    pendingFadeOuts.delete(element)
+  }
+
+  const finalize = () => {
+    cancel()
+    element.classList.remove('fade-in', 'fade-out')
+    element.classList.add(hiddenClass)
+    if (elementId === 'backdrop') unlockScroll()
+  }
+
+  const handleAnimationEnd = (event: Event) => {
+    if (event.target !== element) return
+    finalize()
+  }
+
+  pendingFadeOuts.set(element, { cancel, finalize })
+  element.addEventListener('animationend', handleAnimationEnd)
 }
 
 /**

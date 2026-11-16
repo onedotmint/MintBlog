@@ -14,13 +14,28 @@ const { unique, relations } = buildTagRelations(tags)
 <!-- less than 1128px -->
 <div
   id="tag-panel"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Tags filter"
+  tabindex="-1"
+  data-panel-trigger="tag-open-button"
   class="hidden! z-200 fixed top-10% left-50% translate-x--50%
     overflow-y-auto flex flex-col
     w-90% max-h-80vh py-4 px-6 rounded-lg
     bg-[var(--c-bg)] shadow-custom_0_0_10_0 text-[var(--c-text)]"
   {style}
 >
-  <div class="pb-1 b-b b-[var(--c-text)] op-50">Tags</div>
+  <div class="flex items-center justify-between pb-1 b-b b-[var(--c-text)]">
+    <span class="op-50">Tags</span>
+    <button
+      type="button"
+      data-panel-close
+      aria-label="Close tags filter"
+      class="flex items-center justify-center size-8 op-60 hover:op-100 op-transition"
+    >
+      <span class="i-ri-close-line" aria-hidden="true" />
+    </button>
+  </div>
   <div
     role="listbox"
     class="flex flex-wrap justify-start items-start content-start

@@ -1,5 +1,8 @@
 import { z } from 'astro/zod'
+import { BG_TYPES } from './types.ts'
 import type { SchemaContext } from 'astro:content'
+
+const bgTypeSchema = z.union([z.literal(false), z.enum(BG_TYPES)]).default(false)
 
 const httpUrlSchema = z.url().refine(
   (value) => {
@@ -37,24 +40,9 @@ export const pageSchema = z.object({
     .describe(
       'Provides a brief description, used in meta tags for SEO and sharing purposes. If not needed, leave the field as an empty string or delete it, and the `SITE.description` will be used directly.'
     ),
-  bgType: z
-    .union([
-      z.literal(false),
-      z.enum([
-        'plum',
-        'dot',
-        'rose',
-        'particle',
-        'signal',
-        'signal-plus',
-        'breeze',
-        'mist',
-      ]),
-    ])
-    .default(false)
-    .describe(
-      'Specifies whether to apply a background on this page and select its type. It is also used as the page-specific OG image background; if not needed, delete the field or set to `false`.'
-    ),
+  bgType: bgTypeSchema.describe(
+    'Specifies whether to apply a background on this page and select its type. It is also used as the page-specific OG image background; if not needed, delete the field or set to `false`.'
+  ),
   ogImage: z
     .union([z.literal('fallback'), z.string(), z.boolean()])
     .default(true)
@@ -95,7 +83,28 @@ export const postSchema = ({ image }: SchemaContext) =>
         'Adds tags to the post. These are displayed in post metadata and can also be used by list/card view tag filters on pages that enable them. If not needed, leave the field as an empty array or delete it.'
       ),
     cover: z
-      .union([image(), z.url()])
+      .union([
+        z.literal(''),
+        httpUrlSchema,
+        // Validate before Astro's permissive content-layer image transform.
+        z.preprocess((value, ctx) => {
+          if (
+            typeof value !== 'string' ||
+            value !== value.trim() ||
+            URL.canParse(value) ||
+            value.startsWith('/') ||
+            value.includes('\\') ||
+            !/\.(apng|avif|gif|jpe?g|png|svg|tiff|webp)$/i.test(value)
+          ) {
+            ctx.addIssue({
+              code: 'custom',
+              message: 'Cover must be a relative image path or a credential-free HTTP(S) URL.',
+            })
+            return z.NEVER
+          }
+          return value
+        }, image()),
+      ])
       .default('')
       .describe(
         'Defines a cover image for the post. Specify either a URL or a path relative to the current directory. If not needed, leave the field as an empty string or delete it.'
@@ -107,16 +116,20 @@ export const postSchema = ({ image }: SchemaContext) =>
       .describe(
         'Defines the cover image alt text. If `UI.postView.useCoverAltAsCaption` is `true`, it is also shown below the cover image as a caption. If not needed, leave the field as an empty string or delete it.'
       ),
-    pubDate: z.coerce
-      .date()
+    pubDate: z
+      .union([z.date(), z.string(), z.number()])
+      .pipe(z.coerce.date())
       .describe(
         'Specifies the publication date. Blog/Shorts supply Git history dates when omitted; explicit dates take priority. See supported formats [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse#examples).'
       ),
     lastModDate: z
-      .union([z.coerce.date(), z.literal('')])
+      .union([
+        z.literal(''),
+        z.union([z.date(), z.string(), z.number()]).pipe(z.coerce.date()),
+      ])
       .optional()
       .describe(
-        'Tracks the last modified date. Blog/Shorts derive this from Git when omitted. Set an empty string to hide it; an explicit date takes priority.'
+        'Tracks the last modified date shown on every Blog/Shorts/Project article detail page. Missing or empty values use the latest Git date, no earlier than publication; an explicit date takes priority.'
       ),
     minutesRead: z
       .union([z.number(), z.boolean()])
@@ -143,24 +156,9 @@ export const postSchema = ({ image }: SchemaContext) =>
       .describe(
         'Specifies the platform where the audio or video content is published. If provided, the platform name will be displayed. If not needed, leave the field as an empty string or delete it.'
       ),
-    bgType: z
-      .union([
-        z.literal(false),
-        z.enum([
-          'plum',
-          'dot',
-          'rose',
-          'particle',
-          'signal',
-          'signal-plus',
-          'breeze',
-          'mist',
-        ]),
-      ])
-      .default(false)
-      .describe(
-        'Specifies whether to apply a background on this post and select its type. It is also used as the page-specific OG image background; if not needed, delete the field or set to `false`.'
-      ),
+    bgType: bgTypeSchema.describe(
+      'Specifies whether to apply a background on this post and select its type. It is also used as the page-specific OG image background; if not needed, delete the field or set to `false`.'
+    ),
     ogImage: z
       .union([z.literal('fallback'), z.string(), z.boolean()])
       .default(true)

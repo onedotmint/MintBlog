@@ -10,39 +10,138 @@ import { SITE } from '~/config'
   aria-label={`${SITE.author} / onedotmint`}
   aria-current={Astro.url.pathname === `${withBasePath('/')}` ? 'page' : false}
 >
-  <div class="logo-container">
-    <img
-      src={withBasePath('/onedotmint-wordmark.svg')}
-      width="2048"
-      height="682"
-      alt="onedotmint"
-      decoding="async"
+  <svg
+    class="logo-mark"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 64 64"
+    width="36"
+    height="36"
+    fill="none"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <title>Three-Beat Rhythm</title>
+    <defs>
+      <mask
+        id="mintblog-logo-mask-1"
+        maskUnits="userSpaceOnUse"
+        x="0"
+        y="0"
+        width="64"
+        height="64"
+      >
+        <path
+          class="logo-stroke logo-stroke-1"
+          pathLength="1"
+          fill="none"
+          stroke="#fff"
+          stroke-width="18"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M11 46C16 32 25 20 39 12"
+        />
+      </mask>
+      <mask
+        id="mintblog-logo-mask-2"
+        maskUnits="userSpaceOnUse"
+        x="0"
+        y="0"
+        width="64"
+        height="64"
+      >
+        <path
+          class="logo-stroke logo-stroke-2"
+          pathLength="1"
+          fill="none"
+          stroke="#fff"
+          stroke-width="18"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M38 17C46 19 48 25 44 29C40 33 33 34 27 33"
+        />
+      </mask>
+      <mask
+        id="mintblog-logo-mask-3"
+        maskUnits="userSpaceOnUse"
+        x="0"
+        y="0"
+        width="64"
+        height="64"
+      >
+        <path
+          class="logo-stroke logo-stroke-3"
+          pathLength="1"
+          fill="none"
+          stroke="#fff"
+          stroke-width="16"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M31 37C38 40 45 44 53 50"
+        />
+      </mask>
+    </defs>
+    <path
+      fill="currentColor"
+      mask="url(#mintblog-logo-mask-1)"
+      d="M13 44C16 30 24 19 37 14C34 19 28 28 21 41C18 42 15 43 13 44Z"
     />
-  </div>
+    <path
+      fill="currentColor"
+      mask="url(#mintblog-logo-mask-2)"
+      d="M39 19C45 19 48 23 45 28C42 32 35 34 29 33C34 29 37 24 39 19Z"
+    />
+    <path
+      fill="currentColor"
+      mask="url(#mintblog-logo-mask-3)"
+      d="M33 37C39 39 45 43 51 49C45 48 39 45 33 40Z"
+    />
+  </svg>
 </Link>
 
 <style>
-  .logo-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.8rem;
-
-    transform: translate(-0.18rem, -0.16rem) scale(1.08);
+  .logo-mark {
+    display: block;
+    width: 2.25rem;
+    height: 2.25rem;
   }
 
-  @media (max-width: 767.9px) {
-    .logo-container {
-      margin-top: 0.125rem;
+  .logo-stroke {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
 
-      transform-origin: 0%;
-      transform: translate(-0.12rem, -0.08rem) scale(1);
+  @media (prefers-reduced-motion: no-preference) {
+    .logo-stroke-1 {
+      animation: logo-draw 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0s 1 both;
+    }
+
+    .logo-stroke-2 {
+      animation: logo-draw 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.45s 1 both;
+    }
+
+    .logo-stroke-3 {
+      animation: logo-draw 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.85s 1 both;
     }
   }
 
-  .logo-container img {
-    display: block;
-    height: 2.25rem;
-    width: auto;
+  @media (prefers-reduced-motion: reduce), print {
+    .logo-stroke {
+      animation: none;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes logo-draw {
+    0% {
+      stroke-dashoffset: 1;
+      stroke-opacity: 0;
+    }
+    2% {
+      stroke-opacity: 1;
+    }
+    100% {
+      stroke-dashoffset: 0;
+      stroke-opacity: 1;
+    }
   }
 </style>

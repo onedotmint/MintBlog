@@ -3,7 +3,9 @@
 ---
 
 <button
+  type="button"
   id="nav-open-button"
+  hidden
   class="hidden lt-md:block op-60 hover:op-100 op-transition"
   title="Navigation"
   aria-label="Navigation"
@@ -15,11 +17,24 @@
 
 <div
   id="nav-panel"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Navigation"
+  tabindex="-1"
+  data-panel-trigger="nav-open-button"
   class="hidden! z-200 fixed top-10% left-50% translate-x--50%
     overflow-y-auto flex flex-col gap-5
     w-90% max-h-80vh py-4 px-6 rounded-lg
   bg-[var(--c-bg)] shadow-custom_0_0_10_0 text-[var(--c-text)]"
 >
+  <button
+    type="button"
+    data-panel-close
+    aria-label="Close navigation"
+    class="flex items-center justify-center self-end size-8 op-60 hover:op-100 op-transition"
+  >
+    <span class="i-ri-close-line" aria-hidden="true" />
+  </button>
   <ul>
     <slot name="text" />
   </ul>
@@ -39,6 +54,15 @@
     }
 
     const navOpenButton = document.getElementById('nav-open-button')
-    navOpenButton?.addEventListener('click', handleBtnClickToOpen)
+    if (!navOpenButton) return
+    navOpenButton.addEventListener('click', handleBtnClickToOpen)
+    navOpenButton.removeAttribute('hidden')
+    document.getElementById('mobile-nav-fallback')?.classList.add('hidden!')
   })
 </script>
+
+<style>
+  #nav-open-button[hidden] {
+    display: none;
+  }
+</style>
