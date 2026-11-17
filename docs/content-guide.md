@@ -44,6 +44,45 @@ description: '用于列表和 SEO 的一句话说明。'
 
 文章正文使用 Markdown。图片放在 `public/images/` 时，用根路径引用，例如 `/images/blog/example.svg`。
 
+### 长代码与折叠内容
+
+普通代码块仍用三个反引号书写：短代码保持自然高度，长代码自动限制为 **400px** 高并在框内上下滚动；太宽的行可以左右滚动，不强制换行。高亮、文件名和复制按钮照常可用。滚动区域可用 Tab 聚焦，再用方向键滚动。
+
+需要整段默认收起时，在 Markdown 中使用原生 `<details>`。下面两种写法均不需要导入组件或开启脚本；点击标题或聚焦标题后按 Enter／空格，可反复展开、收起。
+
+**折叠完整代码：**（反引号代码块前后保留空行）
+
+````md
+<details>
+<summary>展开完整代码</summary>
+
+```js title="example.js"
+console.log('这里放完整代码，行数多时自动在框内滚动。')
+```
+
+</details>
+````
+
+**折叠长文本：** 用 `.scroll-content` 给需要的内容单独限高；把 `aria-label` 改成能说明内容的名称，保留 `tabindex="0"` 以便键盘滚动。
+
+```md
+<details>
+<summary>展开补充说明</summary>
+<div class="scroll-content" tabindex="0" role="region" aria-label="补充说明">
+
+这里放长文本，可以有多个段落、**加粗**和列表。
+
+- 第一项
+- 第二项
+
+</div>
+</details>
+```
+
+不加 `<details>` 则内容默认展开；给 `<details>` 加 `open` 也能默认展开并保留收起按钮。代码块还支持原有的局部行折叠：例如在开头写 `js collapse={5-30}`，仅收起第 5–30 行。
+
+这些样式作用于站点文章预览和发布页面，Typora 的编辑预览不一定相同。打印时会取消滚动区域的高度限制；需要打印折叠内容时，请先展开。
+
 ## 随笔（Collections）
 
 Collections 是随笔栏目的显示名，网址和内容目录仍使用 `/shorts/`、`src/content/shorts/`。它已与已删除的历史 `src/content/collections/`、`src/content/articles/` 数据无关。

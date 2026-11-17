@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
+import sharp from 'sharp'
 
 test('LogoButton renders inline Three-Beat Rhythm SVG and preserves home link', async () => {
   const source = await readFile(
@@ -59,4 +60,38 @@ test('LogoButton renders inline Three-Beat Rhythm SVG and preserves home link', 
   )
   assert.match(source, /\b1 both;/)
   assert.doesNotMatch(source, /\binfinite\b/)
+})
+
+test('tab icons reuse the static header mark in SVG and ICO formats', async () => {
+  const logo = await readFile(
+    new URL('../src/components/widgets/LogoButton.astro', import.meta.url),
+    'utf8',
+  )
+  const svg = await readFile(
+    new URL('../public/favicon.svg', import.meta.url),
+    'utf8',
+  )
+  const paths = [
+    ...logo.matchAll(/<path\s+fill="currentColor"[^>]*\bd="([^"]+)"/g),
+  ].map((match) => match[1])
+  assert.equal(paths.length, 3)
+  assert.deepEqual(
+    [...svg.matchAll(/<path\s+d="([^"]+)"/g)].map((match) => match[1]),
+    paths,
+  )
+  assert.match(svg, /prefers-color-scheme: dark/)
+  assert.doesNotMatch(svg, /<circle\b|<mask\b|<animate\b/)
+
+  const ico = await readFile(new URL('../public/favicon.ico', import.meta.url))
+  assert.equal(ico.readUInt16LE(0), 0)
+  assert.equal(ico.readUInt16LE(2), 1)
+  assert.equal(ico.readUInt16LE(4), 1)
+  assert.equal(ico[6], 32)
+  assert.equal(ico[7], 32)
+  const offset = ico.readUInt32LE(18)
+  assert.equal(ico.readUInt32LE(14), ico.length - offset)
+  assert.deepEqual(
+    ico.subarray(offset),
+    await sharp(Buffer.from(svg)).resize(32, 32).png().toBuffer(),
+  )
 })

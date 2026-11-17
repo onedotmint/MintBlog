@@ -1,6 +1,7 @@
 import { defineEcConfig, setLuminance, setAlpha } from 'astro-expressive-code'
 import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers'
 import { pluginCollapsibleSections } from '@expressive-code/plugin-collapsible-sections'
+import { visit } from 'unist-util-visit'
 
 // https://expressive-code.com/reference/configuration/
 export default defineEcConfig({
@@ -15,7 +16,23 @@ export default defineEcConfig({
   minSyntaxHighlightingColorContrast: 0,
 
   /* Plugins */
-  plugins: [pluginLineNumbers(), pluginCollapsibleSections()],
+  plugins: [
+    pluginLineNumbers(),
+    pluginCollapsibleSections(),
+    {
+      name: 'Keyboard-accessible code scrolling',
+      hooks: {
+        postprocessRenderedBlock: ({ renderData }) => {
+          visit(renderData.blockAst, 'element', (node) => {
+            if (node.tagName !== 'pre') return
+            node.properties.tabIndex = 0
+            node.properties.role = 'region'
+            node.properties.ariaLabel = '代码（可滚动）'
+          })
+        },
+      },
+    },
+  ],
 
   /* Styles */
   styleOverrides: {

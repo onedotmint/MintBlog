@@ -4,18 +4,16 @@
   height="64"
   viewBox="0 0 64 64"
   role="img"
-  aria-labelledby="title desc"
+  aria-labelledby="title"
 >
-  <title id="title">onedotmint</title>
-  <desc id="desc">A geometric o mark with a mint center dot.</desc>
+  <title id="title">onedotmint — Three-Beat Rhythm</title>
   <style>
-    .mark-ring { fill: none; stroke: #46534d }
-    .mark-dot { fill: #49b88d }
+    path { fill: #46534d }
     @media (prefers-color-scheme: dark) {
-      .mark-ring { stroke: #e7efea }
-      .mark-dot { fill: #79d7b2 }
+      path { fill: #e7efea }
     }
   </style>
-  <circle class="mark-ring" cx="32" cy="32" r="17" stroke-width="4.5" />
-  <circle class="mark-dot" cx="32" cy="32" r="5.5" />
+  <path d="M13 44C16 30 24 19 37 14C34 19 28 28 21 41C18 42 15 43 13 44Z" />
+  <path d="M39 19C45 19 48 23 45 28C42 32 35 34 29 33C34 29 37 24 39 19Z" />
+  <path d="M33 37C39 39 45 43 51 49C45 48 39 45 33 40Z" />
 </svg>

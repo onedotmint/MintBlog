@@ -146,6 +146,27 @@ html.dark .prose code:not(.expressive-code code) {
   margin: 1em 0;
 }
 
+.prose .expressive-code pre,
+.prose .scroll-content {
+  max-height: 400px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.prose .expressive-code pre:focus-visible,
+.prose .scroll-content:focus-visible {
+  outline: 2px solid var(--fg-light);
+  outline-offset: 2px;
+}
+
+@media print {
+  .prose .expressive-code pre,
+  .prose .scroll-content {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
 .expressive-code .copy {
   align-items: center;
 }
