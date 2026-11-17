@@ -36,7 +36,7 @@ Node 支持范围以 `package.json` 的 `engines.node` 为准（当前 `>=24.22.
 - [ ] 明确正式 HTTPS 域名，并核对 `src/config.ts` 的 `SITE.website` 是正确的生产地址（当前为 `https://onedotmint.com/`）；确认 base、canonical、RSS、sitemap 和资源 URL 与生产入口一致。静态配置变更需要重新构建与发布。
 - [ ] 验证候选版本的 Docker 构建、镜像启动和内部健康检查；基础镜像版本与 digest、容器内 Nginx 配置及外层代理版本均需独立核对。本地无 Docker 时明确记为未验证，不以静态构建替代。
 - [ ] 确认 GHCR 镜像路径为实际小写仓库路径，Actions 有发布权限，VPS 能拉取镜像（公开包或只读凭据）；首次发布时特别检查包可见性。记录本次 `sha-<40 位小写十六进制完整提交 SHA>` 镜像；不发布或使用 `latest`。
-- [ ] 确认操作者可手动登录 VPS，并具有 Docker 权限及部署目录所需的读写、进入权限；服务器具备 Bash、`flock` 与支持 `up --wait` 的 Docker Compose。首次复制 `docker-compose.yml`、`.env.example` 和 `scripts/deploy.sh`（服务器名为 `deploy.sh`），由维护者管理 Compose、`.env` 和脚本，workflow 不访问 VPS。具体步骤见 [deployment.md](deployment.md)。
+- [ ] 确认操作者可手动登录 VPS，并具有 Docker 权限及部署目录所需的读写、进入权限；服务器具备 Bash、`flock` 与支持 `up --wait` 的 Docker Compose；一条命令自动选版还需 `curl`、`jq` 及公开 GitHub API 访问。首次复制 `docker-compose.yml`、`.env.example` 和 `scripts/deploy.sh`（服务器名为 `deploy.sh`），由维护者管理 Compose、`.env` 和脚本，workflow 不访问 VPS。具体步骤见 [deployment.md](deployment.md)。
 - [ ] 新 workflow 已推送且旧 SSH 部署运行已停止后，删除不再有其它用途的 GitHub `DEPLOY_*` secrets，以及 VPS `authorized_keys` 中对应的 Actions 专用授权（如果曾配置）；保留操作者正常登录权限。记录实际清理结果，不能假定本地改动已远程撤权。
 - [ ] 确认外部 Docker network 存在，站点与反向代理都在同一网络，代理目标为 `mintblog:80`；站点不发布宿主机端口。确认容器重建后代理仍能访问新容器，不能只检查重建前的连通性。
 - [ ] 确认公网 DNS 指向预期入口、HTTPS 证书与域名匹配且有效、HTTP/HTTPS 跳转符合预期。容器 `/healthz` 仅说明内部存活，不证明网络、DNS、HTTPS 或公网页面正常。
@@ -46,8 +46,8 @@ Node 支持范围以 `package.json` 的 `engines.node` 为准（当前 `>=24.22.
 
 - [ ] 获得明确发布授权后才执行发布操作。`.github/workflows/deploy.yml` 保留原路径，显示名为 **Build and publish MintBlog**；push 到 `main`，以及选择 `main` 的手动 `workflow_dispatch`，只在检查通过后发布 GHCR SHA 镜像，不连接或更新 VPS。
 - [ ] PR 和非 `main` 分支的手动运行仅验证，不发布镜像。执行前确认事件、分支与候选 SHA；`main` 工作流仍有发布镜像的副作用，但不等于服务器部署授权。
-- [ ] 记录 workflow run、完整 SHA 与镜像标签。另获服务器部署授权后，由操作者手动登录 VPS，在含 `docker-compose.yml` 的部署目录运行 `bash deploy.sh 'ghcr.io/owner/repository:sha-<完整SHA>'`（替换为 40 位小写十六进制 SHA），记录操作者、时间、所选版本和结果。
-- [ ] 确认脚本先拉取再 `up --wait`，用锁防止同目录并发部署；启动或内部健康失败时恢复旧容器精确本地镜像 ID 并确认健康，无旧容器则停止 `web`。脚本运行期间以参数覆盖 `.env` 的 `BLOG_IMAGE`，不自动改 `.env` 或执行公网验收。
+- [ ] 记录 workflow run、完整 SHA 与镜像标签。另获服务器部署授权后，由操作者手动登录 VPS，在含 `docker-compose.yml` 和一次性仓库配置 `.env` 的部署目录运行 `bash deploy.sh`，自动选择并打印最近成功发布的 `main` SHA 和 workflow；如需明确版本或回滚，可传入 `'ghcr.io/owner/repository:sha-<40位完整SHA>'`。记录操作者、时间、所选版本和结果；想上线某次新提交时，应先等它的 workflow 成功，否则可能选到之前成功的版本。
+- [ ] 确认脚本先拉取再 `up --wait`，用锁防止同目录并发部署；启动或内部健康失败时恢复旧容器精确本地镜像 ID 并确认健康，无旧容器则停止 `web`。自动模式须确认主分支 workflow 和镜像发布任务均成功；失败不能猜测当前 main SHA。脚本先准备新默认值，内部健康成功后原子保存 `.env` 的 `BLOG_IMAGE`，保留其余配置与权限；查询、拉取、启动或保存失败不替换原默认值。脚本不执行公网验收。
 
 ## 5. 部署后公网验收与回滚收尾
 
@@ -59,5 +59,5 @@ Node 支持范围以 `package.json` 的 `engines.node` 为准（当前 `>=24.22.
 - [ ] 实际打开搜索，用公开 Blog/Shorts 的已知正文词检索并访问结果，确认中文、分类、链接和 Pagefind 资源加载正常；草稿及历史私有内容无命中，无可索引正文时无陈旧索引或全站兜底。
 - [ ] 确认外层代理在站点容器重建后访问正常，无因旧容器地址缓存导致的 502；必要时按代理运维流程处理并重新验收，不改变现有运行架构。
 - [ ] 公网验收失败时按 [Rollback](deployment.md#rollback) 由操作者恢复已知版本；回滚（包括脚本自动恢复）后仍需复查公网、代理、关键页面及搜索，记录操作者、最终运行的镜像、SHA、结果和遗留问题，不能仅以回滚命令成功收尾。
-- [ ] 公网验收通过后，手动将服务器 `.env` 的 `BLOG_IMAGE` 同步为最终已验收版本（包括回滚后的版本），防止以后不带参数的 Compose 命令恢复旧默认值；发布记录不能只写 workflow 成功。
+- [ ] 核对服务器 `.env` 的 `BLOG_IMAGE` 与实际运行的镜像一致（健康部署及明确版本回滚后由脚本自动保存）；该记录只代表运行版本，不等于公网验收。自动恢复失败时手动核实并修复运行状态与默认值；发布记录不能只写 workflow 成功。
 

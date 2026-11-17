@@ -8,7 +8,7 @@
 
 - 原版基准：`ca826e279870b4d6582403bb3ec4cb75047e7f70`，2026-07-25，`fix: normalize deployment image name`。它是近期未提交全站重设计之前最后完整的站点，不是仓库最早提交。
 - 对比了 `221d42a` 刚采用主题的中间态（无 Links、不同导航和背景）与更早 `1d7495a` 另一代 `/writing/`、`/works/` 架构，二者均不符合本次四页恢复目标。
-- 外部完整备份：`/home/dotmint/Backups/MintBlog-restore-20261023T031418Z/`。`worktree/` 包括 Git、所有未提交/未跟踪文件、忽略文件、依赖与完整 `.local/`。共38736项、30342个普通文件、2607个符号链接，经SHA-256/链接目标/权限比较无差异；Git对象检查通过。
+- 外部完整备份：`<private-backup-root>/`。`worktree/` 包括 Git、所有未提交/未跟踪文件、忽略文件、依赖与完整 `.local/`。共38736项、30342个普通文件、2607个符号链接，经SHA-256/链接目标/权限比较无差异；Git对象检查通过。
 - `HEAD.txt`、`git-status.txt`、`git-log.txt`、`git-reflog.txt`、二进制patch及双份manifest与 `verification.json` 都在备份根目录。备份权限仅当前用户访问。首次差异仅为Git状态检查刷新index缓存，复制同一index后重验全通过。
 - 没有 reset --hard、git clean、暂存、commit、push或部署；真实HEAD不移动。
 
@@ -43,9 +43,9 @@
 
 ### 证据与后续运行
 
-`/home/dotmint/Backups/MintBlog-restore-20261023T031418Z/evidence/` 包含 `browser-results.json`、40张原版/恢复截图、隔离文章实拍、`final-integrity.json`、完整工程/浏览器日志与独立报告。`final-git-status.txt`、`final-worktree.patch` 位于备份根。请勿将整个备份作为网站目录公开或部署。
+`<private-backup-root>/evidence/` 包含 `browser-results.json`、40张原版/恢复截图、隔离文章实拍、`final-integrity.json`、完整工程/浏览器日志与独立报告。`final-git-status.txt`、`final-worktree.patch` 位于备份根。请勿将整个备份作为网站目录公开或部署。
 
-当前预览进程关闭后，从正式仓库执行 `pnpm build && pnpm preview --host 0.0.0.0 --port 4321` 即可重开恢复站点；原版基准可在外部 `candidates/head/` 执行 `pnpm preview --port 4330`。对照报告仅需 `python3 -m http.server 4331 --directory /home/dotmint/Backups/MintBlog-restore-20261023T031418Z/evidence`。
+当前预览进程关闭后，从正式仓库执行 `pnpm build && pnpm preview --host 0.0.0.0 --port 4321` 即可重开恢复站点；原版基准可在外部 `candidates/head/` 执行 `pnpm preview --port 4330`。对照报告仅需 `python3 -m http.server 4331 --directory <private-backup-root>/evidence`。
 
 未测试实体设备、Safari/Firefox或读屏器；未实机验证Docker/VPS部署。原版远程字体构建下载与首页图片的外部地址保留，未来可用性仍依赖原服务，未擅自替换资源。没有无法恢复而临时设计的页面，没有commit/push/部署。
 

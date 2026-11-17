@@ -49,7 +49,7 @@ pnpm --version
 
 这些版本配置和锁文件需要随代码进入发布流程，**本机升级不等于线上升级**。之后经用户批准发布时，CI 会使用指定 Node/pnpm、冻结锁文件安装、完整审计、检查和构建，再以新的 Node/Nginx 基础镜像生成站点镜像。
 
-本地回归成功只是待发布依据，不能替代 Docker 构建、GHCR 拉取权限、域名、外层反向代理和 VPS 健康检查。当前决定是 GitHub 只检查并发布 GHCR SHA 镜像，不再持有 VPS SSH 私钥或部署；操作者另行登录服务器，运行 `bash deploy.sh` 拉取选定的完整 SHA 版本，公网验收后手动同步 `.env` 的 `BLOG_IMAGE`。新边界仅在修改后的 workflow 提交并推送后生效；旧 SSH 部署运行停止后，仍需手动清理无其它用途的 `DEPLOY_*` secrets 和专用 `authorized_keys` 授权。本记录不表示这些远程操作已完成，也不授予 push 或部署权限。
+本地回归成功只是待发布依据，不能替代 Docker 构建、GHCR 拉取权限、域名、外层反向代理和 VPS 健康检查。当前决定是 GitHub 只检查并发布 GHCR SHA 镜像，不再持有 VPS SSH 私钥或部署；操作者另行登录服务器，运行 `bash deploy.sh` 自动选择成功发布的完整 SHA 版本（或明确传入 SHA 镜像）；内部健康成功后脚本自动保存 `.env` 的 `BLOG_IMAGE`，公网验收仍需操作者完成。新边界仅在修改后的 workflow 提交并推送后生效；旧 SSH 部署运行停止后，仍需手动清理无其它用途的 `DEPLOY_*` secrets 和专用 `authorized_keys` 授权。本记录不表示这些远程操作已完成，也不授予 push 或部署权限。
 
 ## 验证与保留限制
 
