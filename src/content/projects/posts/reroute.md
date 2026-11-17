@@ -1,6 +1,6 @@
 ---
 title: Reroute
-description: 保留本地编辑，把构建和测试任务卸载到远程算力。
+description: 保留本地编辑，把符合条件的构建与测试任务卸载到远程算力。
 repo: https://github.com/onedotmint/Reroute
 category: Now
 icon: i-ri-route-line

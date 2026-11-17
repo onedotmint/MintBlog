@@ -149,3 +149,25 @@ test('modification dates reject non-date inputs and preserve supported overrides
     }
   }
 })
+
+
+test('project Markdown needs no extra metadata and validates optional repository, category and icon', async () => {
+  const data = await parsePostData({}, projectPostSchema)
+  assert.equal(data.category, 'Now')
+  assert.equal(data.icon, 'i-ri-code-line')
+  assert.equal(data.repo, undefined)
+  for (const repo of ['https://github.com/onedotmint/MintBlog', 'http://example.com/']) {
+    assert.equal((await parsePostData({ repo }, projectPostSchema)).repo, repo)
+  }
+  for (const repo of ['javascript:alert(1)', '//example.com/', 'https://user:password@example.com/']) {
+    await assert.rejects(parsePostData({ repo }, projectPostSchema), /repo/)
+  }
+  for (const icon of ['i-ri-code-line', 'i-grommet-icons:blog']) {
+    assert.equal((await parsePostData({ icon }, projectPostSchema)).icon, icon)
+  }
+  for (const icon of ['', 'invalid', 'i-ri-code-line extra-class']) {
+    await assert.rejects(parsePostData({ icon }, projectPostSchema), /icon/)
+  }
+  assert.equal((await parsePostData({ category: ' 实验室 ' }, projectPostSchema)).category, '实验室')
+  await assert.rejects(parsePostData({ category: ' ' }, projectPostSchema), /category/)
+})

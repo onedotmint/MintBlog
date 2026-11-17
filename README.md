@@ -21,7 +21,7 @@ pnpm preview
 
 站点配置位于 `src/config.ts`，文章位于 `src/content/blog/`，随笔栏目 Collections 位于
 `src/content/shorts/`：首段目录决定合集，根目录文件归入默认 `notes`（随手记），不使用 `collection` 字段。
-`src/content/short-collections/` 仅放可选的合集显示名、介绍与草稿覆盖；项目数据位于 `src/content/projects/data.json`。
+`src/content/short-collections/` 仅放可选的合集显示名、介绍与草稿覆盖；项目位于 `src/content/projects/posts/`，每个 `.md` 同时提供列表信息和详情正文，无需 JSON。
 
 Typora 直接写正文、自动标题和日期的流程见 [`docs/writing.md`](docs/writing.md)。更多字段与内容说明见 [`docs/content-guide.md`](docs/content-guide.md)。
 

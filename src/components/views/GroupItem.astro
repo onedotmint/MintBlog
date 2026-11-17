@@ -3,20 +3,17 @@ import Link from '~/components/base/Link.astro'
 import { UI } from '~/config'
 
 export interface GroupItemData {
-  id: string
-  /** Internal detail page path; falls back to `link` when absent. */
-  href?: string
-  link: string
+  title: string
+  href: string
   desc: string
   icon: string
 }
 
 interface Props {
   items: GroupItemData[]
-  openInNewTab?: boolean
 }
 
-const { items, openInNewTab = false } = Astro.props
+const { items } = Astro.props
 const { maxGroupColumns, showGroupItemColorOnHover } = UI.groupView
 ---
 
@@ -25,29 +22,24 @@ const { maxGroupColumns, showGroupItemColorOnHover } = UI.groupView
     py-8 mx-auto lt-lgp:max-w-[712px]! lt-md:max-w-[350px]!`}
   style={`max-width: calc(350px * ${maxGroupColumns} + ${maxGroupColumns - 1} * 0.75rem);`}
 >
-  {
-    items.map((item) => (
-      <Link
-        class={`group relative flex items-center
+  {items.map((item) => (
+    <Link
+      class={`group relative flex items-center
           px-3.5 pt-2 pb-3.5 rounded-md
           bg-transparent hover:bg-[#88888811]
           text-4.4 op-100! transition-all duration-300`}
-        href={item.href ?? item.link}
-        external={!item.href}
-        target={!item.href && openInNewTab ? '_blank' : undefined}
-        rel={!item.href && openInNewTab ? 'noopener noreferrer' : undefined}
-      >
-        <div class="pt-2 pr-5">
-          <div
-            class={`group-hover:data-[show-color]:saturate-100 op-60 saturate-0 leading-9 text-7.5 ${item.icon}`}
-            data-show-color={showGroupItemColorOnHover ? '' : undefined}
-          />
-        </div>
-        <div class="flex-auto">
-          <div>{item.id}</div>
-          <div class="op-70 text-sm font-normal">{item.desc}</div>
-        </div>
-      </Link>
-    ))
-  }
+      href={item.href}
+    >
+      <div class="pt-2 pr-5">
+        <div
+          class={`group-hover:data-[show-color]:saturate-100 op-60 saturate-0 leading-9 text-7.5 ${item.icon}`}
+          data-show-color={showGroupItemColorOnHover ? '' : undefined}
+        />
+      </div>
+      <div class="flex-auto">
+        <div>{item.title}</div>
+        <div class="op-70 text-sm font-normal">{item.desc}</div>
+      </div>
+    </Link>
+  ))}
 </div>

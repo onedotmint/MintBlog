@@ -7,7 +7,6 @@ import {
 } from 'unocss'
 
 import { UI } from './src/config'
-import projecstData from './src/content/projects/data.json'
 
 import type { PresetWind3Theme } from 'unocss'
 import type {
@@ -23,18 +22,16 @@ const navIcons = internalNavs
   .filter(
     (item) =>
       item.displayMode !== 'alwaysText' &&
-      item.displayMode !== 'textHiddenOnMobile'
+      item.displayMode !== 'textHiddenOnMobile',
   )
   .map((item) => (item as IconNavItem | ResponsiveNavItem).icon)
 const socialIcons = socialLinks
   .filter(
     (item) =>
       item.displayMode !== 'alwaysText' &&
-      item.displayMode !== 'textHiddenOnMobile'
+      item.displayMode !== 'textHiddenOnMobile',
   )
   .map((item) => (item as IconSocialItem | ResponsiveSocialItem).icon)
-
-const projectIcons = projecstData.map((item) => item.icon)
 
 export default defineConfig<PresetWind3Theme>({
   content: {
@@ -88,17 +85,13 @@ export default defineConfig<PresetWind3Theme>({
     }),
     presetIcons({
       extraProperties: {
-        'display': 'inline-block',
-        'height': '1.2em',
-        'width': '1.2em',
+        display: 'inline-block',
+        height: '1.2em',
+        width: '1.2em',
         'vertical-align': 'text-bottom',
       },
     }),
   ],
   transformers: [transformerVariantGroup()],
-  safelist: [
-    ...navIcons,
-    ...socialIcons,
-    ...projectIcons,
-  ],
+  safelist: [...navIcons, ...socialIcons, 'i-ri-code-line'],
 })

@@ -1,4 +1,4 @@
-import { glob, file } from 'astro/loaders'
+import { glob } from 'astro/loaders'
 import { defineCollection } from 'astro:content'
 import { postLoader } from './utils/post-loader'
 
@@ -6,7 +6,6 @@ import {
   pageSchema,
   postSchema,
   shortCollectionSchema,
-  projectSchema,
   projectPostSchema,
 } from '~/schema'
 
@@ -22,11 +21,6 @@ const home = defineCollection({
 const blog = defineCollection({
   loader: postLoader('./src/content/blog'),
   schema: postSchema,
-})
-
-const projects = defineCollection({
-  loader: file('./src/content/projects/data.json'),
-  schema: projectSchema,
 })
 
 const projectPosts = defineCollection({
@@ -51,7 +45,6 @@ export const collections = {
   pages,
   home,
   blog,
-  projects,
   projectPosts,
   shorts,
   shortCollections,

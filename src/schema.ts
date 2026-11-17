@@ -206,34 +206,18 @@ export const shortCollectionSchema = z.object({
   draft: z.boolean().default(false),
 })
 
-/* Shared display item contract for the Projects collection. */
-const groupItemSchema = {
-  id: z.string().describe('**Required**. Name of the item to be displayed.'),
-  link: httpUrlSchema.describe('**Required**. URL linking to the item.'),
-  desc: z
-    .string()
-    .describe('**Required**. A brief description summarizing the item.'),
-  icon: z
-    .string()
-    .regex(
-      /^i-[\w-]+(:[\w-]+)?$/,
-      'Icon must be in the format `i-<collection>-<icon>` or `i-<collection>:<icon>` as per [UnoCSS](https://unocss.dev/presets/icons) specs.'
-    )
-    .describe(
-      '**Required**. Icon representing the item. It must be in the format `i-<collection>-<icon>` or `i-<collection>:<icon>` as per [UnoCSS](https://unocss.dev/presets/icons) specs. [Check all available icons here](https://icones.js.org/).'
-    ),
-}
-
-export const projectSchema = z.object({
-  ...groupItemSchema,
-  category: z.string().describe('**Required**. Category of the project.'),
-})
-
 /* Project detail pages: Markdown intro with an optional repository link. */
 export const projectPostSchema = ({ image }: SchemaContext) =>
   postSchema({ image }).extend({
     repo: httpUrlSchema
       .optional()
       .describe('Repository URL shown at the end of the project page.'),
-    category: z.string().trim().default(''),
+    category: z.string().trim().min(1).default('Now'),
+    icon: z
+      .string()
+      .regex(
+        /^i-[\w-]+(:[\w-]+)?$/,
+        'Icon must use i-<collection>-<icon> or i-<collection>:<icon>.'
+      )
+      .default('i-ri-code-line'),
   })

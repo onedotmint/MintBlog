@@ -6,97 +6,72 @@ import DesktopAside from '~/components/base/DesktopAside.astro'
 import MobileControl from '~/components/base/MobileControl.astro'
 import Categorizer from '~/components/base/Categorizer.astro'
 import GroupItem from '~/components/views/GroupItem.astro'
-import projectsData from '~/content/projects/data.json'
 import { FEATURES } from '~/config'
 import { withBasePath } from '~/utils/path'
 
 import type { GroupItemData } from '~/components/views/GroupItem.astro'
 
-type GroupCollection = 'projects'
-
 interface Props {
-  collectionType: GroupCollection
   pageToc?: boolean
   showCategories?: boolean
-  openLinksInNewTab?: boolean
 }
 
-const {
-  collectionType,
-  pageToc = false,
-  showCategories = true,
-  openLinksInNewTab = false,
-} = Astro.props
+const { pageToc = false, showCategories = true } = Astro.props
 
 const WARNING = `No content available for display.
   Please review and modify <code>GroupView.astro</code> as needed.`
 
-let isEmpty = false
-let data: Record<string, GroupItemData[]> = {}
+const projects = await getCollection('projectPosts', ({ data }) =>
+  import.meta.env.PROD ? !data.draft : true,
+)
+projects.sort(
+  (a, b) =>
+    b.data.pubDate.valueOf() - a.data.pubDate.valueOf() ||
+    a.id.localeCompare(b.id),
+)
 
-/* Projects */
-if (collectionType === 'projects') {
-  const projects = await getCollection(collectionType)
-  isEmpty = projects.length === 0
-  if (isEmpty) return
-
-  // Projects with a matching detail page link internally; the rest keep their external URL.
-  const detailSlugs = new Map(
-    (await getCollection('projectPosts', ({ data }) => !data.draft)).map((post) => [
-      post.data.title,
-      post.id,
-    ])
-  )
-
-  const projectOrder = new Map(
-    projectsData.map(({ id }, index) => [id, index] as const)
-  )
-  data = [...projects]
-    .sort(
-      (a, b) =>
-        (projectOrder.get(a.data.id) ?? projects.length) -
-        (projectOrder.get(b.data.id) ?? projects.length)
-    )
-    .map((p) => p.data)
-    .reduce((acc: Record<string, GroupItemData[]>, { category, ...rest }) => {
-      const slug = detailSlugs.get(rest.id)
-      const href = slug ? withBasePath(`/projects/${slug}/`) : undefined
-      ;(acc[category] ??= []).push({ ...rest, href })
-      return acc
-    }, {})
+const data = new Map<string, GroupItemData[]>()
+for (const post of projects) {
+  const items = data.get(post.data.category) ?? []
+  items.push({
+    title: post.data.title + (post.data.draft ? '（草稿）' : ''),
+    href: withBasePath(`/projects/${post.id}/`),
+    desc: post.data.description,
+    icon: post.data.icon,
+  })
+  data.set(post.data.category, items)
 }
+const isEmpty = projects.length === 0
 
 /* Toc */
 const { toc } = FEATURES
 const tocEnabled = Array.isArray(toc) && toc[0] && pageToc
 ---
 
-{
-  isEmpty ? (
-    <Warning html={WARNING} />
-  ) : (
-    <>
-      {tocEnabled && (
-        <>
-          <DesktopAside
-            anchors={Object.keys(data)}
-            style={
-              toc[1].displayPosition === 'right'
-                ? 'left: calc(100vw - 15.625rem + 5rem)'
-                : undefined
-            }
-          />
-          <MobileControl anchors={Object.keys(data)} />
-        </>
-      )}
-      {Object.keys(data).map((key, idx) => (
-        <div class="slide-enter" style={{ '--enter-stage': idx }}>
-          {showCategories && (
-            <Categorizer text={key} needId={tocEnabled} wide={true} />
-          )}
-          <GroupItem items={data[key]} openInNewTab={openLinksInNewTab} />
-        </div>
-      ))}
-    </>
-  )
-}
+{isEmpty ? (
+  <Warning html={WARNING} />
+) : (
+  <>
+    {tocEnabled && (
+      <>
+        <DesktopAside
+          anchors={[...data.keys()]}
+          style={
+            toc[1].displayPosition === 'right'
+              ? 'left: calc(100vw - 15.625rem + 5rem)'
+              : undefined
+          }
+        />
+        <MobileControl anchors={[...data.keys()]} />
+      </>
+    )}
+    {[...data].map(([key, items], idx) => (
+      <div class="slide-enter" style={{ '--enter-stage': idx }}>
+        {showCategories && (
+          <Categorizer text={key} needId={tocEnabled} wide={true} />
+        )}
+        <GroupItem {items} />
+      </div>
+    ))}
+  </>
+)}

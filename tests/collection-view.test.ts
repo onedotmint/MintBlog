@@ -75,30 +75,46 @@ test('post and collection draft previews independently explain both publishing s
   )
 })
 
-test('project detail links exclude drafts and keep published detail slugs', async () => {
+test('project Markdown alone supplies grouped cards, stable URLs, ordering and draft previews', async () => {
   const source = readSource('src/components/views/GroupView.astro')
-  const expression = source.match(
-    /const detailSlugs = ([\s\S]*?)\n\s*const projectOrder/,
-  )
-  assert.ok(expression)
+  assert.doesNotMatch(source, /data\.json|detailSlugs|projectOrder/)
+  assert.match(readSource('src/pages/projects.mdx'), /<GroupView pageToc=\{true\} \/>/)
+  const code = source.match(/const projects = ([\s\S]*?)\/\* Toc \*\//)
+  assert.ok(code)
+  const post = (id: string, category: string, date: string, draft = false) => ({
+    id,
+    data: { title: 'Same title', category, description: 'Intro', icon: 'i-ri-code-line', pubDate: new Date(date), draft },
+  })
   const posts = [
-    { id: 'reroute', data: { title: 'Reroute', draft: false } },
-    { id: 'siftpath', data: { title: 'Siftpath', draft: true } },
+    post('older', 'Now', '2025-01-01'),
+    post('nested/b', '__proto__', '2026-01-01'),
+    post('nested/a', '__proto__', '2026-01-01'),
+    post('draft', 'Labs', '2027-01-01', true),
   ]
-  const slugs: Map<string, string> = await runInNewContext(
-    `(async () => { return ${expression[1]} })()`,
-    {
-      async getCollection(
-        collection: string,
-        filter?: (post: (typeof posts)[number]) => boolean,
-      ) {
-        assert.equal(collection, 'projectPosts')
-        return posts.filter(filter ?? (() => true))
-      },
-    },
-  )
-  assert.equal(slugs.get('Reroute'), 'reroute')
-  assert.equal(slugs.has('Siftpath'), false)
+  for (const production of [false, true]) {
+    const groups: Map<string, Array<{ title: string; href: string; desc: string; icon: string }>> =
+      await runInNewContext(
+        '(async () => { const projects = ' + code[1]
+          .replaceAll('import.meta.env.PROD', 'production')
+          .replace('new Map<string, GroupItemData[]>()', 'new Map()') + '; return data })()',
+        {
+          production,
+          withBasePath: (path: string) => '/base' + path,
+          async getCollection(collection: string, filter: (post: (typeof posts)[number]) => boolean) {
+            assert.equal(collection, 'projectPosts')
+            return posts.filter(filter)
+          },
+        },
+      )
+    assert.deepEqual(Array.from(groups.keys()), production ? ['__proto__', 'Now'] : ['Labs', '__proto__', 'Now'])
+    const items = Array.from(groups.values()).flatMap((items) => Array.from(items))
+    assert.deepEqual(items.map((item) => item.href), [
+      ...(!production ? ['/base/projects/draft/'] : []),
+      '/base/projects/nested/a/', '/base/projects/nested/b/', '/base/projects/older/',
+    ])
+    assert.ok(items.every((item) => item.desc === 'Intro' && item.icon === 'i-ri-code-line'))
+    assert.equal(items[0].title, production ? 'Same title' : 'Same title（草稿）')
+  }
 })
 
 
@@ -122,5 +138,20 @@ test('project draft detail routes are available in development but excluded from
     assert.deepEqual(Array.from(paths, (path) => path.params.id), production ? ['notes/published'] : ['notes/published', 'draft'])
     assert.equal(paths[0].props.post, posts[0])
     if (!production) assert.equal(paths[1].props.post, posts[1])
+  }
+})
+
+
+test('project icons are generated from Markdown without a JSON safelist', async () => {
+  const config = readSource('unocss.config.ts')
+  assert.doesNotMatch(config, /data\.json|projectIcons/)
+  assert.match(config, /\.\/src\/content\/\*\*\/\*\.\{md,mdx\}/)
+  assert.match(config, /'i-ri-code-line'/)
+  const { createGenerator, presetIcons } = await import('unocss')
+  const uno = await createGenerator({ presets: [presetIcons()], safelist: ['i-ri-code-line'] })
+  const { matched } = await uno.generate(['mintblog', 'reroute', 'siftpath']
+    .map((slug) => readSource('src/content/projects/posts/' + slug + '.md')).join('\n'))
+  for (const icon of ['i-grommet-icons:blog', 'i-ri-route-line', 'i-ri-search-eye-line', 'i-ri-code-line']) {
+    assert.ok(matched.has(icon), icon)
   }
 })

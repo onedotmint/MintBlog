@@ -79,29 +79,32 @@ draft: false
 
 ## 作品
 
-作品数据放在 `src/content/projects/data.json`。文件内容是数组，每项包含：
+项目和 Writing 一样，每个 Markdown 文件就是一个项目，统一放在 `src/content/projects/posts/`，不用再维护 JSON 或匹配两份名称。新建纯正文 `.md` 即可加入列表；标题默认取文件名，日期自动取 Git，分组默认 `Now`，图标默认代码图标。
 
-```json
-{
-  "id": "项目名称",
-  "link": "https://example.com/",
-  "desc": "一句话说明。",
-  "icon": "i-simple-icons-github",
-  "category": "Lab"
-}
+可选地在同一个文件顶部填写：
+
+```yaml
+---
+title: 我的项目
+description: 一句话介绍，显示在项目列表中。
+repo: https://github.com/用户名/项目名
+category: Now
+icon: i-ri-code-line
+---
 ```
 
-字段规则：
+`---` 后面直接写 Markdown 详细介绍。各字段均可省略：
 
-- `id`：页面显示名称。
-- `link`：必填的 `http://` 或 `https://` URL。
-- `desc`：简短说明，控制在一两句内。
-- `icon`：UnoCSS 图标类名，格式为 `i-<集合>-<图标>` 或 `i-<集合>:<图标>`。
-- `category`：分组标题。当前使用 `Lab`、`Now`、`Foundations`。
+- `title`：项目显示名称，省略时取文件名，不再与其他记录匹配。
+- `description`：列表中的简短介绍；省略时列表不显示简介。
+- `repo`：可选仓库链接，只接受无用户名、密码的 HTTP(S) URL，在详情页显示“查看仓库”。
+- `category`：自定义分组标题，默认 `Now`，也可填写中文，不能留空。
+- `icon`：可选 UnoCSS 图标，格式为 `i-<集合>-<图标>` 或 `i-<集合>:<图标>`，默认 `i-ri-code-line`。
+- `draft`：默认 `false`；开发预览显示草稿并标记，生产构建从项目列表和详情路由同时排除草稿。
 
-作品显示顺序以 JSON 数组顺序为准。修改分类时同时检查作品页的分组标题和描述是否仍然准确。
+列表按发布日期倒序排列，同一时间按文件 ID 排列。点击项目进入站内介绍页；`reroute.md` 对应 `/projects/reroute/`，嵌套目录也保留在 URL 中。改名或移动文件会改变 URL，不自动重定向。
 
-项目详情 Markdown 放在 `src/content/projects/posts/`（使用 `projectPostSchema`，在 `postSchema` 基础上额外支持可选 `repo` 和 `category` 字段）。新增项目详情同样推荐复制 [`docs/templates/post.md`](templates/post.md) 并手填 `title` 与 `pubDate`（也继续支持无 frontmatter 写法）；最后修改日期仅在每篇项目详情页显示，不向作品列表、卡片或搜索增加日期。
+项目复用文章标题、日期、Markdown、目录及最后修改日期规则；详情使用 `projectPostSchema`。可以复制通用模板 `docs/templates/post.md`，但不强制使用模板或 frontmatter。
 
 ## 页面配置
 
@@ -145,7 +148,7 @@ ogImage: true
 
 ## 提交前检查
 
-完整检查步骤见 [release-preparation.md](release-preparation.md)。如果内容校验失败，先根据错误定位字段，再检查对应集合的 schema：文章和随笔使用 `postSchema`，随笔合集的可选覆盖文件使用 `shortCollectionSchema`，作品使用 `projectSchema`，页面使用 `pageSchema`。
+完整检查步骤见 [release-preparation.md](release-preparation.md)。如果内容校验失败，先根据错误定位字段，再检查对应集合的 schema：文章和随笔使用 `postSchema`，随笔合集的可选覆盖文件使用 `shortCollectionSchema`，项目使用 `projectPostSchema`，页面使用 `pageSchema`。
 
 ## 历史记录
 

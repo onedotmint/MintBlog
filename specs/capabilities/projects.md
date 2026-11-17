@@ -10,11 +10,11 @@ tags:
   - restoration
 ---
 
-# Project directory and preserved link data
+# Project directory and Markdown introductions
 
-- Restore the verified `ca826e279870b4d6582403bb3ec4cb75047e7f70` visual baseline, not a new approximation. Projects renders its original `StandardLayout` / `GroupView` / `GroupItem` composition. Links was subsequently removed by explicit owner request, including its data, schema and collection registration.
-- Projects uses the original JSON contract (`id`, HTTP(S) `link`, `desc`, `icon`, `category`). The owner-approved content blend appends Diffusion and Siftpath with basic descriptions from preserved project research, alongside the unchanged blog entry. No project data, media, dates or personal contributions are invented for layout.
-- The original Projects page has its centred title, existing article/home links, category headings and external project entries. Projects retains the historical Signal background. Do not recreate a Links directory or navigation entry.
-- No wheel, graph, media-showcase controller or `/projects/[slug]/` archive belongs to the restored production site. No compatibility redirect or replacement page is introduced for those experimental archive URLs.
-- Private experiments and their complete supporting worktree are archived outside production; they must not be imported into the restored site or used to justify retaining a rejected visual system.
-- Adding a normal project or link remains a JSON content operation, not a page-layout edit.
+- Keep the restored Projects `StandardLayout` / `GroupView` / `GroupItem` composition, centred title, existing article/home links, category headings and Signal background. No redesign, timeline or experimental archive is introduced.
+- Each `src/content/projects/posts/**/*.{md,mdx}` file supplies both a directory entry and its rendered introduction at `/projects/<relative-path-without-extension>/`. Existing Reroute and Siftpath detail URLs remain unchanged; MintBlog gains its own introduction. There is no separate JSON directory, title matching or required repository URL.
+- Reuse the normal post loader and schema: omitted title comes from the filename, dates come from Git with the existing local fallback, and Markdown body is the introduction. Optional `description` supplies the list summary, `repo` supplies the detail-page repository button, `category` defaults to `Now`, and `icon` defaults to `i-ri-code-line`. Preserve credential-free HTTP(S) and icon validation.
+- Directory entries sort newest publication first, with ID as tie-breaker, and group by category in encounter order. Every card links to its own detail URL, independent of its title. Markdown icons are extracted by UnoCSS's existing content scan; the default icon is safelisted.
+- Development lists draft projects with a visible draft label and allows detail previews. Production excludes draft entries and routes. A new project is only a Markdown content operation; no layout edit, JSON entry or frontmatter is required.
+- Private experiments and supporting worktrees remain outside production. Do not restore Links, Connections or the rejected visual system.

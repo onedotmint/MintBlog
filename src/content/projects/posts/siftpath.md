@@ -1,6 +1,6 @@
 ---
 title: Siftpath
-description: 给 AI Agent 统一的网页搜索与阅读入口。
+description: 为 AI Agent 统一网页搜索与阅读入口，连接官方 MCP 服务并按配置失败回退。
 repo: https://github.com/onedotmint/Siftpath
 category: Now
 icon: i-ri-search-eye-line
