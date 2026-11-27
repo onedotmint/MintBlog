@@ -4,7 +4,11 @@ export function installBrowserGlobals(values: Record<string, unknown>) {
     descriptor: Object.getOwnPropertyDescriptor(globalThis, key),
   }))
   for (const [key, value] of Object.entries(values)) {
-    Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
+    Object.defineProperty(globalThis, key, {
+      configurable: true,
+      writable: true,
+      value,
+    })
   }
   return () => {
     for (const { key, descriptor } of originals) {

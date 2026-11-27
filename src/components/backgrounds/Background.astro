@@ -20,8 +20,6 @@ const { type } = Astro.props
 {type === 'rose' && <Rose />}
 {type === 'particle' && <Particle />}
 {(type === 'breeze' || type === 'mist') && <Atmosphere variant={type} />}
-{
-  (type === 'signal' || type === 'signal-plus') && (
-    <Signal variant={type === 'signal-plus' ? 'plus' : 'base'} />
-  )
-}
+{(type === 'signal' || type === 'signal-plus') && (
+  <Signal variant={type === 'signal-plus' ? 'plus' : 'base'} />
+)}

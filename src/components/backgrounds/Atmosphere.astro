@@ -8,7 +8,8 @@ const { variant } = Astro.props
 
 <soft-atmosphere
   class:list={['atmosphere', `atmosphere--${variant}`]}
-  aria-hidden="true"></soft-atmosphere>
+  aria-hidden="true"
+></soft-atmosphere>
 
 <script>
   class SoftAtmosphere extends HTMLElement {
@@ -20,7 +21,7 @@ const { variant } = Astro.props
       const syncVisibility = () => {
         this.style.setProperty(
           '--atmosphere-play-state',
-          document.hidden ? 'paused' : 'running'
+          document.hidden ? 'paused' : 'running',
         )
       }
       document.addEventListener('visibilitychange', syncVisibility, {

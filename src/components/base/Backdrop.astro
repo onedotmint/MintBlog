@@ -1,16 +1,18 @@
 ---
-
 ---
 
 <div
   id="backdrop"
   class="hidden z-150 fixed inset-0 bg-[#ffffffcc] dark:bg-[#000000cc]"
   aria-hidden="true"
->
-</div>
+></div>
 
 <script>
-  import { finishPendingFadeEffects, toggleFadeEffect, unlockScroll } from '~/utils/misc'
+  import {
+    finishPendingFadeEffects,
+    toggleFadeEffect,
+    unlockScroll,
+  } from '~/utils/misc'
 
   const PANELS = [
     { id: 'nav-panel', hiddenClass: 'hidden!' },
@@ -38,13 +40,16 @@
 
   document.addEventListener('astro:page-load', () => {
     document.getElementById('backdrop')?.addEventListener('click', closePanel)
-    document.querySelectorAll<HTMLButtonElement>('[data-panel-close]').forEach((button) => {
-      button.addEventListener('click', closePanel)
-    })
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-panel-close]')
+      .forEach((button) => {
+        button.addEventListener('click', closePanel)
+      })
   })
 
   document.addEventListener('keydown', (event) => {
-    if (event.isComposing || (event.key !== 'Tab' && event.key !== 'Escape')) return
+    if (event.isComposing || (event.key !== 'Tab' && event.key !== 'Escape'))
+      return
     const open = getOpenPanel()
     if (!open) return
 
@@ -55,9 +60,13 @@
     }
 
     const { panel } = open
-    const focusable = Array.from(panel.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )).filter((element) => element.tabIndex >= 0 && element.getClientRects().length > 0)
+    const focusable = Array.from(
+      panel.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter(
+      (element) => element.tabIndex >= 0 && element.getClientRects().length > 0,
+    )
     const first = focusable[0]
     const last = focusable.at(-1)
     const active = document.activeElement

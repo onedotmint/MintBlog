@@ -69,7 +69,7 @@ const { filterMode } = tag[1]
       this.#items = Array.from(document.querySelectorAll(this.#selector))
       this.#buttons = Array.from(this.querySelectorAll('button[data-tag]'))
       this.#yearSections = Array.from(
-        document.querySelectorAll('section[data-year]')
+        document.querySelectorAll('section[data-year]'),
       )
 
       this.#buildYearTocMap()
@@ -98,7 +98,7 @@ const { filterMode } = tag[1]
 
       const id = setTimeout(
         () => run({ didTimeout: false, timeRemaining: () => 0 }),
-        1
+        1,
       )
       this.#cancelIdle = () => clearTimeout(id)
     }
@@ -106,7 +106,7 @@ const { filterMode } = tag[1]
     #buildYearTocMap() {
       const map = new Map<string, HTMLLIElement[]>()
       const tocLinks = Array.from(
-        document.querySelectorAll('table-of-contents a[href]')
+        document.querySelectorAll('table-of-contents a[href]'),
       ) as HTMLAnchorElement[]
 
       for (const a of tocLinks) {
@@ -135,7 +135,7 @@ const { filterMode } = tag[1]
         (raw || '')
           .split(',')
           .map((value) => value.trim())
-          .filter(Boolean)
+          .filter(Boolean),
       )
     }
 
@@ -144,7 +144,7 @@ const { filterMode } = tag[1]
         values
           .filter((t): t is string => typeof t === 'string')
           .map((t) => t.trim())
-          .filter((t) => Boolean(t) && this.#graph.has(t))
+          .filter((t) => Boolean(t) && this.#graph.has(t)),
       )
     }
 
@@ -162,7 +162,7 @@ const { filterMode } = tag[1]
       const target = event.target
       if (!(target instanceof Element)) return
       const button = target.closest(
-        'button[data-tag]'
+        'button[data-tag]',
       ) as HTMLButtonElement | null
       if (!button || !this.contains(button)) return
 
@@ -241,7 +241,7 @@ const { filterMode } = tag[1]
             sourceId: this.#instanceId,
             selected,
           },
-        })
+        }),
       )
     }
 
@@ -373,7 +373,7 @@ const { filterMode } = tag[1]
         if (!tocLis || !tocLis.length) continue
 
         const hasVisibleItems = !!section.querySelector(
-          '[data-tags]:not(.hidden)'
+          '[data-tags]:not(.hidden)',
         )
         for (const li of tocLis) {
           li.classList.toggle('hidden', !hasVisibleItems)

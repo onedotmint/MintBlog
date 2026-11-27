@@ -23,20 +23,18 @@ const { images, imageProps, autoplayDelay = 3000 } = Astro.props
   aria-label="Image carousel"
   aria-live="polite"
 >
-  {
-    images.map((item) => (
-      <div class="op-transition-600" role="group" aria-roledescription="slide">
-        {/* @ts-expect-error(ignore) */}
-        <Image
-          class="aspect-[16/9] object-cover"
-          src={item.src}
-          alt={item.alt}
-          {...(typeof item.src === 'string' ? { inferSize: true } : {})}
-          {...imageProps}
-        />
-      </div>
-    ))
-  }
+  {images.map((item) => (
+    <div class="op-transition-600" role="group" aria-roledescription="slide">
+      {/* @ts-expect-error(ignore) */}
+      <Image
+        class="aspect-[16/9] object-cover"
+        src={item.src}
+        alt={item.alt}
+        {...(typeof item.src === 'string' ? { inferSize: true } : {})}
+        {...imageProps}
+      />
+    </div>
+  ))}
 </image-carousel>
 
 <script>
@@ -73,7 +71,7 @@ const { images, imageProps, autoplayDelay = 3000 } = Astro.props
         el.setAttribute('aria-hidden', idx === this.#current ? 'false' : 'true')
         el.setAttribute(
           'aria-current',
-          idx === this.#current ? 'true' : 'false'
+          idx === this.#current ? 'true' : 'false',
         )
       }
     }

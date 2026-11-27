@@ -27,14 +27,15 @@ const { Content, headings, remarkPluginFrontmatter } = await render(post)
 
 const minutesRead = getMinutesRead(
   frontmatter.minutesRead,
-  remarkPluginFrontmatter.minutesRead as number
+  remarkPluginFrontmatter.minutesRead as number,
 )
 
 const tocEnabled = Array.isArray(toc) && toc[0] && frontmatter.toc
 const haveHeadings = tocEnabled && headings.length > 0
 
-const lastModDate =
-  (frontmatter.lastModDate || frontmatter.pubDate).toISOString()
+const lastModDate = (
+  frontmatter.lastModDate || frontmatter.pubDate
+).toISOString()
 
 const WARNING = `This is a draft project page that will not be published in production.`
 ---
@@ -58,29 +59,25 @@ const WARNING = `This is a draft project page that will not be published in prod
     </Fragment>
     <Fragment slot="article">
       {frontmatter.draft && <Warning html={WARNING} />}
-      {
-        haveHeadings && (
-          <>
-            <DesktopAside {headings} />
-            <MobileControl {headings} />
-          </>
-        )
-      }
+      {haveHeadings && (
+        <>
+          <DesktopAside {headings} />
+          <MobileControl {headings} />
+        </>
+      )}
       <Content />
-      {
-        frontmatter.repo && (
-          <p class="mt-12 not-prose">
-            <Link
-              class="inline-flex items-center gap-2 rounded-md border border-[#8883] px-4 py-2 text-sm no-underline transition-colors hover:bg-[#8881]"
-              href={frontmatter.repo}
-              external={true}
-            >
-              <span class="i-ri-github-fill" />
-              查看仓库
-            </Link>
-          </p>
-        )
-      }
+      {frontmatter.repo && (
+        <p class="mt-12 not-prose">
+          <Link
+            class="inline-flex items-center gap-2 rounded-md border border-[#8883] px-4 py-2 text-sm no-underline transition-colors hover:bg-[#8881]"
+            href={frontmatter.repo}
+            external={true}
+          >
+            <span class="i-ri-github-fill" />
+            查看仓库
+          </Link>
+        </p>
+      )}
     </Fragment>
   </StandardLayout>
 </BaseLayout>

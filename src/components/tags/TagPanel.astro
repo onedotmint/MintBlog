@@ -43,10 +43,8 @@ const { unique, relations } = buildTagRelations(tags)
       op-60 op-transition-700 text-sm color-[var(--c-text)]"
     aria-multiselectable="true"
   >
-    {
-      unique.map((tag) => (
-        <Tag tag={tag} relations={relations} interactive={true} />
-      ))
-    }
+    {unique.map((tag) => (
+      <Tag tag={tag} relations={relations} interactive={true} />
+    ))}
   </div>
 </div>

@@ -32,7 +32,7 @@ export function getPostDates(root: string, filePath: string): PostDates {
       }).trim()
     if (git('rev-parse', '--is-shallow-repository') === 'true')
       throw new Error(
-        'Automatic post dates need full Git history. Run git fetch --unshallow, or use checkout fetch-depth: 0.'
+        'Automatic post dates need full Git history. Run git fetch --unshallow, or use checkout fetch-depth: 0.',
       )
     const dates = git('log', '--follow', '--format=%cI', '--', path)
       .split('\n')
@@ -66,33 +66,51 @@ export function getPostDates(root: string, filePath: string): PostDates {
     return { pubDate: entry.pubDate, lastModDate: entry.lastModDate }
 
   throw new Error(
-    `Cannot determine dates for ${path}. Before building without Git (including Docker), run pnpm content:dates in the full Git checkout. The snapshot must match the current Markdown.`
+    `Cannot determine dates for ${path}. Before building without Git (including Docker), run pnpm content:dates in the full Git checkout. The snapshot must match the current Markdown.`,
   )
+}
+
+const postDatePattern =
+  /^(\d{4})-(\d{1,2})-(\d{1,2})(?:T(\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?)(Z|[+-]\d{2}:?\d{2})?)?$/
+
+export function parsePostDate(value: unknown): Date {
+  if (value instanceof Date || typeof value === 'number') return new Date(value)
+  const parts = typeof value === 'string' && postDatePattern.exec(value.trim())
+  if (!parts) return new Date(NaN)
+
+  const [, year, month, day, time, zone] = parts
+  const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+  const midnight = new Date(`${date}T00:00:00Z`)
+  // Date silently rolls some invalid calendar dates into the following month.
+  if (
+    !Number.isFinite(+midnight) ||
+    midnight.toISOString().slice(0, 10) !== date
+  )
+    return new Date(NaN)
+  return time ? new Date(`${date}T${time}${zone ?? 'Z'}`) : midnight
 }
 
 export function fillPostMetadata(
   root: string,
   filePath: string,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): Record<string, unknown> {
   const result = { ...data }
   if (result.title === undefined)
     result.title = basename(filePath, extname(filePath))
 
-  if (result.pubDate === undefined || result.lastModDate === undefined || result.lastModDate === '') {
+  if (
+    result.pubDate === undefined ||
+    result.lastModDate === undefined ||
+    result.lastModDate === ''
+  ) {
     const dates = getPostDates(root, filePath)
     if (result.pubDate === undefined) result.pubDate = dates.pubDate
     if (result.lastModDate === undefined || result.lastModDate === '') {
-      const published =
-        result.pubDate instanceof Date ||
-        typeof result.pubDate === 'string' ||
-        typeof result.pubDate === 'number'
-          ? new Date(result.pubDate)
-          : new Date(NaN)
+      const published = parsePostDate(result.pubDate)
       const updated = new Date(dates.lastModDate)
-      result.lastModDate = published > updated
-        ? published.toISOString()
-        : dates.lastModDate
+      result.lastModDate =
+        published > updated ? published.toISOString() : dates.lastModDate
     }
   }
   return result

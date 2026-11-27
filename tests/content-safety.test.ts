@@ -35,8 +35,16 @@ test('post redirects accept only credential-free HTTP(S) URLs or an empty value'
 test('post covers accept local images, credential-free HTTP(S) URLs, or empty values', async () => {
   assert.equal((await parsePostData({})).cover, '')
 
-  for (const value of ['./cover.png', '../images/封面 图.svg', 'cover.jpg', '~/assets/cover.webp']) {
-    assert.equal((await parsePostData({ cover: value })).cover, `__ASTRO_IMAGE_${value}`)
+  for (const value of [
+    './cover.png',
+    '../images/封面 图.svg',
+    'cover.jpg',
+    '~/assets/cover.webp',
+  ]) {
+    assert.equal(
+      (await parsePostData({ cover: value })).cover,
+      `__ASTRO_IMAGE_${value}`,
+    )
   }
 
   for (const value of [
@@ -62,13 +70,18 @@ test('post covers accept local images, credential-free HTTP(S) URLs, or empty va
     'C:\\images\\cover.png',
   ]) {
     await assert.rejects(parsePostData({ cover: value }), /cover/)
-    await assert.rejects(parsePostData({ cover: value }, projectPostSchema), /cover/)
+    await assert.rejects(
+      parsePostData({ cover: value }, projectPostSchema),
+      /cover/,
+    )
   }
 })
 
 test('both JSON-LD outputs preserve content without exposing HTML script delimiters', () => {
   const expressions = [
-    ...readSource('src/components/base/Head.astro').matchAll(/set:html=\{([\s\S]*?)\}/g),
+    ...readSource('src/components/base/Head.astro').matchAll(
+      /set:html=\{([\s\S]*?)\}/g,
+    ),
   ]
   assert.equal(expressions.length, 2)
   const payload = {
@@ -93,20 +106,25 @@ test('search subresult titles stay text while Pagefind excerpts keep highlightin
   assert.match(search, /a\.append\(title, excerpt\)/)
 })
 
-
 test('real content loading normalizes an existing bare cover filename as a local image import', async () => {
   const root = mkdtempSync(join(tmpdir(), 'mintblog-cover-'))
   try {
-    writeFileSync(join(root, 'cover.svg'), '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>')
+    writeFileSync(
+      join(root, 'cover.svg'),
+      '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>',
+    )
     for (const schema of [postSchema, projectPostSchema]) {
-      const data = await parsePostData({ cover: 'cover.svg' }, schema, join(root, 'post.md'))
+      const data = await parsePostData(
+        { cover: 'cover.svg' },
+        schema,
+        join(root, 'post.md'),
+      )
       assert.equal(data.cover, '__ASTRO_IMAGE_./cover.svg')
     }
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
 })
-
 
 test('publication dates reject YAML sequences and other coercible non-date inputs', async () => {
   const { frontmatter: data } = safeParseFrontmatter(
@@ -115,10 +133,25 @@ test('publication dates reject YAML sequences and other coercible non-date input
   assert.ok(Array.isArray(data.pubDate))
   for (const schema of [postSchema, projectPostSchema]) {
     await assert.rejects(parsePostData(data, schema), /pubDate/)
-    for (const pubDate of [null, true, false, {}, [], ['2030-01-01'], NaN, Infinity, 'not a date']) {
+    for (const pubDate of [
+      null,
+      true,
+      false,
+      {},
+      [],
+      ['2030-01-01'],
+      NaN,
+      Infinity,
+      'not a date',
+    ]) {
       await assert.rejects(parsePostData({ pubDate }, schema), /pubDate/)
     }
-    for (const pubDate of ['2030-01-01', new Date('2030-01-01'), Date.parse('2030-01-01'), 0]) {
+    for (const pubDate of [
+      '2030-01-01',
+      new Date('2030-01-01'),
+      Date.parse('2030-01-01'),
+      0,
+    ]) {
       const parsed = await parsePostData({ pubDate }, schema)
       assert.ok(parsed.pubDate instanceof Date)
       assert.equal(parsed.pubDate.getTime(), new Date(pubDate).getTime())
@@ -134,32 +167,75 @@ test('modification dates reject non-date inputs and preserve supported overrides
       )
       await assert.rejects(parsePostData(data, schema), /lastModDate/)
     }
-    for (const lastModDate of [null, true, false, {}, [], ['2030-01-01'], NaN, Infinity, new Date(NaN), 'not a date']) {
-      await assert.rejects(parsePostData({ lastModDate }, schema), /lastModDate/)
+    for (const lastModDate of [
+      null,
+      true,
+      false,
+      {},
+      [],
+      ['2030-01-01'],
+      NaN,
+      Infinity,
+      new Date(NaN),
+      'not a date',
+    ]) {
+      await assert.rejects(
+        parsePostData({ lastModDate }, schema),
+        /lastModDate/,
+      )
     }
     assert.equal((await parsePostData({}, schema)).lastModDate, undefined)
     const { frontmatter: automatic } = safeParseFrontmatter(
       "---\nlastModDate: ''\n---\nAn article.\n",
     )
     assert.equal((await parsePostData(automatic, schema)).lastModDate, '')
-    for (const lastModDate of ['2030-01-01', new Date('2030-01-01'), Date.parse('2030-01-01'), 0]) {
+    for (const lastModDate of [
+      '2030-01-01',
+      new Date('2030-01-01'),
+      Date.parse('2030-01-01'),
+      0,
+    ]) {
       const parsed = await parsePostData({ lastModDate }, schema)
       assert.ok(parsed.lastModDate instanceof Date)
-      assert.equal(parsed.lastModDate.getTime(), new Date(lastModDate).getTime())
+      assert.equal(
+        parsed.lastModDate.getTime(),
+        new Date(lastModDate).getTime(),
+      )
     }
   }
 })
 
+test('manual post dates reject ambiguous formats and impossible calendar dates', async () => {
+  for (const field of ['pubDate', 'lastModDate']) {
+    for (const value of [
+      '2030/1/2',
+      '2030-02-29',
+      '2030-04-31T08:00:00+08:00',
+      '2030-01-02T08:00+25:00',
+    ]) {
+      await assert.rejects(parsePostData({ [field]: value }), new RegExp(field))
+    }
+    const parsed = await parsePostData({ [field]: '2032-2-29' })
+    assert.deepEqual(parsed[field], new Date('2032-02-29T00:00:00Z'))
+  }
+})
 
 test('project Markdown needs no extra metadata and validates optional repository, category and icon', async () => {
   const data = await parsePostData({}, projectPostSchema)
   assert.equal(data.category, 'Now')
   assert.equal(data.icon, 'i-ri-code-line')
   assert.equal(data.repo, undefined)
-  for (const repo of ['https://github.com/onedotmint/MintBlog', 'http://example.com/']) {
+  for (const repo of [
+    'https://github.com/onedotmint/MintBlog',
+    'http://example.com/',
+  ]) {
     assert.equal((await parsePostData({ repo }, projectPostSchema)).repo, repo)
   }
-  for (const repo of ['javascript:alert(1)', '//example.com/', 'https://user:password@example.com/']) {
+  for (const repo of [
+    'javascript:alert(1)',
+    '//example.com/',
+    'https://user:password@example.com/',
+  ]) {
     await assert.rejects(parsePostData({ repo }, projectPostSchema), /repo/)
   }
   for (const icon of ['i-ri-code-line', 'i-grommet-icons:blog']) {
@@ -168,6 +244,12 @@ test('project Markdown needs no extra metadata and validates optional repository
   for (const icon of ['', 'invalid', 'i-ri-code-line extra-class']) {
     await assert.rejects(parsePostData({ icon }, projectPostSchema), /icon/)
   }
-  assert.equal((await parsePostData({ category: ' 实验室 ' }, projectPostSchema)).category, '实验室')
-  await assert.rejects(parsePostData({ category: ' ' }, projectPostSchema), /category/)
+  assert.equal(
+    (await parsePostData({ category: ' 实验室 ' }, projectPostSchema)).category,
+    '实验室',
+  )
+  await assert.rejects(
+    parsePostData({ category: ' ' }, projectPostSchema),
+    /category/,
+  )
 })

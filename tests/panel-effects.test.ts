@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import { afterEach, test } from 'node:test'
-import { finishPendingFadeEffects, toggleFadeEffect } from '../src/utils/misc.ts'
+import {
+  finishPendingFadeEffects,
+  toggleFadeEffect,
+} from '../src/utils/misc.ts'
 import { installBrowserGlobals } from './helpers/browser-globals.ts'
 
 const restores: Array<() => void> = []
@@ -63,7 +66,10 @@ class FakeElement {
   focusCount = 0
   focusTarget: FakeElement | null = null
   contains(node: unknown): boolean {
-    return node === this || (node instanceof FakeElement && node.parentElement === this)
+    return (
+      node === this ||
+      (node instanceof FakeElement && node.parentElement === this)
+    )
   }
   setAttribute(name: string, value: string) {
     this.attributes.set(name, value)
@@ -367,8 +373,6 @@ test('navigation cleanup finalizes unfinished fade-out and unlocks backdrop scro
   assert.equal(env.body.style.paddingRight, '')
 })
 
-
-
 test('panels sync expanded state, focus their content and restore the trigger on close', () => {
   const env = createDomEnv({ reducedMotion: true })
   const trigger = env.addElement('nav-open-button')
@@ -400,7 +404,6 @@ test('panels sync expanded state, focus their content and restore the trigger on
   assert.equal(trigger.focusCount, 2, 'do not steal focus from another control')
 })
 
-
 test('browser globals are restored without leaving new properties behind', () => {
   const before = Object.getOwnPropertyDescriptor(globalThis, 'window')
   const restore = installBrowserGlobals({ window: { marker: true } })
@@ -409,5 +412,8 @@ test('browser globals are restored without leaving new properties behind', () =>
   } finally {
     restore()
   }
-  assert.deepEqual(Object.getOwnPropertyDescriptor(globalThis, 'window'), before)
+  assert.deepEqual(
+    Object.getOwnPropertyDescriptor(globalThis, 'window'),
+    before,
+  )
 })

@@ -17,12 +17,13 @@ export interface PagefindApi {
   debouncedSearch: (
     query: string,
     options: { filters?: Record<string, string | string[]> },
-    delay: number
+    delay: number,
   ) => Promise<{ results: PagefindResult[] } | null>
 }
 
 export function registerSearchPanel(
-  importModule: (url: string) => Promise<PagefindApi> = (url) => import(/* @vite-ignore */ url)
+  importModule: (url: string) => Promise<PagefindApi> = (url) =>
+    import(/* @vite-ignore */ url),
 ) {
   let pagefindPromise: ReturnType<typeof importPagefind> | undefined
 
@@ -106,13 +107,19 @@ export function registerSearchPanel(
       this.#initPagination()
 
       this.#input?.addEventListener('input', this.#handleInput)
-      this.#input?.addEventListener('compositionstart', this.#handleCompositionStart)
-      this.#input?.addEventListener('compositionend', this.#handleCompositionEnd)
+      this.#input?.addEventListener(
+        'compositionstart',
+        this.#handleCompositionStart,
+      )
+      this.#input?.addEventListener(
+        'compositionend',
+        this.#handleCompositionEnd,
+      )
 
       this.#content?.addEventListener('click', this.#handleResultClick)
       this.#content?.addEventListener(
         'pointerover',
-        this.#handleResultsPointerOver
+        this.#handleResultsPointerOver,
       )
 
       this.addEventListener('keydown', this.#handleResultsKeyDown)
@@ -120,14 +127,20 @@ export function registerSearchPanel(
 
     disconnectedCallback() {
       this.#input?.removeEventListener('input', this.#handleInput)
-      this.#input?.removeEventListener('compositionstart', this.#handleCompositionStart)
-      this.#input?.removeEventListener('compositionend', this.#handleCompositionEnd)
+      this.#input?.removeEventListener(
+        'compositionstart',
+        this.#handleCompositionStart,
+      )
+      this.#input?.removeEventListener(
+        'compositionend',
+        this.#handleCompositionEnd,
+      )
       this.#isComposing = false
 
       this.#content?.removeEventListener('click', this.#handleResultClick)
       this.#content?.removeEventListener(
         'pointerover',
-        this.#handleResultsPointerOver
+        this.#handleResultsPointerOver,
       )
 
       this.removeEventListener('keydown', this.#handleResultsKeyDown)
@@ -159,14 +172,18 @@ export function registerSearchPanel(
       } catch {
         // Search remains usable when browser storage is unavailable.
       }
-      this.#currentTab = Number.isInteger(storedTab) && storedTab >= 0 && storedTab < this.#tabs.length
-        ? storedTab
-        : 0
+      this.#currentTab =
+        Number.isInteger(storedTab) &&
+        storedTab >= 0 &&
+        storedTab < this.#tabs.length
+          ? storedTab
+          : 0
       for (let i = 0; i < this.#tabs.length; i++) {
         const isSelected = i === this.#currentTab
         this.#tabs[i].setAttribute('aria-selected', isSelected.toString())
         this.#tabs[i].setAttribute('tabindex', isSelected ? '0' : '-1')
-        if (isSelected) this.#results?.setAttribute('aria-labelledby', this.#tabs[i].id)
+        if (isSelected)
+          this.#results?.setAttribute('aria-labelledby', this.#tabs[i].id)
         if (isSelected) this.#updateHint(this.#tabs[i].dataset.label)
 
         this.#tabs[i].addEventListener('click', () => this.#activateTab(i))
@@ -197,7 +214,12 @@ export function registerSearchPanel(
     }
 
     #handleInput = async (event: Event) => {
-      if (this.#isComposing || (event as InputEvent).isComposing || !this.#content) return
+      if (
+        this.#isComposing ||
+        (event as InputEvent).isComposing ||
+        !this.#content
+      )
+        return
       const value = (event.target as HTMLInputElement).value.trim()
       const requestId = ++this.#activeRequestId
       this.#resetView()
@@ -219,21 +241,28 @@ export function registerSearchPanel(
           }
           const url = this.dataset.pagefindUrl
           if (!url) throw new Error('Search index URL is missing')
-          const pagefind = await loadPagefind(url, this.dataset.navHighlight === 'true')
+          const pagefind = await loadPagefind(
+            url,
+            this.dataset.navHighlight === 'true',
+          )
           if (requestId !== this.#activeRequestId) return
           res = await pagefind.debouncedSearch(value, options, 300)
         } else {
-          res = { results: fakeResults.map((result) => ({
-            data: async () => ({
-              meta: result.meta,
-              sub_results: [{
-                title: result.meta.title,
-                url: this.#results?.dataset.base || '/',
-                excerpt: result.excerpt,
-                weighted_locations: [],
-              }],
-            }),
-          })) }
+          res = {
+            results: fakeResults.map((result) => ({
+              data: async () => ({
+                meta: result.meta,
+                sub_results: [
+                  {
+                    title: result.meta.title,
+                    url: this.#results?.dataset.base || '/',
+                    excerpt: result.excerpt,
+                    weighted_locations: [],
+                  },
+                ],
+              }),
+            })),
+          }
         }
         if (res === null || requestId !== this.#activeRequestId) return
         if (res.results.length === 0) {
@@ -262,7 +291,8 @@ export function registerSearchPanel(
     }
 
     #handleResultsKeyDown = (event: KeyboardEvent) => {
-      if (this.#isComposing || event.isComposing || event.keyCode === 229) return
+      if (this.#isComposing || event.isComposing || event.keyCode === 229)
+        return
       if (!this.#selectedItem || document.activeElement !== this.#input) return
 
       const key = event.key
@@ -275,7 +305,10 @@ export function registerSearchPanel(
         return
       }
 
-      const items = Array.from(this.#content?.querySelectorAll<HTMLAnchorElement>('[role="option"]') ?? [])
+      const items = Array.from(
+        this.#content?.querySelectorAll<HTMLAnchorElement>('[role="option"]') ??
+          [],
+      )
       const index = items.indexOf(this.#selectedItem)
       const step = key === 'ArrowDown' ? 1 : -1
       const target = items[(index + step + items.length) % items.length]
@@ -297,7 +330,8 @@ export function registerSearchPanel(
       const index = this.#tabs.indexOf(event.currentTarget as HTMLElement)
       let next: number
       if (event.key === 'ArrowRight') next = (index + 1) % this.#tabs.length
-      else if (event.key === 'ArrowLeft') next = (index - 1 + this.#tabs.length) % this.#tabs.length
+      else if (event.key === 'ArrowLeft')
+        next = (index - 1 + this.#tabs.length) % this.#tabs.length
       else if (event.key === 'Home') next = 0
       else if (event.key === 'End') next = this.#tabs.length - 1
       else return
@@ -423,7 +457,10 @@ export function registerSearchPanel(
         if (requestId !== this.#activeRequestId) return
         this.#showFeedback('')
         this.#content.appendChild(frag)
-        this.#input?.setAttribute('aria-expanded', String(Boolean(this.#selectedItem)))
+        this.#input?.setAttribute(
+          'aria-expanded',
+          String(Boolean(this.#selectedItem)),
+        )
         if (!next) {
           this.#selectedItem?.scrollIntoView({
             behavior: 'smooth',
@@ -541,5 +578,4 @@ export function registerSearchPanel(
 
   if (!customElements.get('search-panel'))
     customElements.define('search-panel', SearchPanel)
-
 }

@@ -25,7 +25,7 @@ pnpm preview
 
 Typora 直接写正文、自动标题和日期的流程见 [`docs/writing.md`](docs/writing.md)。更多字段与内容说明见 [`docs/content-guide.md`](docs/content-guide.md)。
 
-Docker 部署说明见 [`docs/deployment.md`](docs/deployment.md)。当前依赖迁移与兼容边界见 [`docs/dependency-upgrade.md`](docs/dependency-upgrade.md)。GitHub 只做 CI 与 GHCR SHA 镜像发布，不再 SSH 部署：push `main` 或在 `main` 手动运行 workflow 检查并发布镜像，PR 与其他分支手动运行仅验证。上线由操作者手动登录 VPS，在部署目录运行 `bash deploy.sh` 自动选择最近成功发布的完整 SHA（也可明确传入版本）；内部健康成功后自动保存 `.env` 的镜像版本，无需每次复制 SHA 或手改 `.env`，但仍须打开正式网站完成验收。自动模式需一次性配置镜像仓库并安装 `curl`、`jq`。此边界须在新 workflow 提交并推送后才生效，不表示旧运行或远端授权已清理。
+Docker 部署说明见 [`docs/deployment.md`](docs/deployment.md)，发布验收见 [`docs/release-preparation.md`](docs/release-preparation.md)。GitHub Actions 在 `main` 构建并启动待发布镜像，通过健康、关键路由和 404 检查后推送同一个镜像，不访问 VPS；PR 与其他分支的手动运行仅验证。上线时，确认目标运行成功并批准任务摘要中的不可变镜像 digest，再登录 VPS，在部署目录粘贴摘要中的 `bash deploy.sh ghcr.io/owner/repository@sha256:…` 命令。无参只显示用法并拒绝部署；人工回滚也必须显式传入已验收且获准的 digest。脚本确认实际运行的镜像 ID 和健康状态后自动保存 `.env`，但仍需完成公网验收。新流程只有在对应 workflow 推送后才生效。当前依赖迁移与兼容边界见 [`docs/dependency-upgrade.md`](docs/dependency-upgrade.md)。
 
 ## 原版恢复
 

@@ -9,7 +9,7 @@ import type { CollectionEntry } from 'astro:content'
 function ensurePositiveInteger(value: number, name: string) {
   if (Number.isInteger(value) && value > 0) return value
   throw new Error(
-    `'${name}' must be a positive integer. Please check 'src/config.ts' for the correct configuration.`
+    `'${name}' must be a positive integer. Please check 'src/config.ts' for the correct configuration.`,
   )
 }
 
@@ -18,7 +18,7 @@ function ensurePositiveInteger(value: number, name: string) {
  */
 export function parseTuple(
   tuple: boolean | [boolean, number] | undefined,
-  name: string
+  name: string,
 ) {
   if (!tuple || !Array.isArray(tuple) || !tuple[0]) return undefined
   return ensurePositiveInteger(tuple[1], name)
@@ -29,7 +29,7 @@ export function parseTuple(
  */
 export function getMinutesRead(
   minutesRead: number | boolean,
-  computedMinutesRead: number
+  computedMinutesRead: number,
 ) {
   return minutesRead === false
     ? 0
@@ -42,7 +42,7 @@ export async function getShortCollections() {
   return groupShorts(
     await getCollection('shortCollections'),
     await getCollection('shorts'),
-    import.meta.env.PROD
+    import.meta.env.PROD,
   )
 }
 
@@ -61,7 +61,7 @@ export async function getFilteredPosts(collection: 'blog' | 'shorts') {
  */
 export function getSortedPosts(posts: CollectionEntry<'blog' | 'shorts'>[]) {
   return posts.sort(
-    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
   )
 }
 
@@ -69,7 +69,7 @@ export function getSortedPosts(posts: CollectionEntry<'blog' | 'shorts'>[]) {
  * Build tag relations from input shapes.
  */
 export function buildTagRelations(
-  input: string[][] | string[] | Record<string, string[]>
+  input: string[][] | string[] | Record<string, string[]>,
 ): { unique: string[]; relations: Record<string, string[]> } {
   // use Map+Set to store de-duplicated relations
   const relMap = new Map<string, Set<string>>()
@@ -93,7 +93,7 @@ export function buildTagRelations(
       // string[][]: each is a post's tags
       for (const group of input) {
         const clean = Array.from(
-          new Set(group.map((t) => t.trim()).filter(Boolean))
+          new Set(group.map((t) => t.trim()).filter(Boolean)),
         )
 
         for (const a of clean) {

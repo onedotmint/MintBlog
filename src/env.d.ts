@@ -12,7 +12,9 @@ declare global {
   }
 
   interface Window {
-    PagefindHighlight?: new (options: Record<string, unknown>) => PagefindHighlightInstance
+    PagefindHighlight?: new (
+      options: Record<string, unknown>,
+    ) => PagefindHighlightInstance
     pagefindHighlight?: PagefindHighlightInstance
     pagefindHighlightPromise?: Promise<PagefindHighlightInstance | null>
     __pagefindHighlightListenerBound?: boolean

@@ -42,11 +42,9 @@ const { unique, relations } = buildTagRelations(tags)
     class="flex flex-wrap justify-start items-start content-start gap-y-3 gap-x-2.5 overflow-y-auto"
     aria-multiselectable="true"
   >
-    {
-      unique.map((tag) => (
-        <Tag tag={tag} relations={relations} interactive={true} />
-      ))
-    }
+    {unique.map((tag) => (
+      <Tag tag={tag} relations={relations} interactive={true} />
+    ))}
   </div>
   <div id="skip-tags" class="sr-only" tabindex="-1"></div>
 </div>

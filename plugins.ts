@@ -124,7 +124,7 @@ export const rehypePlugins: RehypePlugins = [
 
         return {
           'u-i-carbon-arrow-up-right': true,
-          'className': ['new-tab-icon'],
+          className: ['new-tab-icon'],
           'aria-hidden': 'true',
         }
       },
@@ -162,7 +162,7 @@ export const rehypePlugins: RehypePlugins = [
           content += textNode.value
         })
         return {
-          'class': 'header-anchor',
+          class: 'header-anchor',
           'tab-index': 0,
           'aria-hidden': 'false',
           'aria-label': content ? `Link to ${content}` : undefined,

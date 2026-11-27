@@ -69,7 +69,7 @@ function shouldGenerateOgImage(
     title?: unknown
     bgType?: unknown
     ogImage?: unknown
-  }
+  },
 ): data is { title: string; bgType?: unknown; ogImage: true } {
   return (
     typeof data.title === 'string' &&
@@ -95,7 +95,7 @@ function addManifestItem(
   authorOrBrand: string,
   title: string,
   bgType: BgType,
-  context: 'fallback' | 'page' = 'page'
+  context: 'fallback' | 'page' = 'page',
 ) {
   const slug =
     context === 'fallback'
@@ -114,8 +114,8 @@ function addManifestItem(
       `${ANSI_YELLOW}${ANSI_BOLD}${timestamp()}${ANSI_RESET}${ANSI_YELLOW} [WARN]${ANSI_RESET} Skipping OG image endpoint: \`${endpointPath}\`. ${withOgImageDocsHint(
         context === 'fallback'
           ? `'${publicPath}' already exists. Delete it to let the endpoint generate the fallback image.`
-          : `'${publicPath}' already exists. Delete it to generate \`${endpointPath}\`, or set \`ogImage\` to '${filename}' to use it explicitly.`
-      )}`
+          : `'${publicPath}' already exists. Delete it to generate \`${endpointPath}\`, or set \`ogImage\` to '${filename}' to use it explicitly.`,
+      )}`,
     )
 
     return
@@ -123,7 +123,7 @@ function addManifestItem(
 
   if (manifest.has(slug)) {
     console.warn(
-      `${ANSI_YELLOW}${ANSI_BOLD}${timestamp()}${ANSI_RESET}${ANSI_YELLOW} [WARN]${ANSI_RESET} Skipping OG image endpoint: \`${slug}\`. Multiple routes are defined to build the same URL path, please check and ensure they are unique.`
+      `${ANSI_YELLOW}${ANSI_BOLD}${timestamp()}${ANSI_RESET}${ANSI_YELLOW} [WARN]${ANSI_RESET} Skipping OG image endpoint: \`${slug}\`. Multiple routes are defined to build the same URL path, please check and ensure they are unique.`,
     )
     return
   }
@@ -155,7 +155,7 @@ function addPostManifestItem(
   collection: OgImageCollectionConfig,
   post: PostEntry,
   authorOrBrand: string,
-  fallbackBgType: BgType
+  fallbackBgType: BgType,
 ) {
   if (post.data.draft || post.data.redirect) return
   if (!shouldGenerateOgImage(authorOrBrand, post.data)) return
@@ -166,7 +166,7 @@ function addPostManifestItem(
     pathname,
     authorOrBrand,
     post.data.title,
-    isBgType(post.data.bgType) ? post.data.bgType : fallbackBgType
+    isBgType(post.data.bgType) ? post.data.bgType : fallbackBgType,
   )
 }
 
@@ -183,7 +183,7 @@ function addPageManifestItem(
   manifest: Map<string, OgImageManifestItem>,
   page: CollectionEntry<'pages'>,
   authorOrBrand: string,
-  fallbackBgType: BgType
+  fallbackBgType: BgType,
 ) {
   if (!shouldGenerateOgImage(authorOrBrand, page.data)) return
 
@@ -193,7 +193,7 @@ function addPageManifestItem(
     pathname,
     authorOrBrand,
     page.data.title,
-    page.data.bgType || fallbackBgType
+    page.data.bgType || fallbackBgType,
   )
 }
 
@@ -219,7 +219,7 @@ export async function getOgImageManifest() {
     authorOrBrand,
     fallbackTitle,
     fallbackBgType,
-    'fallback'
+    'fallback',
   )
 
   const pages = await getCollection('pages')
@@ -227,16 +227,17 @@ export async function getOgImageManifest() {
     addPageManifestItem(manifest, page, authorOrBrand, fallbackBgType)
 
   for (const collection of collections) {
-    const posts = collection.collection === 'shorts'
-      ? await getFilteredPosts('shorts')
-      : await getCollection(collection.collection)
+    const posts =
+      collection.collection === 'shorts'
+        ? await getFilteredPosts('shorts')
+        : await getCollection(collection.collection)
     for (const post of posts)
       addPostManifestItem(
         manifest,
         collection,
         post,
         authorOrBrand,
-        fallbackBgType
+        fallbackBgType,
       )
   }
 

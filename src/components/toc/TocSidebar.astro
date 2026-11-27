@@ -48,10 +48,8 @@ const specHeadings = generateToc(headings, minHeadingLevel, maxHeadingLevel)
     Skip toc
   </Link>
   <ul class="h-full first-of-type:mt--2 overflow-y-auto">
-    {
-      !!specHeadings.length &&
-        specHeadings.map((heading) => <TocItem {heading} />)
-    }
+    {!!specHeadings.length &&
+      specHeadings.map((heading) => <TocItem {heading} />)}
     {!!anchors.length && <TocItem {anchors} />}
   </ul>
   <div id="skip-toc" class="sr-only" tabindex="-1"></div>

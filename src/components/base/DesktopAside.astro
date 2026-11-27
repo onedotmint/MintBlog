@@ -42,32 +42,97 @@ if (tocPosition === 'left' && tagPosition === 'left') asidePosition = 'left'
 if (tocPosition === 'right' && tagPosition === 'right') asidePosition = 'right'
 ---
 
-{
-  (anchors.length > 0 || headings.length > 0) &&
-  tags.length > 0 &&
-  asidePosition !== 'both' ? (
-    <aside
-      id="desktop-aside"
-      data-desktop-aside
-      class="group/aside fixed top-8.875rem z-100 lt-lgp:hidden
+{(anchors.length > 0 || headings.length > 0) &&
+tags.length > 0 &&
+asidePosition !== 'both' ? (
+  <aside
+    id="desktop-aside"
+    data-desktop-aside
+    class="group/aside fixed top-8.875rem z-100 lt-lgp:hidden
         data-[position=left]:(left-2rem right-auto)
         data-[position=right]:(left-[calc(100vw-15.625rem-3.2rem)] right-auto)"
-      data-position={asidePosition}
-      {style}
-    >
-      <div role="tablist" class="flex items-center gap-4 mb-3">
-        <button
-          type="button"
-          role="tab"
-          class="flex-none flex items-center op-30 op-transition-700
+    data-position={asidePosition}
+    {style}
+  >
+    <div role="tablist" class="flex items-center gap-4 mb-3">
+      <button
+        type="button"
+        role="tab"
+        class="flex-none flex items-center op-30 op-transition-700
             data-[display-mode=always]:transition-none
             data-[display-mode=always]:aria-[selected=true]:op-60
             [.prose:hover_&]:data-[display-mode=content]:aria-[selected=true]:op-60
             group-hover/content:data-[display-mode=content]:aria-[selected=true]:op-60
             group-hover/aside:data-[display-mode=hover]:aria-[selected=true]:op-60"
-          aria-selected="true"
+        aria-selected="true"
+        aria-label="Table of contents"
+        data-type="toc"
+        data-display-mode={tocDisplayMode}
+      >
+        {tocButtonText ? (
+          <span class="text-[#555] text-sm truncate op-100!">
+            {tocButtonText}
+          </span>
+        ) : (
+          <span u-i-ri-menu-2-fill aria-hidden="true" />
+        )}
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="flex-none flex items-center op-30 op-transition-700
+            data-[display-mode=always]:transition-none
+            data-[display-mode=always]:aria-[selected=true]:op-60
+            [.prose:hover_&]:data-[display-mode=content]:aria-[selected=true]:op-60
+            group-hover/content:data-[display-mode=content]:aria-[selected=true]:op-60
+            group-hover/aside:data-[display-mode=hover]:aria-[selected=true]:op-60"
+        aria-selected="false"
+        aria-label="Tags"
+        data-type="tag"
+        data-display-mode={tagDisplayMode}
+      >
+        {tagButtonText ? (
+          <span class="text-[#555] text-sm truncate op-100!">
+            {tagButtonText}
+          </span>
+        ) : (
+          <span u-i-ri-price-tag-3-line aria-hidden="true" />
+        )}
+      </button>
+    </div>
+    <Toc isArticle={false}>
+      <TocSidebar anchors={anchors} style={tocStyle} />
+    </Toc>
+    <TagFilter>
+      <TagSidebar
+        tags={tags}
+        style={tagStyle ? `display: none; ${tagStyle}` : 'display: none;'}
+      />
+    </TagFilter>
+  </aside>
+) : (
+  <>
+    {(anchors.length > 0 || headings.length > 0) && (
+      <aside
+        id="desktop-aside-toc"
+        data-desktop-aside
+        class="group/aside fixed top-8.875rem z-100 lt-lgp:hidden
+            data-[position=left]:(left-2rem right-auto)
+            data-[position=right]:(left-[calc(100vw-15.625rem-3.2rem)] right-auto)
+            flex flex-col gap-3"
+        data-position={tocPosition}
+        {style}
+      >
+        <button
+          type="button"
+          class={`flex-none flex items-center op-30 op-transition-700
+              data-[display-mode=always]:op-60
+              [.prose:hover_&]:data-[display-mode=content]:op-60
+              group-hover/content:data-[display-mode=content]:op-60
+              group-hover/aside:data-[display-mode=hover]:op-60
+              ${tocButtonText ? 'op-100!' : undefined}`}
           aria-label="Table of contents"
-          data-type="toc"
+          title="Table of contents"
           data-display-mode={tocDisplayMode}
         >
           {tocButtonText ? (
@@ -78,119 +143,52 @@ if (tocPosition === 'right' && tagPosition === 'right') asidePosition = 'right'
             <span u-i-ri-menu-2-fill aria-hidden="true" />
           )}
         </button>
+        <Toc isArticle={headings.length > 0}>
+          {anchors.length > 0 && (
+            <TocSidebar anchors={anchors} style={tocStyle} />
+          )}
+          {headings.length > 0 && (
+            <TocSidebar headings={headings} style={tocStyle} />
+          )}
+        </Toc>
+      </aside>
+    )}
+    {tags.length > 0 && (
+      <aside
+        id="desktop-aside-tag"
+        data-desktop-aside
+        class="group/aside fixed top-8.875rem z-100 lt-lgp:hidden
+            data-[position=left]:(left-2rem right-auto)
+            data-[position=right]:(left-[calc(100vw-15.625rem-3.2rem)] right-auto)
+            flex flex-col gap-3"
+        data-position={tagPosition}
+        {style}
+      >
         <button
           type="button"
-          role="tab"
-          class="flex-none flex items-center op-30 op-transition-700
-            data-[display-mode=always]:transition-none
-            data-[display-mode=always]:aria-[selected=true]:op-60
-            [.prose:hover_&]:data-[display-mode=content]:aria-[selected=true]:op-60
-            group-hover/content:data-[display-mode=content]:aria-[selected=true]:op-60
-            group-hover/aside:data-[display-mode=hover]:aria-[selected=true]:op-60"
-          aria-selected="false"
-          aria-label="Tags"
-          data-type="tag"
-          data-display-mode={tagDisplayMode}
-        >
-          {tagButtonText ? (
-            <span class="text-[#555] text-sm truncate op-100!">
-              {tagButtonText}
-            </span>
-          ) : (
-            <span u-i-ri-price-tag-3-line aria-hidden="true" />
-          )}
-        </button>
-      </div>
-      <Toc isArticle={false}>
-        <TocSidebar anchors={anchors} style={tocStyle} />
-      </Toc>
-      <TagFilter>
-        <TagSidebar
-          tags={tags}
-          style={tagStyle ? `display: none; ${tagStyle}` : 'display: none;'}
-        />
-      </TagFilter>
-    </aside>
-  ) : (
-    <>
-      {(anchors.length > 0 || headings.length > 0) && (
-        <aside
-          id="desktop-aside-toc"
-          data-desktop-aside
-          class="group/aside fixed top-8.875rem z-100 lt-lgp:hidden
-            data-[position=left]:(left-2rem right-auto)
-            data-[position=right]:(left-[calc(100vw-15.625rem-3.2rem)] right-auto)
-            flex flex-col gap-3"
-          data-position={tocPosition}
-          {style}
-        >
-          <button
-            type="button"
-            class={`flex-none flex items-center op-30 op-transition-700
-              data-[display-mode=always]:op-60
-              [.prose:hover_&]:data-[display-mode=content]:op-60
-              group-hover/content:data-[display-mode=content]:op-60
-              group-hover/aside:data-[display-mode=hover]:op-60
-              ${tocButtonText ? 'op-100!' : undefined}`}
-            aria-label="Table of contents"
-            title="Table of contents"
-            data-display-mode={tocDisplayMode}
-          >
-            {tocButtonText ? (
-              <span class="text-[#555] text-sm truncate op-100!">
-                {tocButtonText}
-              </span>
-            ) : (
-              <span u-i-ri-menu-2-fill aria-hidden="true" />
-            )}
-          </button>
-          <Toc isArticle={headings.length > 0}>
-            {anchors.length > 0 && (
-              <TocSidebar anchors={anchors} style={tocStyle} />
-            )}
-            {headings.length > 0 && (
-              <TocSidebar headings={headings} style={tocStyle} />
-            )}
-          </Toc>
-        </aside>
-      )}
-      {tags.length > 0 && (
-        <aside
-          id="desktop-aside-tag"
-          data-desktop-aside
-          class="group/aside fixed top-8.875rem z-100 lt-lgp:hidden
-            data-[position=left]:(left-2rem right-auto)
-            data-[position=right]:(left-[calc(100vw-15.625rem-3.2rem)] right-auto)
-            flex flex-col gap-3"
-          data-position={tagPosition}
-          {style}
-        >
-          <button
-            type="button"
-            class={`flex-none flex items-center op-30 op-transition-700
+          class={`flex-none flex items-center op-30 op-transition-700
               data-[display-mode=always]:op-60
               [.prose:hover_&]:data-[display-mode=content]:op-60
               group-hover/content:data-[display-mode=content]:op-60
               group-hover/aside:data-[display-mode=hover]:op-60
               ${tagButtonText ? 'op-100!' : undefined}`}
-            aria-label="Tags"
-            title="Tags"
-            data-display-mode={tagDisplayMode}
-          >
-            {tagButtonText ? (
-              <span class="text-[#555] text-sm truncate">{tagButtonText}</span>
-            ) : (
-              <span u-i-ri-price-tag-3-line aria-hidden="true" />
-            )}
-          </button>
-          <TagFilter>
-            <TagSidebar tags={tags} style={tagStyle} />
-          </TagFilter>
-        </aside>
-      )}
-    </>
-  )
-}
+          aria-label="Tags"
+          title="Tags"
+          data-display-mode={tagDisplayMode}
+        >
+          {tagButtonText ? (
+            <span class="text-[#555] text-sm truncate">{tagButtonText}</span>
+          ) : (
+            <span u-i-ri-price-tag-3-line aria-hidden="true" />
+          )}
+        </button>
+        <TagFilter>
+          <TagSidebar tags={tags} style={tagStyle} />
+        </TagFilter>
+      </aside>
+    )}
+  </>
+)}
 
 <script>
   const STORAGE_KEY_PREFIX = 'desktop-aside:active'

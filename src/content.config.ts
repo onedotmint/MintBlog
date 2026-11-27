@@ -1,6 +1,7 @@
 import { glob } from 'astro/loaders'
 import { defineCollection } from 'astro:content'
 import { postLoader } from './utils/post-loader'
+import { shortPathId } from './utils/short-collections'
 
 import {
   pageSchema,
@@ -32,12 +33,13 @@ const shortCollections = defineCollection({
   loader: glob({
     base: './src/content/short-collections',
     pattern: '[^_]*.{md,mdx}',
+    generateId: shortPathId,
   }),
   schema: shortCollectionSchema,
 })
 
 const shorts = defineCollection({
-  loader: postLoader('./src/content/shorts'),
+  loader: postLoader('./src/content/shorts', shortPathId),
   schema: postSchema,
 })
 

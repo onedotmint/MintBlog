@@ -46,7 +46,7 @@ src/content/shorts/notes/下雨的周末.md
 
 - 建新合集 = 建新文件夹，例如 `src/content/shorts/生活切片/`；里面放第一篇随笔就自动出现在合集目录。更深层目录不另建合集。
 - 直接放在 `src/content/shorts/` 根目录的随笔也归入 `notes`（随手记）。旧文章可留在根目录，保持原地址，不必移动。
-- 正文 URL 使用相对于 `src/content/shorts/` 的完整路径（去扩展名）：`notes/下雨的周末.md` 对应 `/shorts/notes/下雨的周末/`，根目录的 `下雨的周末.md` 则对应 `/shorts/下雨的周末/`。移动文件或改目录名会改变 URL，**不会自动重定向**。
+- 正文 URL 使用相对于 `src/content/shorts/` 的完整路径（去扩展名）：`notes/下雨的周末.md` 对应 `/shorts/notes/下雨的周末/`，根目录的 `下雨的周末.md` 则对应 `/shorts/下雨的周末/`。移动文件或改目录名会改变 URL，**不会自动重定向**。例如 `notes/index.md` 保留 `/shorts/notes/index/`；`slug` 或 `collection` 不会改变归属或 URL。
 - 想改合集显示名或加介绍，可选建 `src/content/short-collections/生活切片.md`，完整写法如下；正文无需填写：
 
   ```yaml
@@ -80,7 +80,7 @@ src/content/shorts/notes/下雨的周末.md
   ---
   ```
 
-- 默认普通文章可进入生产构建；**保存本地文件不会自动上线**。确认内容完成后，仍按 Git 提交、检查和发布流程操作。新流程中推送 `main` 或在 `main` 手动运行 workflow 只检查并发布 GHCR SHA 镜像，不更新 VPS；PR 与其他分支手动运行仅验证。正式上线须操作者另行登录服务器，手动拉取选定版本，见 [部署说明](deployment.md) 和 [发布清单](release-preparation.md)。该边界须在新 workflow 提交并推送后才生效；此前不能假定旧自动部署已停止。
+- 默认普通文章可进入生产构建；**保存本地文件不会自动上线**。确认内容完成后，仍按 Git 提交、检查和发布流程操作。新流程中推送 `main` 或在 `main` 手动运行 workflow 只检查并发布 GHCR 镜像，不更新 VPS；PR 与其他分支手动运行仅验证。正式上线须操作者另行登录服务器，显式部署获准的镜像 digest，见 [部署说明](deployment.md) 和 [发布清单](release-preparation.md)。该边界须在新 workflow 提交并推送后才生效；此前不能假定旧自动部署已停止。
 - Git 提交后如果只变了历史、没有改正文，正在运行的开发服务不一定立即重读日期；重新启动预览或运行构建会更新。正式构建始终重算，不复用旧日期缓存。
 
 ## 偶尔需要手动指定
@@ -96,6 +96,8 @@ lastModDate: 2020-06-15
 ```
 
 没有写 `pubDate` 时自动取 Git 首次提交；`lastModDate` 缺失或留空（`lastModDate: ''`）时自动取 Git 最近提交（不早于 `pubDate`），并在 Writing、Shorts、Projects 文章详情页每篇显示。**手填有效 `lastModDate` 后，今后修改正文需要自己更新该日期**；如果想恢复自动取 Git 最近提交，只需把 `lastModDate` 清空（`''`）或删掉该字段。若从 [`docs/templates/post.md`](templates/post.md) 复制模板起稿，记得把示例 `title` 和 `pubDate`（`2026-11-14`）改成实际值。
+
+日期可写 `2020-05-01` 或 `2020-5-1`，均表示 UTC 零点。若要写到时刻，建议带上时区，例如 `2020-05-01T08:30:00+08:00`；ISO 日期时间省略时区时一律按 UTC。
 
 文件相对于所属内容目录的完整路径（去扩展名）决定 URL；发布后改文件名、移动文件或改目录名都会改变 URL，不会自动维护旧网址重定向。Git 通常能追溯普通重命名的首次提交，但不保证在大幅改写后识别重命名。
 

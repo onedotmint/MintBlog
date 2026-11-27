@@ -50,7 +50,7 @@ const { minHeadingLevel, maxHeadingLevel } = toc[1]
       const headings =
         this.#minH && this.#maxH
           ? this.#getElements(
-              this.#getTocHeadingsSelector(this.#minH, this.#maxH)
+              this.#getTocHeadingsSelector(this.#minH, this.#maxH),
             )
           : this.#getElements('.toc-heading')
 
@@ -142,7 +142,7 @@ const { minHeadingLevel, maxHeadingLevel } = toc[1]
     #getTocHeadingsSelector = (
       minH: number,
       maxH: number,
-      baseSelector = ''
+      baseSelector = '',
     ) => {
       const levelSelectors = []
       for (let i = minH; i <= maxH; i++) {
@@ -156,7 +156,7 @@ const { minHeadingLevel, maxHeadingLevel } = toc[1]
 
     #getPreviousHeading = (
       headingMapToc: Map<Element, HTMLAnchorElement[]>,
-      curHeading: Element
+      curHeading: Element,
     ) => {
       let prevHeading = null
 

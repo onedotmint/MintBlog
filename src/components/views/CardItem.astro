@@ -108,14 +108,14 @@ let proccessedImages: { src: string | ImageMetadata; alt: string }[] = []
 if (images && images.length > 0) {
   if (images.some((image) => !image.src.startsWith('http'))) {
     const localImages = import.meta.glob<{ default: ImageMetadata }>(
-      '/src/assets/**/*.{jpg,jpeg,png,webp,avif}'
+      '/src/assets/**/*.{jpg,jpeg,png,webp,avif}',
     )
 
     proccessedImages = await Promise.all(
       images.map(async (image) => {
         if (!image.src.startsWith('http') && !localImages[image.src])
           throw new Error(
-            `"${image.src}" does not exist in glob: "/src/assets/**/*.{jpg,jpeg,png,webp,avif}"`
+            `"${image.src}" does not exist in glob: "/src/assets/**/*.{jpg,jpeg,png,webp,avif}"`,
           )
 
         return {
@@ -124,7 +124,7 @@ if (images && images.length > 0) {
             : (await localImages[image.src]()).default,
           alt: image.alt,
         }
-      })
+      }),
     )
   } else {
     proccessedImages = images
@@ -138,212 +138,193 @@ if (images && images.length > 0) {
       h-full b b-[#8884] rounded-lg bg-white dark:bg-black
       shadow-transition-500`}
   >
-    {
-      ((images && images.length > 0) || video) && (
-        <MediaContainer
-          class="b-b b-b-[#8884] op-100!"
-          href={link || undefined}
-        >
-          {images &&
-            (images.length > 1 ? (
-              <ImageCarousel
-                images={proccessedImages}
-                imageProps={imageProps}
-              />
-            ) : (
-              // @ts-expect-error(ignore)
-              <Image
-                class="aspect-[16/9] object-cover"
-                src={proccessedImages[0].src}
-                alt={images[0].alt}
-                {...(typeof images[0].src === 'string'
-                  ? { inferSize: true }
-                  : {})}
-                {...imageProps}
-              />
-            ))}
-
-          {video && (
-            <video
-              class="w-full aspect-[16/9] object-cover"
-              src={video.src}
-              poster={video.poster}
-              aria-label={video.alt}
-              autoplay
-              muted
-              loop
-              playsinline
-              {...videoProps}
-            />
-          )}
-        </MediaContainer>
-      )
-    }
-    {
-      external && (
-        <Link
-          class={`overflow-hidden flex flex-col
-            b b-[#8884] rounded-lg mt-3 mx-3
-            op-100! shadow-transition-500 hover:(shadow-custom_0_5_15_-3)`}
-          href={external.uri}
-        >
-          {!COMPACT && external.img && (
+    {((images && images.length > 0) || video) && (
+      <MediaContainer class="b-b b-b-[#8884] op-100!" href={link || undefined}>
+        {images &&
+          (images.length > 1 ? (
+            <ImageCarousel images={proccessedImages} imageProps={imageProps} />
+          ) : (
+            // @ts-expect-error(ignore)
             <Image
-              class="b-b b-b-[#8884] aspect-[1.91/1] object-cover"
-              src={external.img}
-              alt={external.title}
-              inferSize
+              class="aspect-[16/9] object-cover"
+              src={proccessedImages[0].src}
+              alt={images[0].alt}
+              {...(typeof images[0].src === 'string'
+                ? { inferSize: true }
+                : {})}
               {...imageProps}
             />
-          )}
-          <div class="flex flex-col px-3 pt-2 pb-1">
-            <div class="flex flex-col gap-1 pb-1.5 b-b b-b-[#8884]">
-              <p class="text-sm font-600">{external.title}</p>
-              <p class="text-xs">{external.description}</p>
-            </div>
-            <div class="flex items-center gap-1 pt-1 text-[0.72rem] op-70">
-              <div u-i-hugeicons-earth class="size-1em" aria-hidden="true" />
-              <p>{new URL(external.uri).hostname}</p>
-            </div>
+          ))}
+
+        {video && (
+          <video
+            class="w-full aspect-[16/9] object-cover"
+            src={video.src}
+            poster={video.poster}
+            aria-label={video.alt}
+            autoplay
+            muted
+            loop
+            playsinline
+            {...videoProps}
+          />
+        )}
+      </MediaContainer>
+    )}
+    {external && (
+      <Link
+        class={`overflow-hidden flex flex-col
+            b b-[#8884] rounded-lg mt-3 mx-3
+            op-100! shadow-transition-500 hover:(shadow-custom_0_5_15_-3)`}
+        href={external.uri}
+      >
+        {!COMPACT && external.img && (
+          <Image
+            class="b-b b-b-[#8884] aspect-[1.91/1] object-cover"
+            src={external.img}
+            alt={external.title}
+            inferSize
+            {...imageProps}
+          />
+        )}
+        <div class="flex flex-col px-3 pt-2 pb-1">
+          <div class="flex flex-col gap-1 pb-1.5 b-b b-b-[#8884]">
+            <p class="text-sm font-600">{external.title}</p>
+            <p class="text-xs">{external.description}</p>
           </div>
-        </Link>
-      )
-    }
-    {
-      quote && (
-        <div
-          class={`overflow-hidden flex flex-col gap-2
+          <div class="flex items-center gap-1 pt-1 text-[0.72rem] op-70">
+            <div u-i-hugeicons-earth class="size-1em" aria-hidden="true" />
+            <p>{new URL(external.uri).hostname}</p>
+          </div>
+        </div>
+      </Link>
+    )}
+    {quote && (
+      <div
+        class={`overflow-hidden flex flex-col gap-2
             b b-[#8884] rounded-lg p-2 mt-3 mx-3
             text-sm shadow-transition-500 hover:(shadow-custom_0_5_15_-3)`}
-        >
-          <div class="flex items-center gap-1">
-            <Image
-              class="size-1em rounded-full object-cover"
-              src={quote.author.avatar}
-              alt={quote.author.name}
-              inferSize
-              widths={[64]}
-              sizes="1em"
-            />
-            <p class="truncate">
-              <span class="font-600">{quote.author.name}</span>{' '}
-              <Link class="op-transition" href={quote.author.link}>
-                {`@${quote.author.handle}`}
-              </Link>
-            </p>
-          </div>
-          <Link class="op-80!" href={quote.uri}>
-            <p class="line-height-normal">{quote.text}</p>
-          </Link>
+      >
+        <div class="flex items-center gap-1">
+          <Image
+            class="size-1em rounded-full object-cover"
+            src={quote.author.avatar}
+            alt={quote.author.name}
+            inferSize
+            widths={[64]}
+            sizes="1em"
+          />
+          <p class="truncate">
+            <span class="font-600">{quote.author.name}</span>{' '}
+            <Link class="op-transition" href={quote.author.link}>
+              {`@${quote.author.handle}`}
+            </Link>
+          </p>
         </div>
-      )
-    }
+        <Link class="op-80!" href={quote.uri}>
+          <p class="line-height-normal">{quote.text}</p>
+        </Link>
+      </div>
+    )}
     <ContentContainer
       class="flex flex-col justify-between h-full p-4 pb-3 op-100!"
       href={link || undefined}
     >
-      {
-        Astro.slots.has('default') && (
-          <div class="prose [&.prose_p]:my-[1.1em] [&.prose>:first-child]:mt-0 [&.prose>:last-child]:mb-0">
-            <slot />
-          </div>
-        )
-      }
-      {
-        html && (
-          <div
-            class="prose [&.prose_p]:my-[1.1em] [&.prose>:first-child]:mt-0 [&.prose>:last-child]:mb-0"
-            set:html={html}
-          />
-        )
-      }
+      {Astro.slots.has('default') && (
+        <div class="prose [&.prose_p]:my-[1.1em] [&.prose>:first-child]:mt-0 [&.prose>:last-child]:mb-0">
+          <slot />
+        </div>
+      )}
+      {html && (
+        <div
+          class="prose [&.prose_p]:my-[1.1em] [&.prose>:first-child]:mt-0 [&.prose>:last-child]:mb-0"
+          set:html={html}
+        />
+      )}
       {text && <p class="prose">{text}</p>}
-      {description && <p class="mt-2 text-sm op-60 break-words">{description}</p>}
-      {
-        tags && tags.length > 0 && (
-          <>
-            <div class="grow" />
-            {date && (
-              <p class="text-sm color-[var(--c-text)] op-85">
-                {formatDate(date)}
-              </p>
-            )}
-            {footer && <p class="text-sm color-[var(--c-text)] op-85">{footer}</p>}
-            <div
-              role="none"
-              class="w-[calc(100%+2rem)] h-[1px] my-3.5 ml--4 bg-[#8884]"
-            />
-            <div
-              class="flex flex-wrap content-start justify-start items-start
+      {description && (
+        <p class="mt-2 text-sm op-60 break-words">{description}</p>
+      )}
+      {tags && tags.length > 0 && (
+        <>
+          <div class="grow" />
+          {date && (
+            <p class="text-sm color-[var(--c-text)] op-85">
+              {formatDate(date)}
+            </p>
+          )}
+          {footer && (
+            <p class="text-sm color-[var(--c-text)] op-85">{footer}</p>
+          )}
+          <div
+            role="none"
+            class="w-[calc(100%+2rem)] h-[1px] my-3.5 ml--4 bg-[#8884]"
+          />
+          <div
+            class="flex flex-wrap content-start justify-start items-start
                 min-h-[4.25rem] gap-y-3 gap-x-2.5 mt-0.5 mb-1
                 text-sm color-[var(--c-text)]"
-            >
-              {visibleTags.map((tag) => (
-                <Tag tag={tag} />
-              ))}
-              {overflowTags.length > 0 && (
-                <Tag
-                  tag={`+${overflowTags.length}`}
-                  title={overflowTags.join(' / ')}
-                  ariaLabel={`Additional tags: ${overflowTags.join(', ')}`}
-                  filterable={false}
-                />
-              )}
-            </div>
-          </>
-        )
-      }
-      {
-        details && (
-          <div
-            class="card-item-details"
-            style="max-height: 0; overflow-y: clip;"
           >
-            <ol class="relative border-s border-gray-200 dark:border-gray-700">
-              {details.slice(0, MAX_DETAILS + 1).map((detail, idx) => (
-                <li class="ms-4 mb-6 last:mb-0">
-                  <div
-                    class="absolute start--1.6 w-3 h-3
+            {visibleTags.map((tag) => (
+              <Tag tag={tag} />
+            ))}
+            {overflowTags.length > 0 && (
+              <Tag
+                tag={`+${overflowTags.length}`}
+                title={overflowTags.join(' / ')}
+                ariaLabel={`Additional tags: ${overflowTags.join(', ')}`}
+                filterable={false}
+              />
+            )}
+          </div>
+        </>
+      )}
+      {details && (
+        <div class="card-item-details" style="max-height: 0; overflow-y: clip;">
+          <ol class="relative border-s border-gray-200 dark:border-gray-700">
+            {details.slice(0, MAX_DETAILS + 1).map((detail, idx) => (
+              <li class="ms-4 mb-6 last:mb-0">
+                <div
+                  class="absolute start--1.6 w-3 h-3
                       border rounded-full border-white dark:border-gray-900 mt-1.5
                       bg-gray-200 dark:bg-gray-700"
+                />
+                {idx < MAX_DETAILS && (
+                  <div
+                    class="prose [&.prose_p]:my-[1.1em] [&.prose>:first-child]:mt-0 [&.prose>:last-child]:mb-0"
+                    set:html={detail}
                   />
-                  {idx < MAX_DETAILS && (
-                    <div
-                      class="prose [&.prose_p]:my-[1.1em] [&.prose>:first-child]:mt-0 [&.prose>:last-child]:mb-0"
-                      set:html={detail}
-                    />
-                  )}
-                  {link && idx === MAX_DETAILS && (
-                    <Link class="prose op-100!" href={link}>
-                      View more...
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </div>
-        )
-      }
-      {(!tags || tags.length === 0) && footer && <p class="mt-auto pt-3 text-sm op-60">{footer}</p>}
-      {
-        (!tags || tags.length === 0) && date && (
-          <div class="flex justify-between items-center pt-3 text-sm">
-            {link && html ? (
-              <Link class="flex-auto op-transition" href={link}>
-                {formatDate(date)}
-              </Link>
-            ) : (
-              <p class="op-60">{formatDate(date)}</p>
-            )}
-            {details && (
-              <button class="details-switch op-50 op-transition hover:op-100">
-                <div u-i-famicons-chevron-down-sharp class="icon-down" />
-                <div u-i-famicons-chevron-up-sharp class="icon-up hidden" />
-              </button>
-            )}
-          </div>
-        )
-      }
+                )}
+                {link && idx === MAX_DETAILS && (
+                  <Link class="prose op-100!" href={link}>
+                    View more...
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+      {(!tags || tags.length === 0) && footer && (
+        <p class="mt-auto pt-3 text-sm op-60">{footer}</p>
+      )}
+      {(!tags || tags.length === 0) && date && (
+        <div class="flex justify-between items-center pt-3 text-sm">
+          {link && html ? (
+            <Link class="flex-auto op-transition" href={link}>
+              {formatDate(date)}
+            </Link>
+          ) : (
+            <p class="op-60">{formatDate(date)}</p>
+          )}
+          {details && (
+            <button class="details-switch op-50 op-transition hover:op-100">
+              <div u-i-famicons-chevron-down-sharp class="icon-down" />
+              <div u-i-famicons-chevron-up-sharp class="icon-up hidden" />
+            </button>
+          )}
+        </div>
+      )}
     </ContentContainer>
   </div>
 </section>

@@ -33,7 +33,7 @@ Pre-commit runs `simple-git-hooks` → `lint-staged` → `eslint --report-unused
 ## ENGQ-002 Pre-completion expectations
 
 - The changed paths and commands must exist in the current repository.
-- Run the narrowest applicable checks, and run `pnpm check`, `pnpm lint`, `pnpm test`, and `pnpm build` before completion unless an environment limitation is recorded. CI runs these gates before image publishing; PRs also build the static site.
+- Run the narrowest applicable checks, and run `pnpm check`, `pnpm lint`, `pnpm format`, `pnpm test`, and `pnpm build` before completion unless an environment limitation is recorded. CI runs these gates before image publishing; PRs also build the static site.
 - For documentation-only work, verify Markdown links, paths, and commands against checked-in sources.
 - `pnpm build` also runs the Pagefind postbuild step, so search index and route changes are only proven by a real build.
 

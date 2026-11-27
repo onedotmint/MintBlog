@@ -174,16 +174,27 @@ test('WASM runtime overrides keep Astro and Rolldown on compatible generations',
     readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
   )
   const overrides = manifest.pnpm.overrides
-  assert.equal(overrides['@napi-rs/wasm-runtime@1.2.4>@emnapi/runtime'], '1.11.3')
+  assert.equal(
+    overrides['@napi-rs/wasm-runtime@1.2.4>@emnapi/runtime'],
+    '1.11.3',
+  )
   assert.equal(Object.hasOwn(overrides, '@emnapi/runtime'), false)
-  assert.equal(Object.hasOwn(overrides, '@napi-rs/wasm-runtime>@emnapi/runtime'), false)
+  assert.equal(
+    Object.hasOwn(overrides, '@napi-rs/wasm-runtime>@emnapi/runtime'),
+    false,
+  )
 
-  const lock = readFileSync(new URL('../pnpm-lock.yaml', import.meta.url), 'utf8')
+  const lock = readFileSync(
+    new URL('../pnpm-lock.yaml', import.meta.url),
+    'utf8',
+  )
   const snapshots = lock.split('\nsnapshots:\n')[1]
   assert.ok(snapshots)
-  assert.ok(snapshots.includes(
-    "  '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':",
-  ))
+  assert.ok(
+    snapshots.includes(
+      "  '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':",
+    ),
+  )
   for (const version of ['1.2.19', '1.3.2']) {
     const binding = snapshots
       .split(`  '@rolldown/binding-wasm32-wasi@${version}':\n`)[1]
@@ -191,15 +202,23 @@ test('WASM runtime overrides keep Astro and Rolldown on compatible generations',
     assert.ok(binding, `Missing Rolldown ${version} WASM binding`)
     assert.match(binding, /'@emnapi\/core': 2\.0\.0-beta\.2/)
     assert.match(binding, /'@emnapi\/runtime': 2\.0\.0-beta\.2/)
-    assert.ok(binding.includes(
-      "'@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)",
-    ))
+    assert.ok(
+      binding.includes(
+        "'@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)",
+      ),
+    )
   }
-  const pairs = [...snapshots.matchAll(
-    /^ {2}'@napi-rs\/wasm-runtime@[^('\s]+\(@emnapi\/core@([^)]+)\)\(@emnapi\/runtime@([^)]+)\)':/gm,
-  )]
+  const pairs = [
+    ...snapshots.matchAll(
+      /^ {2}'@napi-rs\/wasm-runtime@[^('\s]+\(@emnapi\/core@([^)]+)\)\(@emnapi\/runtime@([^)]+)\)':/gm,
+    ),
+  ]
   assert.ok(pairs.length > 0)
   for (const [, core, runtime] of pairs) {
-    assert.equal(core.split('.')[0], runtime.split('.')[0], `${core} / ${runtime}`)
+    assert.equal(
+      core.split('.')[0],
+      runtime.split('.')[0],
+      `${core} / ${runtime}`,
+    )
   }
 })

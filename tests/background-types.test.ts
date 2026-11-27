@@ -17,7 +17,8 @@ test('BG_TYPES preserves existing background names without duplicates', () => {
     'signal-plus',
     'breeze',
     'mist',
-  ]) assert.ok(supported.includes(name), name)
+  ])
+    assert.ok(supported.includes(name), name)
   assert.equal(new Set(BG_TYPES).size, BG_TYPES.length)
 })
 
@@ -31,14 +32,17 @@ test('pageSchema, postSchema, and projectPostSchema share BG_TYPES and false def
     assert.equal((await parsePostData({ bgType: value })).bgType, value)
     assert.equal(
       (await parsePostData({ bgType: value }, projectPostSchema)).bgType,
-      value
+      value,
     )
   }
 
   for (const invalid of ['unknown', '', true, 123, null]) {
     assert.equal(pageSchema.safeParse({ bgType: invalid }).success, false)
     await assert.rejects(parsePostData({ bgType: invalid }), /bgType/)
-    await assert.rejects(parsePostData({ bgType: invalid }, projectPostSchema), /bgType/)
+    await assert.rejects(
+      parsePostData({ bgType: invalid }, projectPostSchema),
+      /bgType/,
+    )
   }
 })
 
@@ -54,13 +58,13 @@ test('ogImageMarkup accepts every BG_TYPES entry and rejects unknown types', () 
       assert.ok(error instanceof Error)
       assert.match(
         error.message,
-        /The value of 'bgType' must be one of the following:/
+        /The value of 'bgType' must be one of the following:/,
       )
       for (const bgType of BG_TYPES) {
         assert.ok(error.message.includes(`'${bgType}'`))
       }
       return true
-    }
+    },
   )
 })
 

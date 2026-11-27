@@ -1,5 +1,4 @@
 ---
-
 ---
 
 <div class="giscus"></div>
@@ -43,13 +42,13 @@
     // Always clone a fresh <script> to ensure it executes again;
     // reused or previously inserted scripts won't run
     const clonedScript = giscusTemplateScript.cloneNode(
-      true
+      true,
     ) as HTMLScriptElement
     clonedScript.setAttribute(
       'data-theme',
       document.documentElement.classList.contains('dark')
         ? giscusThemeDark
-        : giscusThemeLight
+        : giscusThemeLight,
     )
     document.body.appendChild(clonedScript)
   }

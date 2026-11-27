@@ -6,8 +6,7 @@ export async function GET() {
     id: withBasePath('/'),
     name: '一点薄荷',
     short_name: '一点薄荷',
-    description:
-      '一个安静的技术笔记本，记录文章、学习笔记、系统实验和小作品。',
+    description: '一个安静的技术笔记本，记录文章、学习笔记、系统实验和小作品。',
     icons: [
       {
         src: withBasePath('icon-192.png'),

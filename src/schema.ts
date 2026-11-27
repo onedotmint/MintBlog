@@ -1,21 +1,21 @@
 import { z } from 'astro/zod'
 import { BG_TYPES } from './types.ts'
+import { parsePostDate } from './utils/post-metadata.ts'
 import type { SchemaContext } from 'astro:content'
 
-const bgTypeSchema = z.union([z.literal(false), z.enum(BG_TYPES)]).default(false)
+const bgTypeSchema = z
+  .union([z.literal(false), z.enum(BG_TYPES)])
+  .default(false)
 
-const httpUrlSchema = z.url().refine(
-  (value) => {
-    const url = URL.parse(value)
-    return (
-      url !== null &&
-      (url.protocol === 'http:' || url.protocol === 'https:') &&
-      !url.username &&
-      !url.password
-    )
-  },
-  'Link must use HTTP(S) and must not contain credentials.'
-)
+const httpUrlSchema = z.url().refine((value) => {
+  const url = URL.parse(value)
+  return (
+    url !== null &&
+    (url.protocol === 'http:' || url.protocol === 'https:') &&
+    !url.username &&
+    !url.password
+  )
+}, 'Link must use HTTP(S) and must not contain credentials.')
 
 /* Pages */
 export const pageSchema = z.object({
@@ -24,32 +24,40 @@ export const pageSchema = z.object({
     .trim()
     .default('')
     .describe(
-      'Sets the page title, formatted with `SITE.title` as `<pageTitle> - <siteTitle>` for metadata. If empty or the same as `SITE.title`, only `<siteTitle>` is displayed. Page-specific OG images also require a non-empty title different from `FEATURES.ogImage[1].authorOrBrand`; otherwise the fallback OG image is used.'
+      'Sets the page title, formatted with `SITE.title` as `<pageTitle> - <siteTitle>` for metadata. If empty or the same as `SITE.title`, only `<siteTitle>` is displayed. Page-specific OG images also require a non-empty title different from `FEATURES.ogImage[1].authorOrBrand`; otherwise the fallback OG image is used.',
     ),
   subtitle: z
     .string()
     .trim()
     .default('')
     .describe(
-      'Provides a page subtitle. If provided, it will be displayed below the title. If not needed, leave the field as an empty string or delete it.'
+      'Provides a page subtitle. If provided, it will be displayed below the title. If not needed, leave the field as an empty string or delete it.',
     ),
   description: z
     .string()
     .trim()
     .default('')
     .describe(
-      'Provides a brief description, used in meta tags for SEO and sharing purposes. If not needed, leave the field as an empty string or delete it, and the `SITE.description` will be used directly.'
+      'Provides a brief description, used in meta tags for SEO and sharing purposes. If not needed, leave the field as an empty string or delete it, and the `SITE.description` will be used directly.',
     ),
   bgType: bgTypeSchema.describe(
-    'Specifies whether to apply a background on this page and select its type. It is also used as the page-specific OG image background; if not needed, delete the field or set to `false`.'
+    'Specifies whether to apply a background on this page and select its type. It is also used as the page-specific OG image background; if not needed, delete the field or set to `false`.',
   ),
   ogImage: z
     .union([z.literal('fallback'), z.string(), z.boolean()])
     .default(true)
     .describe(
-      "Controls OG image metadata. Set to `true` or omit the field to generate a page-specific OG image from the final pathname, such as `/blog/foo/` -> `/og-images/blog/foo.png`; if the `title` is empty or matches `FEATURES.ogImage[1].authorOrBrand`, the fallback is used. Set to 'fallback' to use `/og-images/og-image.png`, or false to omit OG image metadata. To use a custom image, place it in `public/og-images/` and set this field to its relative path (for example, `custom.png` or `blog/custom.png`). Missing images fall back to `/og-images/og-image.png`."
+      "Controls OG image metadata. Set to `true` or omit the field to generate a page-specific OG image from the final pathname, such as `/blog/foo/` -> `/og-images/blog/foo.png`; if the `title` is empty or matches `FEATURES.ogImage[1].authorOrBrand`, the fallback is used. Set to 'fallback' to use `/og-images/og-image.png`, or false to omit OG image metadata. To use a custom image, place it in `public/og-images/` and set this field to its relative path (for example, `custom.png` or `blog/custom.png`). Missing images fall back to `/og-images/og-image.png`.",
     ),
 })
+
+const postDateSchema = z
+  .union([z.date(), z.string(), z.number()])
+  .transform(parsePostDate)
+  .refine((date) => Number.isFinite(date.valueOf()), {
+    message:
+      'Use a valid YYYY-MM-DD date, ISO date-time, or millisecond timestamp.',
+  })
 
 /* Posts */
 export const postSchema = ({ image }: SchemaContext) =>
@@ -60,27 +68,27 @@ export const postSchema = ({ image }: SchemaContext) =>
       .min(1)
       .max(60)
       .describe(
-        "Sets the post title, limited to **60 characters**. Blog/Shorts automatically use the filename when omitted; other post collections require a title. This follows [Moz's recommendation](https://moz.com/learn/seo/title-tag), ensuring approximately 90% of titles display correctly in SERPs and preventing truncation on smaller screens or social platforms. Page-specific OG images also require a title different from `FEATURES.ogImage[1].authorOrBrand`; otherwise the fallback OG image is used."
+        "Sets the post title, limited to **60 characters**. Blog/Shorts automatically use the filename when omitted; other post collections require a title. This follows [Moz's recommendation](https://moz.com/learn/seo/title-tag), ensuring approximately 90% of titles display correctly in SERPs and preventing truncation on smaller screens or social platforms. Page-specific OG images also require a title different from `FEATURES.ogImage[1].authorOrBrand`; otherwise the fallback OG image is used.",
       ),
     subtitle: z
       .string()
       .trim()
       .default('')
       .describe(
-        'Provides a post subtitle. If provided, it will be displayed below the title. If not needed, leave the field as an empty string or delete it.'
+        'Provides a post subtitle. If provided, it will be displayed below the title. If not needed, leave the field as an empty string or delete it.',
       ),
     description: z
       .string()
       .trim()
       .default('')
       .describe(
-        'Provides a brief description, used in meta tags for SEO and sharing purposes. If not needed, leave the field as an empty string or delete it, and the `SITE.description` will be used directly.'
+        'Provides a brief description, used in meta tags for SEO and sharing purposes. If not needed, leave the field as an empty string or delete it, and the `SITE.description` will be used directly.',
       ),
     tags: z
       .array(z.string())
       .default([])
       .describe(
-        'Adds tags to the post. These are displayed in post metadata and can also be used by list/card view tag filters on pages that enable them. If not needed, leave the field as an empty array or delete it.'
+        'Adds tags to the post. These are displayed in post metadata and can also be used by list/card view tag filters on pages that enable them. If not needed, leave the field as an empty array or delete it.',
       ),
     cover: z
       .union([
@@ -98,7 +106,8 @@ export const postSchema = ({ image }: SchemaContext) =>
           ) {
             ctx.addIssue({
               code: 'custom',
-              message: 'Cover must be a relative image path or a credential-free HTTP(S) URL.',
+              message:
+                'Cover must be a relative image path or a credential-free HTTP(S) URL.',
             })
             return z.NEVER
           }
@@ -107,69 +116,63 @@ export const postSchema = ({ image }: SchemaContext) =>
       ])
       .default('')
       .describe(
-        'Defines a cover image for the post. Specify either a URL or a path relative to the current directory. If not needed, leave the field as an empty string or delete it.'
+        'Defines a cover image for the post. Specify either a URL or a path relative to the current directory. If not needed, leave the field as an empty string or delete it.',
       ),
     coverAlt: z
       .string()
       .trim()
       .default('')
       .describe(
-        'Defines the cover image alt text. If `UI.postView.useCoverAltAsCaption` is `true`, it is also shown below the cover image as a caption. If not needed, leave the field as an empty string or delete it.'
+        'Defines the cover image alt text. If `UI.postView.useCoverAltAsCaption` is `true`, it is also shown below the cover image as a caption. If not needed, leave the field as an empty string or delete it.',
       ),
-    pubDate: z
-      .union([z.date(), z.string(), z.number()])
-      .pipe(z.coerce.date())
-      .describe(
-        'Specifies the publication date. Blog/Shorts supply Git history dates when omitted; explicit dates take priority. See supported formats [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse#examples).'
-      ),
+    pubDate: postDateSchema.describe(
+      'Specifies the publication date. Omit it to use Git history. Date-only values and ISO date-times without an offset are interpreted as UTC; explicit offsets and millisecond timestamps are honored.',
+    ),
     lastModDate: z
-      .union([
-        z.literal(''),
-        z.union([z.date(), z.string(), z.number()]).pipe(z.coerce.date()),
-      ])
+      .union([z.literal(''), postDateSchema])
       .optional()
       .describe(
-        'Tracks the last modified date shown on every Blog/Shorts/Project article detail page. Missing or empty values use the latest Git date, no earlier than publication; an explicit date takes priority.'
+        'Tracks the last modified date shown on every Blog/Shorts/Project article detail page. Missing or empty values use the latest Git date, no earlier than publication; an explicit date takes priority.',
       ),
     minutesRead: z
       .union([z.number(), z.boolean()])
       .default(true)
       .describe(
-        'Provides an estimated reading time. Set a positive number to override it manually, set `true` or delete the field to auto-generate it, and set `false` to hide it.'
+        'Provides an estimated reading time. Set a positive number to override it manually, set `true` or delete the field to auto-generate it, and set `false` to hide it.',
       ),
     radio: z
       .boolean()
       .default(false)
       .describe(
-        'Indicates if the post includes audio content or links to an external audio source. If `true`, an icon will be added to the post item in the list.'
+        'Indicates if the post includes audio content or links to an external audio source. If `true`, an icon will be added to the post item in the list.',
       ),
     video: z
       .boolean()
       .default(false)
       .describe(
-        'Indicates if the post includes video content or links to an external video source. If `true`, an icon will be added to the post item in the list.'
+        'Indicates if the post includes video content or links to an external video source. If `true`, an icon will be added to the post item in the list.',
       ),
     platform: z
       .string()
       .trim()
       .default('')
       .describe(
-        'Specifies the platform where the audio or video content is published. If provided, the platform name will be displayed. If not needed, leave the field as an empty string or delete it.'
+        'Specifies the platform where the audio or video content is published. If provided, the platform name will be displayed. If not needed, leave the field as an empty string or delete it.',
       ),
     bgType: bgTypeSchema.describe(
-      'Specifies whether to apply a background on this post and select its type. It is also used as the page-specific OG image background; if not needed, delete the field or set to `false`.'
+      'Specifies whether to apply a background on this post and select its type. It is also used as the page-specific OG image background; if not needed, delete the field or set to `false`.',
     ),
     ogImage: z
       .union([z.literal('fallback'), z.string(), z.boolean()])
       .default(true)
       .describe(
-        "Controls OG image metadata. Set to `true` or omit the field to generate a page-specific OG image from the final pathname, such as `/blog/foo/` -> `/og-images/blog/foo.png`; if the `title` is empty or matches `FEATURES.ogImage[1].authorOrBrand`, the fallback is used. Set to 'fallback' to use `/og-images/og-image.png`, or false to omit OG image metadata. To use a custom image, place it in `public/og-images/` and set this field to its relative path (for example, `custom.png` or `blog/custom.png`). Missing images fall back to `/og-images/og-image.png`."
+        "Controls OG image metadata. Set to `true` or omit the field to generate a page-specific OG image from the final pathname, such as `/blog/foo/` -> `/og-images/blog/foo.png`; if the `title` is empty or matches `FEATURES.ogImage[1].authorOrBrand`, the fallback is used. Set to 'fallback' to use `/og-images/og-image.png`, or false to omit OG image metadata. To use a custom image, place it in `public/og-images/` and set this field to its relative path (for example, `custom.png` or `blog/custom.png`). Missing images fall back to `/og-images/og-image.png`.",
       ),
     toc: z
       .boolean()
       .default(true)
       .describe(
-        'Controls whether the table of contents (TOC) is generated for the post.'
+        'Controls whether the table of contents (TOC) is generated for the post.',
       ),
     share: z
       .boolean()
@@ -183,19 +186,19 @@ export const postSchema = ({ image }: SchemaContext) =>
       .boolean()
       .default(true)
       .describe(
-        'Controls whether search is available for the post. If `true`, search will be enabled; otherwise, it will be disabled.'
+        'Controls whether search is available for the post. If `true`, search will be enabled; otherwise, it will be disabled.',
       ),
     redirect: z
       .union([httpUrlSchema, z.literal('')])
       .default('')
       .describe(
-        'Defines a credential-free HTTP(S) URL for the post link. If not needed, leave it empty or omit the field.'
+        'Defines a credential-free HTTP(S) URL for the post link. If not needed, leave it empty or omit the field.',
       ),
     draft: z
       .boolean()
       .default(false)
       .describe(
-        'Marks the post as a draft. If `true`, it is only visible in development and excluded from production builds.'
+        'Marks the post as a draft. If `true`, it is only visible in development and excluded from production builds.',
       ),
   })
 
@@ -217,7 +220,7 @@ export const projectPostSchema = ({ image }: SchemaContext) =>
       .string()
       .regex(
         /^i-[\w-]+(:[\w-]+)?$/,
-        'Icon must use i-<collection>-<icon> or i-<collection>:<icon>.'
+        'Icon must use i-<collection>-<icon> or i-<collection>:<icon>.',
       )
       .default('i-ri-code-line'),
   })

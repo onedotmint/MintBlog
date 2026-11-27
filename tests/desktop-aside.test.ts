@@ -8,7 +8,7 @@ const readSource = (path: string) =>
 test('DesktopAside uses unique ids and shared data-desktop-aside across all branches', () => {
   const source = readSource('src/components/base/DesktopAside.astro')
   const asideTags = [...source.matchAll(/<aside\b([\s\S]*?)>/g)].map(
-    (match) => match[1]
+    (match) => match[1],
   )
 
   assert.equal(asideTags.length, 3)
@@ -29,6 +29,6 @@ test('main.css excludes all DesktopAside instances via data-desktop-aside instea
   assert.doesNotMatch(css, /:not\(#desktop-aside\)/)
   assert.match(
     css,
-    /\.slide-enter-content\s*>\s*\*:not\(\[data-desktop-aside\]\):not\(#mobile-control\)/
+    /\.slide-enter-content\s*>\s*\*:not\(\[data-desktop-aside\]\):not\(#mobile-control\)/,
   )
 })

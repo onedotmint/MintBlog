@@ -9,7 +9,9 @@ const source = (path: string) =>
 const script = (path: string) => {
   const body = source(path).match(/<script\b[^>]*>([\s\S]*?)<\/script>/)?.[1]
   assert.ok(body)
-  return stripTypeScriptTypes(body.replace(/^\s*import[\s\S]*?from\s*['"][^'"]+['"];?/gm, ''))
+  return stripTypeScriptTypes(
+    body.replace(/^\s*import[\s\S]*?from\s*['"][^'"]+['"];?/gm, ''),
+  )
 }
 
 test('mobile navigation keeps static links until its enhancement is wired', () => {
@@ -25,7 +27,9 @@ test('mobile navigation keeps static links until its enhancement is wired', () =
   runInNewContext(script('src/components/nav/NavSwitch.astro'), {
     toggleFadeEffect: () => {},
     document: {
-      addEventListener(_type: string, fn: () => void) { loaded = fn },
+      addEventListener(_type: string, fn: () => void) {
+        loaded = fn
+      },
       getElementById(id: string) {
         return id === 'nav-open-button'
           ? {
@@ -36,9 +40,61 @@ test('mobile navigation keeps static links until its enhancement is wired', () =
       },
     },
   })
-  assert.deepEqual(calls, [], 'static links remain available before initialization')
+  assert.deepEqual(
+    calls,
+    [],
+    'static links remain available before initialization',
+  )
   loaded()
   assert.deepEqual(calls, ['wired', 'show-button', 'hide-fallback'])
+})
+
+test('search omits empty production markup and only reveals an enhanced trigger', () => {
+  const path = 'src/components/widgets/SearchSwitch.astro'
+  const component = source(path)
+  const frontmatter = component.split('---')[1]
+  assert.match(
+    frontmatter,
+    /if \(import\.meta\.env\.PROD && !hasSearchablePosts\) return/,
+  )
+  assert.match(component, /id="search-switch"\s+hidden/)
+  assert.match(component, /#search-switch\[hidden\]\s*\{\s*display: none;/)
+
+  const calls: unknown[] = []
+  let pageLoad = () => {}
+  let click = () => {}
+  let trigger: object | null = null
+  runInNewContext(script(path), {
+    registerSearchPanel: () => calls.push('registered'),
+    toggleFadeEffect: (...args: unknown[]) => calls.push(args),
+    document: {
+      addEventListener(type: string, fn: () => void) {
+        assert.equal(type, 'astro:page-load')
+        pageLoad = fn
+      },
+      getElementById: (id: string) => (id === 'search-switch' ? trigger : null),
+    },
+  })
+  pageLoad()
+  assert.deepEqual(calls, ['registered'])
+  trigger = {
+    addEventListener(type: string, fn: () => void) {
+      assert.equal(type, 'click')
+      click = fn
+      calls.push('wired')
+    },
+    removeAttribute(name: string) {
+      assert.equal(name, 'hidden')
+      calls.push('shown')
+    },
+  }
+  pageLoad()
+  assert.deepEqual(calls, ['registered', 'wired', 'shown'])
+  click()
+  assert.deepEqual(calls.slice(-2), [
+    ['backdrop', true, 'hidden'],
+    ['search-panel', true, 'hidden'],
+  ])
 })
 
 function panelHarness(panelId = 'nav-panel') {
@@ -56,15 +112,34 @@ function panelHarness(panelId = 'nav-panel') {
   let clickBackdrop = () => {}
   let clickClose = () => {}
   const calls: unknown[][] = []
-  const first = { tabIndex: 0, focus: () => { active = first }, getClientRects: () => [1] }
-  const last = { tabIndex: 0, focus: () => { active = last }, getClientRects: () => [1] }
+  const first = {
+    tabIndex: 0,
+    focus: () => {
+      active = first
+    },
+    getClientRects: () => [1],
+  }
+  const last = {
+    tabIndex: 0,
+    focus: () => {
+      active = last
+    },
+    getClientRects: () => [1],
+  }
   const panel = {
     id: panelId,
     inert: false,
     classList: { contains: () => !open },
-    contains: (node: unknown) => node === first || node === last || node === panel,
-    focus: () => { active = panel },
-    querySelectorAll: () => [first, last, { tabIndex: -1, getClientRects: () => [1] }],
+    contains: (node: unknown) =>
+      node === first || node === last || node === panel,
+    focus: () => {
+      active = panel
+    },
+    querySelectorAll: () => [
+      first,
+      last,
+      { tabIndex: -1, getClientRects: () => [1] },
+    ],
   }
   runInNewContext(script('src/components/base/Backdrop.astro'), {
     toggleFadeEffect: (...args: unknown[]) => {
@@ -72,25 +147,57 @@ function panelHarness(panelId = 'nav-panel') {
       open = false
     },
     finishPendingFadeEffects: () => {},
-    unlockScroll: () => { unlocked++ },
+    unlockScroll: () => {
+      unlocked++
+    },
     document: {
-      get activeElement() { return active },
+      get activeElement() {
+        return active
+      },
       querySelectorAll: (selector: string) => {
         assert.equal(selector, '[data-panel-close]')
-        return [{ addEventListener: (_type: string, fn: () => void) => { clickClose = fn } }]
+        return [
+          {
+            addEventListener: (_type: string, fn: () => void) => {
+              clickClose = fn
+            },
+          },
+        ]
       },
-      addEventListener: (type: string, fn: (event: Key) => void) => events.set(type, fn),
-      getElementById: (id: string) => id === panel.id ? panel : id === 'backdrop' ? {
-        addEventListener: (_type: string, fn: () => void) => { clickBackdrop = fn },
-      } : null,
+      addEventListener: (type: string, fn: (event: Key) => void) =>
+        events.set(type, fn),
+      getElementById: (id: string) =>
+        id === panel.id
+          ? panel
+          : id === 'backdrop'
+            ? {
+                addEventListener: (_type: string, fn: () => void) => {
+                  clickBackdrop = fn
+                },
+              }
+            : null,
     },
   })
   const key = (key: string, shiftKey = false, isComposing = false) => {
-    events.get('keydown')?.({ key, shiftKey, isComposing, preventDefault: () => { prevented++ } })
+    events.get('keydown')?.({
+      key,
+      shiftKey,
+      isComposing,
+      preventDefault: () => {
+        prevented++
+      },
+    })
   }
   return {
-    first, last, panel, events, calls, key,
-    focus: (node: unknown) => { active = node },
+    first,
+    last,
+    panel,
+    events,
+    calls,
+    key,
+    focus: (node: unknown) => {
+      active = node
+    },
     active: () => active,
     prevented: () => prevented,
     unlocked: () => unlocked,
@@ -144,7 +251,9 @@ test('every modal has a named close button that dismisses the panel and backdrop
   ]
   for (const [id, path, hiddenClass] of panels) {
     const markup = source(path)
-    const closeButton = markup.match(/<button\b[^>]*\bdata-panel-close[^>]*>[\s\S]*?<\/button>/)?.[0]
+    const closeButton = markup.match(
+      /<button\b[^>]*\bdata-panel-close[^>]*>[\s\S]*?<\/button>/,
+    )?.[0]
     assert.ok(closeButton, `${id} needs a close button inside its dialog`)
     assert.ok(markup.indexOf(closeButton) > markup.indexOf(`id="${id}"`))
     assert.match(closeButton, /type="button"/)
@@ -158,6 +267,10 @@ test('every modal has a named close button that dismisses the panel and backdrop
       ['backdrop', false, 'hidden'],
     ])
     env.clickClose()
-    assert.equal(env.calls.length, 2, 'closing an already closed dialog is harmless')
+    assert.equal(
+      env.calls.length,
+      2,
+      'closing an already closed dialog is harmless',
+    )
   }
 })

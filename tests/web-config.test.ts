@@ -30,6 +30,27 @@ test('nginx disables absolute redirects and serves 404.html with 404 status', ()
   )
 })
 
+test('runtime health requires the built homepage, not the base image welcome page', () => {
+  const dockerfile = readFileSync(
+    new URL('../Dockerfile', import.meta.url),
+    'utf8',
+  )
+  const compose = readFileSync(
+    new URL('../docker-compose.yml', import.meta.url),
+    'utf8',
+  )
+  assert.match(
+    dockerfile,
+    /^COPY --from=build \/app\/dist\/ \/srv\/mintblog\/$/m,
+  )
+  assert.match(nginxConf, /\broot \/srv\/mintblog;/)
+  const health = nginxConf.match(/location = \/healthz \{([^}]+)\}/)?.[1] ?? ''
+  assert.match(health, /try_files \/index\.html =503;/)
+  assert.doesNotMatch(health, /\breturn\s+200\b/)
+  assert.match(dockerfile, /HEALTHCHECK[^\n]*\n\s*CMD [^\n]*\/healthz/)
+  assert.doesNotMatch(compose, /^\s+healthcheck:/m)
+})
+
 test('lint-staged only targets JS/TS/Astro files with strict eslint flags matching pnpm lint', () => {
   const lintStaged = packageJson['lint-staged']
   assert.ok(lintStaged && typeof lintStaged === 'object')

@@ -55,7 +55,7 @@ export function getOgImageConfig() {
  */
 export function checkPublicOgImageExists(
   ogImage: string,
-  logger?: Logger
+  logger?: Logger,
 ): PublicOgImageCheckResult {
   // trim 'og-images/' from the beginning of the input if present
   const input = ogImage.trim()
@@ -72,8 +72,8 @@ export function checkPublicOgImageExists(
   if (!valid) {
     logger?.warn(
       `Invalid OG image path '${ogImage}'. ${withOgImageDocsHint(
-        `Set \`ogImage\` to the path relative to the \`public/${OG_IMAGE_DIR}\` directory, such as 'custom.png', 'blog/custom.jpg', '${OG_IMAGE_DIR}/blog/custom.webp'.`
-      )}.`
+        `Set \`ogImage\` to the path relative to the \`public/${OG_IMAGE_DIR}\` directory, such as 'custom.png', 'blog/custom.jpg', '${OG_IMAGE_DIR}/blog/custom.webp'.`,
+      )}.`,
     )
 
     return { exists: false, valid: false }
@@ -98,7 +98,7 @@ export function checkPublicOgImageExists(
  */
 export function getPostPathname(pathnamePrefix: string, postId: string) {
   return ensureTrailingSlash(
-    `/${pathnamePrefix}/${postId}`.replace(/\/+/g, '/')
+    `/${pathnamePrefix}/${postId}`.replace(/\/+/g, '/'),
   )
 }
 
@@ -187,7 +187,7 @@ export function resolveOgImagePathname({
 
     if (!publicOgImage.exists) {
       logger.warn(
-        `Specified OG image '${ogImage}' was not found. ${withOgImageDocsHint(`Falling back to \`${FALLBACK_OG_IMAGE_PATHNAME}\``)}.`
+        `Specified OG image '${ogImage}' was not found. ${withOgImageDocsHint(`Falling back to \`${FALLBACK_OG_IMAGE_PATHNAME}\``)}.`,
       )
     }
 

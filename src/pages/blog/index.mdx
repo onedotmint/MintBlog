@@ -15,10 +15,7 @@ import ListView from '~/components/views/ListView.astro'
   bgType={frontmatter.bgType}
   ogImage={frontmatter.ogImage}
 >
-  <StandardLayout
-    class="prose"
-    title={frontmatter.title}
-  >
+  <StandardLayout class="prose" title={frontmatter.title}>
     <ListView collectionType="blog" />
   </StandardLayout>
 </BaseLayout>

@@ -39,7 +39,7 @@ export function finishPendingFadeEffects() {
 export function toggleFadeEffect(
   elementId: string,
   visible: boolean,
-  hiddenClass: string
+  hiddenClass: string,
 ) {
   const element = document.getElementById(elementId)
   if (!element) return
@@ -51,14 +51,18 @@ export function toggleFadeEffect(
     : null
   if (trigger) {
     trigger.setAttribute('aria-expanded', String(visible))
-    if (!visible && (element.contains(document.activeElement) || document.activeElement === document.body)) {
+    if (
+      !visible &&
+      (element.contains(document.activeElement) ||
+        document.activeElement === document.body)
+    ) {
       trigger.focus()
     }
     element.inert = !visible
   }
 
   const prefersReducedMotion = window.matchMedia(
-    '(prefers-reduced-motion)'
+    '(prefers-reduced-motion)',
   ).matches
 
   if (visible) {
@@ -66,7 +70,9 @@ export function toggleFadeEffect(
     if (trigger) {
       const target =
         element.querySelector<HTMLElement>('[data-panel-autofocus]') ??
-        element.querySelector<HTMLElement>('a[href], button:not([disabled]), input:not([disabled])') ??
+        element.querySelector<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled])',
+        ) ??
         element
       target.focus()
     }
@@ -119,7 +125,7 @@ export function toggleFadeEffect(
 export function withClientBasePath(path: string): string {
   const resolvedPath = `/${import.meta.env.BASE_URL}/${path}`.replace(
     /\/+/,
-    '/'
+    '/',
   )
 
   return new URL(resolvedPath, location.origin).href

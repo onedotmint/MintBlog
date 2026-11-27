@@ -10,11 +10,14 @@ const { includes, filter, navHighlight, batchLoadSize, maxItemsPerPage } =
   search[1]
 if (includes.length === 0)
   throw new Error(
-    "Search feature enabled, but `includes` array is empty. Please check 'src/config.ts' for the correct configuration."
+    "Search feature enabled, but `includes` array is empty. Please check 'src/config.ts' for the correct configuration.",
   )
 const categories = includes.map((type) => ({
   type,
-  label: type === 'shorts' ? 'Collections' : type.charAt(0).toUpperCase() + type.slice(1),
+  label:
+    type === 'shorts'
+      ? 'Collections'
+      : type.charAt(0).toUpperCase() + type.slice(1),
 }))
 const filterEnabled = filter && includes.length > 1
 const batchSize = parseTuple(batchLoadSize, 'batchLoadSize')
@@ -22,17 +25,19 @@ const maxItems = parseTuple(maxItemsPerPage, 'maxItemsPerPage')
 const searchableGroups = await Promise.all(
   (['blog', 'shorts'] as const)
     .filter((collection) => includes.includes(collection))
-    .map((collection) => getFilteredPosts(collection))
+    .map((collection) => getFilteredPosts(collection)),
 )
 const hasSearchablePosts = searchableGroups.some((posts) =>
-  posts.some(({ data }) => !data.draft && data.search)
+  posts.some(({ data }) => !data.draft && data.search),
 )
+if (import.meta.env.PROD && !hasSearchablePosts) return
 ---
 
 <!-- Search Switch -->
 <button
   type="button"
   id="search-switch"
+  hidden
   aria-controls="search-panel"
   aria-expanded="false"
   class="op-60 hover:op-100 op-transition"
@@ -65,34 +70,32 @@ const hasSearchablePosts = searchableGroups.some((posts) =>
 >
   <div class="flex flex-col gap-2">
     <!-- Tab list -->
-    {
-      filterEnabled && (
-        <div
-          role="tablist"
-          class="search-tabs flex gap-2 justify-start items-center text-xs"
-          aria-label="Search categories"
-        >
-          {categories.map(({ type, label }, idx) => (
-            <button
-              type="button"
-              role="tab"
-              id={`search-tab-${type}`}
-              aria-controls="search-results"
-              aria-selected={idx === 0 ? 'true' : 'false'}
-              tabindex={idx === 0 ? 0 : -1}
-              class="px-1.5 py-0.5 rounded
+    {filterEnabled && (
+      <div
+        role="tablist"
+        class="search-tabs flex gap-2 justify-start items-center text-xs"
+        aria-label="Search categories"
+      >
+        {categories.map(({ type, label }, idx) => (
+          <button
+            type="button"
+            role="tab"
+            id={`search-tab-${type}`}
+            aria-controls="search-results"
+            aria-selected={idx === 0 ? 'true' : 'false'}
+            tabindex={idx === 0 ? 0 : -1}
+            class="px-1.5 py-0.5 rounded
                 bg-[#88888816] dark:bg-[#88888823]
                 aria-[selected=false]:op-40 aria-[selected=true]:op-100
                 aria-[selected=false]:hover:op-70 op-transition cursor-pointer"
-              data-type={type}
-              data-label={label}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )
-    }
+            data-type={type}
+            data-label={label}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    )}
     <!-- Search Bar -->
     <div
       class="grid grid-cols-[auto_1fr_auto] items-center
@@ -136,8 +139,12 @@ const hasSearchablePosts = searchableGroups.some((posts) =>
     <!-- Results -->
     <div id="search-content" role="listbox" aria-label="Search results"></div>
     <!-- Feedback -->
-    <div id="search-feedback" role="status" aria-atomic="true" class="hidden py-3 text-center text-sm op-40">
-    </div>
+    <div
+      id="search-feedback"
+      role="status"
+      aria-atomic="true"
+      class="hidden py-3 text-center text-sm op-40"
+    ></div>
     <!-- Pagination -->
     <div
       id="search-pagination"
@@ -192,6 +199,9 @@ const hasSearchablePosts = searchableGroups.some((posts) =>
 
 <script>
   import { toggleFadeEffect } from '~/utils/misc'
+  import { registerSearchPanel } from '~/scripts/search-panel'
+
+  registerSearchPanel()
 
   /* Handle click on search switch to open or close */
   document.addEventListener('astro:page-load', () => {
@@ -201,74 +211,83 @@ const hasSearchablePosts = searchableGroups.some((posts) =>
     }
 
     const searchSwitch = document.getElementById('search-switch')
-    searchSwitch?.addEventListener('click', handleToggle)
+    if (!searchSwitch) return
+    searchSwitch.addEventListener('click', handleToggle)
+    searchSwitch.removeAttribute('hidden')
   })
 </script>
 
-<script>
-  import { registerSearchPanel } from '~/scripts/search-panel'
+<style>
+  #search-switch[hidden] {
+    display: none;
+  }
 
-  registerSearchPanel()
-</script>
+  #search-input:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+</style>
 
-{import.meta.env.PROD && hasSearchablePosts && navHighlight &&
-  <script is:inline data-astro-rerun define:vars={{scriptUrl: withBasePath('/pagefind/pagefind-highlight.js')}}>
-    async function loadPagefindHighlight() {
-      try {
-        await import(scriptUrl)
+{import.meta.env.PROD && hasSearchablePosts && navHighlight && <script
+  is:inline
+  data-astro-rerun
+  define:vars={{ scriptUrl: withBasePath('/pagefind/pagefind-highlight.js') }}
+>
+  async function loadPagefindHighlight() {
+    try {
+      await import(scriptUrl)
 
-        const PagefindHighlight = window.PagefindHighlight
-        if (!PagefindHighlight) return null
-        const pagefindHighlight = new PagefindHighlight({
-          // https://pagefind.app/docs/highlight-config
-          highlightParam: "search",
-          markContext: "[data-pagefind-body]",
-          markOptions: {
-            // https://markjs.io/#mark
-            className: "pagefind-highlight",
-            exclude: ["[data-pagefind-ignore]", "[data-pagefind-ignore] *"],
-          },
-          addStyles: false,
-        });
-
-        window.pagefindHighlight = pagefindHighlight
-        return pagefindHighlight
-      } catch (_err) {
-        window.pagefindHighlightPromise = undefined
-        return null
-      }
-    }
-
-    if (!window.pagefindHighlight && !window.pagefindHighlightPromise) {
-      window.pagefindHighlightPromise = loadPagefindHighlight()
-    }
-  </script>}
-
-{import.meta.env.PROD && hasSearchablePosts && navHighlight &&
-  <script>
-    if (!window.__pagefindHighlightListenerBound) {
-      window.__pagefindHighlightListenerBound = true
-      document.addEventListener('astro:page-load', async () => {
-        try {
-          const search = location.search
-          const href = location.href
-          const params = new URLSearchParams(search)
-          if (!params.has('search')) return
-
-          const highlighter =
-            window.pagefindHighlight ?? (await window.pagefindHighlightPromise)
-          if (
-            !highlighter ||
-            location.href !== href ||
-            location.search !== search
-          ) {
-            return
-          }
-
-          highlighter.highlight()
-        } catch (_err) {
-          // Keep page navigation resilient when highlighting fails.
-        }
+      const PagefindHighlight = window.PagefindHighlight
+      if (!PagefindHighlight) return null
+      const pagefindHighlight = new PagefindHighlight({
+        // https://pagefind.app/docs/highlight-config
+        highlightParam: 'search',
+        markContext: '[data-pagefind-body]',
+        markOptions: {
+          // https://markjs.io/#mark
+          className: 'pagefind-highlight',
+          exclude: ['[data-pagefind-ignore]', '[data-pagefind-ignore] *'],
+        },
+        addStyles: false,
       })
+
+      window.pagefindHighlight = pagefindHighlight
+      return pagefindHighlight
+    } catch (_err) {
+      window.pagefindHighlightPromise = undefined
+      return null
     }
-  </script>}
+  }
+
+  if (!window.pagefindHighlight && !window.pagefindHighlightPromise) {
+    window.pagefindHighlightPromise = loadPagefindHighlight()
+  }
+</script>}
+
+{import.meta.env.PROD && hasSearchablePosts && navHighlight && <script>
+  if (!window.__pagefindHighlightListenerBound) {
+    window.__pagefindHighlightListenerBound = true
+    document.addEventListener('astro:page-load', async () => {
+      try {
+        const search = location.search
+        const href = location.href
+        const params = new URLSearchParams(search)
+        if (!params.has('search')) return
+
+        const highlighter =
+          window.pagefindHighlight ?? (await window.pagefindHighlightPromise)
+        if (
+          !highlighter ||
+          location.href !== href ||
+          location.search !== search
+        ) {
+          return
+        }
+
+        highlighter.highlight()
+      } catch (_err) {
+        // Keep page navigation resilient when highlighting fails.
+      }
+    })
+  }
+</script>}

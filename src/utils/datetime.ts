@@ -29,7 +29,7 @@ export function getYear(a: Date | string | number) {
  */
 export function isSameYear(
   a?: Date | string | number,
-  b?: Date | string | number
+  b?: Date | string | number,
 ) {
   return a && b && getYear(a) === getYear(b)
 }

@@ -7,11 +7,11 @@ import type { BgType } from '../../../types.ts'
 export const ogImageMarkup = (
   authorOrBrand: string,
   title: string,
-  bgType: BgType
+  bgType: BgType,
 ) => {
   if (!isBgType(bgType))
     throw new Error(
-      `The value of 'bgType' must be one of the following: ${BG_TYPES.map((type) => `'${type}'`).join(', ')}.`
+      `The value of 'bgType' must be one of the following: ${BG_TYPES.map((type) => `'${type}'`).join(', ')}.`,
     )
 
   return html`<div

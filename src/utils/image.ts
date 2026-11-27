@@ -29,7 +29,7 @@ const MAX_BYTES = 10_000_000 // 10MB
 function getBitmapDimensions(
   imgWidth: number,
   imgHeight: number,
-  pixelTarget: number
+  pixelTarget: number,
 ) {
   // h * r * h = ~P
   const ratioWH = imgWidth / imgHeight
@@ -47,7 +47,7 @@ export async function generatePlaceholder(
   buffer: SharpInput,
   width: number,
   height: number,
-  pixelTarget: number
+  pixelTarget: number,
 ) {
   // calculate appropriate dimensions for the placeholder
   const dims = getBitmapDimensions(width, height, pixelTarget)
@@ -120,7 +120,7 @@ export async function fetchRemoteImage(
   opts: {
     timeoutMs?: number
     maxBytes?: number
-  } = {}
+  } = {},
 ): Promise<RemoteImageSuccess | RemoteImageFail> {
   const { timeoutMs = TIMEOUT_MS, maxBytes = MAX_BYTES } = opts
 
@@ -148,7 +148,7 @@ export async function fetchRemoteImage(
     const len = Number(head.headers.get('content-length') ?? 0)
     if (len && len > maxBytes) {
       return fail(
-        `File too large (${formatBytes(len)} > ${formatBytes(maxBytes)} limit; increase \`MAX_BYTES\` if needed)`
+        `File too large (${formatBytes(len)} > ${formatBytes(maxBytes)} limit; increase \`MAX_BYTES\` if needed)`,
       )
     }
   } catch {
@@ -184,7 +184,7 @@ export async function fetchRemoteImage(
       if (total > maxBytes) {
         await reader.cancel().catch(() => undefined)
         return fail(
-          `File too large (${formatBytes(total)} > ${formatBytes(maxBytes)} limit; increase MAX_BYTES if needed)`
+          `File too large (${formatBytes(total)} > ${formatBytes(maxBytes)} limit; increase MAX_BYTES if needed)`,
         )
       }
       chunks.push(value)
@@ -217,7 +217,7 @@ export async function fetchRemoteImage(
 export async function getThumbnail(
   src: string | ImageMetadata,
   width: number,
-  ratio: number
+  ratio: number,
 ): Promise<string> {
   const result = await getImage({
     src,

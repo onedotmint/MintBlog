@@ -30,8 +30,9 @@ description: '用于列表和 SEO 的一句话说明。'
 
 - `title`：可省略，默认文件名，最多 60 个字符。
 - `description`：简介。省略时使用站点默认描述。
-- `pubDate`：可省略，默认 Git 首次提交时间；未提交新文件本地暂用 `mtime` 预览（Git-free 构建需匹配 `.post-dates.json` 快照，不能编造日期）。从 [`docs/templates/post.md`](templates/post.md) 复制起稿时，需把示例日期 `2026-11-14` 手填改成实际发布日期（不会自动填今天）；Git 提交不等于真正发布日期，必要时可手动覆盖。显式值只接受有效日期／日期字符串或毫秒时间戳，不接受数组、布尔值或 `null`。
+- `pubDate`：可省略，默认 Git 首次提交时间；未提交新文件本地暂用 `mtime` 预览（Git-free 构建需匹配 `.post-dates.json` 快照，不能编造日期）。从 [`docs/templates/post.md`](templates/post.md) 复制起稿时，需把示例日期 `2026-11-14` 手填改成实际发布日期（不会自动填今天）；Git 提交不等于真正发布日期，必要时可手动覆盖。显式值可写纯日期、ISO 日期时间或毫秒时间戳，不接受数组、布尔值或 `null`。
 - `lastModDate`：只在 Writing、Shorts、Projects 文章详情页每篇显示（列表、卡片与搜索结果不增加日期）。有效手填日期优先；缺失或留空字符串（`''`）时自动取 Git 最近提交日期，且自动值不早于 `pubDate`，首次同日也会显示；未提交新文件本地暂用 `mtime` 预览。手填后今后修改正文需自己更新；想恢复自动取 Git 最近提交，只需填写空字符串（`''`）或删掉该字段。非空值只接受有效日期／日期字符串或毫秒时间戳；裸写 `lastModDate:` 是 `null`，会报错，不等同于空字符串。
+- 两个日期字段都按同一规则解析：纯日期 `2026-07-25` 或 `2026-7-25` 表示 UTC 零点；需要指定时刻时，建议写明时区，例如 `2026-07-25T08:30:00+08:00`。没有时区的 ISO 日期时间也按 UTC 处理；不要使用 `2026/7/25` 等地区相关格式。
 - `tags`：标签数组，例如 `[Astro, Systems]`。
 - `minutesRead`：填数字覆盖阅读时长，填 `true` 自动估算，填 `false` 隐藏。
 - `cover` 和 `coverAlt`：封面及替代文本。`cover` 可留空，或使用本地相对图片路径（如 `./cover.png`、`../images/cover.webp`、`cover.jpg`），或不含用户名、密码的 HTTP(S) URL；本地路径使用 `/` 分隔，不使用根路径或 Windows 绝对路径。支持 Astro 的 PNG、JPEG、APNG、TIFF、WebP、GIF、SVG、AVIF 图片格式。
@@ -100,7 +101,7 @@ src/content/shorts/生活切片/周末/散步.md
 
 第一篇归入 `notes`，默认显示「随手记」，无需另建「随手记」目录；第二篇归入「生活切片」，不是「周末」。未填写 `title` 时，标题均取文件名。
 
-正文 URL 使用相对于 `src/content/shorts/` 的完整路径（去扩展名），上述两篇分别为 `/shorts/notes/下雨的周末/`、`/shorts/生活切片/周末/散步/`。移动文件或改目录名会改变 URL，不自动重定向。根目录文件也归入 `notes`；旧文章留在根目录即可保持 `/shorts/<文件名>/` 旧地址，不必移动。
+正文 URL 使用相对于 `src/content/shorts/` 的完整路径（去扩展名），上述两篇分别为 `/shorts/notes/下雨的周末/`、`/shorts/生活切片/周末/散步/`。移动文件或改目录名会改变 URL，不自动重定向。根目录文件也归入 `notes`；旧文章留在根目录即可保持 `/shorts/<文件名>/` 旧地址，不必移动。`notes/index.md` 仍使用 `/shorts/notes/index/`，不会简化成 `/shorts/notes/`。随笔和合集覆盖文件的路径保留大小写，不要在文件或目录名中使用 `%`、`#`、`?`、反斜杠或控制字符。
 
 可选地为合集改显示名、加介绍或设草稿，建 `src/content/short-collections/<合集ID>.md`（默认合集用 `notes.md`）。例如 `生活切片.md` 的完整 frontmatter：
 
@@ -114,7 +115,7 @@ draft: false
 
 覆盖文件无需正文，各字段均可省略。`title` 省略或留空时，`notes` 显示「随手记」，其他合集使用首段目录名。`draft: true` 隐藏整个合集及其所有随笔，包括详情路由、sitemap 和搜索；单篇设草稿只隐藏该篇。开发预览显示两级草稿并标记，生产构建排除草稿后再计数；空的公开合集仍显示 0 篇。
 
-自动标题和日期规则与 Writing 相同。归属不使用 `collection` 字段，标签只描述主题。`collections` 及 `collections/` 子目录保留给合集路由，不能用作随笔路径。
+自动标题和日期规则与 Writing 相同。归属不使用 `collection` 字段，随笔与合集覆盖文件的 `slug` 也不会改变路径 ID；覆盖文件的名字须与合集首段目录名匹配（含大小写）。标签只描述主题。`collections` 及 `collections/` 子目录保留给合集路由，不能用作随笔路径。
 
 ## 作品
 

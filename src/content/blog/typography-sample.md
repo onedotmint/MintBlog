@@ -1,10 +1,10 @@
 ---
-title: "排版样本"
-description: "临时样本，仅用于检查中文正文排版；已标记 draft，不会进入生产构建，预览完可直接删除。"
+title: '排版样本'
+description: '临时样本，仅用于检查中文正文排版；已标记 draft，不会进入生产构建，预览完可直接删除。'
 tags: [Typography]
 pubDate: 2026-09-29
 minutesRead: false
-lastModDate: ""
+lastModDate: ''
 toc: true
 search: false
 draft: true
@@ -30,8 +30,8 @@ WebSocket、RVC3-python 这类混排字符串，需要确认中文 Serif 与 Lat
 > 引用块的语气应当比正文安静一点，但不能灰到难以阅读。
 
 ```js
-const fonts = ["content", "ui", "mono"];
-console.log(fonts.join(" / "));
+const fonts = ['content', 'ui', 'mono']
+console.log(fonts.join(' / '))
 ```
 
 ### 更深一层的小标题

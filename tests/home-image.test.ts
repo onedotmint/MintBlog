@@ -3,7 +3,10 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
 test('the home illustration reserves its verified aspect ratio without advertising a missing viewer', () => {
-  const source = readFileSync(new URL('../src/content/home/index.md', import.meta.url), 'utf8')
+  const source = readFileSync(
+    new URL('../src/content/home/index.md', import.meta.url),
+    'utf8',
+  )
   const image = source.match(/<img\b[\s\S]*?\/>/)?.[0]
   assert.ok(image)
   assert.match(image, /alt="[^"]+"/)

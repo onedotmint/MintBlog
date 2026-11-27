@@ -1,5 +1,4 @@
 ---
-
 ---
 
 <button
@@ -48,7 +47,7 @@
       ) {
         iframe.contentWindow.postMessage(
           { giscus: { setConfig: { theme: newTheme } } },
-          'https://giscus.app'
+          'https://giscus.app',
         )
       }
     }
@@ -79,7 +78,7 @@
 
   const syncTheme = (
     isDark: boolean,
-    buttonElement = getThemeSwitchButton()
+    buttonElement = getThemeSwitchButton(),
   ) => {
     document.documentElement.classList.toggle('dark', isDark)
     changeGiscusTheme(isDark)
@@ -121,33 +120,36 @@
       const y = event.clientY
       const endRadius = Math.hypot(
         Math.max(x, innerWidth - x),
-        Math.max(y, innerHeight - y)
+        Math.max(y, innerHeight - y),
       )
 
       const transition = document.startViewTransition(() => toggle())
 
-      transition.ready.then(() => {
-        const clipPath = [
-          `circle(0px at ${x}px ${y}px)`,
-          `circle(${endRadius}px at ${x}px ${y}px)`,
-        ]
+      transition.ready.then(
+        () => {
+          const clipPath = [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${endRadius}px at ${x}px ${y}px)`,
+          ]
 
-        document.documentElement.animate(
-          {
-            clipPath: isDark ? clipPath.reverse() : clipPath,
-          },
-          {
-            duration: 400,
-            easing: 'ease-out',
-            fill,
-            pseudoElement: isDark
-              ? '::view-transition-old(root)'
-              : '::view-transition-new(root)',
-          }
-        )
-      }, () => {
-        // Navigation can cancel an appearance transition before it starts.
-      })
+          document.documentElement.animate(
+            {
+              clipPath: isDark ? clipPath.reverse() : clipPath,
+            },
+            {
+              duration: 400,
+              easing: 'ease-out',
+              fill,
+              pseudoElement: isDark
+                ? '::view-transition-old(root)'
+                : '::view-transition-new(root)',
+            },
+          )
+        },
+        () => {
+          // Navigation can cancel an appearance transition before it starts.
+        },
+      )
     }
 
     const toggleThemeButton = getThemeSwitchButton()

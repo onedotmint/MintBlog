@@ -51,10 +51,8 @@ const specHeadings = generateToc(headings, minHeadingLevel, maxHeadingLevel)
     </button>
   </div>
   <ul class="text-sm">
-    {
-      !!specHeadings.length &&
-        specHeadings.map((heading) => <TocItem {heading} />)
-    }
+    {!!specHeadings.length &&
+      specHeadings.map((heading) => <TocItem {heading} />)}
     {!!anchors.length && <TocItem {anchors} />}
   </ul>
 </nav>

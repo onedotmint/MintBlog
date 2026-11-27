@@ -14,15 +14,15 @@ export const GET: APIRoute = async ({ props, url, logger = silentLogger }) => {
   logger.info(
     formatLoggerInfoMessage(
       'og-images',
-      `Generating OG image for ${target.slug}.png...`
-    )
+      `Generating OG image for ${target.slug}.png...`,
+    ),
   )
 
   const pngBuffer = await generateOgImageBuffer(
     target.authorOrBrand,
     target.title,
     target.bgType,
-    url
+    url,
   )
 
   return new Response(new Uint8Array(pngBuffer), {

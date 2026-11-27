@@ -10,17 +10,17 @@
 
 ## 升级结果
 
-| 项目 | 升级前 | 升级后 |
-| --- | --- | --- |
-| 本地 Node | 24.21.0 | 已通过现有 nvm 安装 24.22.1，设为 nvm default |
-| Docker 构建 Node | 固定 digest 实际为 24.18.0 | 24.22.1-bookworm-slim，新 digest |
-| pnpm | 10.33.4 | 10.34.7，本地／packageManager／CI／Docker 同步 |
-| Astro | 7.0.7 | 7.4.2 |
-| Sharp | 0.35.3 | 0.35.5 |
-| Vite | 8.1.3 | 8.3.5，兼容依赖解析结果 |
-| Docker Nginx | 固定 digest 实际为 1.27.5 | 1.30.6-alpine，新 digest |
-| ESLint / Astro 插件 | 9.39.4 / 1.7.0 | 10.13.0 / 3.2.1 |
-| KaTeX | 0.16.47（旧 CSS 0.16.11） | 0.18.10，渲染库和 CSS 同步 |
+| 项目                | 升级前                     | 升级后                                         |
+| ------------------- | -------------------------- | ---------------------------------------------- |
+| 本地 Node           | 24.21.0                    | 已通过现有 nvm 安装 24.22.1，设为 nvm default  |
+| Docker 构建 Node    | 固定 digest 实际为 24.18.0 | 24.22.1-bookworm-slim，新 digest               |
+| pnpm                | 10.33.4                    | 10.34.7，本地／packageManager／CI／Docker 同步 |
+| Astro               | 7.0.7                      | 7.4.2                                          |
+| Sharp               | 0.35.3                     | 0.35.5                                         |
+| Vite                | 8.1.3                      | 8.3.5，兼容依赖解析结果                        |
+| Docker Nginx        | 固定 digest 实际为 1.27.5  | 1.30.6-alpine，新 digest                       |
+| ESLint / Astro 插件 | 9.39.4 / 1.7.0             | 10.13.0 / 3.2.1                                |
+| KaTeX               | 0.16.47（旧 CSS 0.16.11）  | 0.18.10，渲染库和 CSS 同步                     |
 
 其他直接与间接依赖在原有主版本约束内更新，见 `package.json` 和 `pnpm-lock.yaml`。未使用 `audit fix --force`，没有审计忽略名单或降低严重级别。
 
@@ -49,7 +49,7 @@ pnpm --version
 
 这些版本配置和锁文件需要随代码进入发布流程，**本机升级不等于线上升级**。之后经用户批准发布时，CI 会使用指定 Node/pnpm、冻结锁文件安装、完整审计、检查和构建，再以新的 Node/Nginx 基础镜像生成站点镜像。
 
-本地回归成功只是待发布依据，不能替代 Docker 构建、GHCR 拉取权限、域名、外层反向代理和 VPS 健康检查。当前决定是 GitHub 只检查并发布 GHCR SHA 镜像，不再持有 VPS SSH 私钥或部署；操作者另行登录服务器，运行 `bash deploy.sh` 自动选择成功发布的完整 SHA 版本（或明确传入 SHA 镜像）；内部健康成功后脚本自动保存 `.env` 的 `BLOG_IMAGE`，公网验收仍需操作者完成。新边界仅在修改后的 workflow 提交并推送后生效；旧 SSH 部署运行停止后，仍需手动清理无其它用途的 `DEPLOY_*` secrets 和专用 `authorized_keys` 授权。本记录不表示这些远程操作已完成，也不授予 push 或部署权限。
+本地回归成功只是待发布依据，不能替代 Docker 构建、GHCR 拉取权限、域名、外层反向代理和 VPS 健康检查。本次升级记录不作为当前部署操作说明；请按 [部署说明](deployment.md) 与 [发布检查清单](release-preparation.md) 使用获准的镜像 digest，重新验证并记录结果。本记录不表示远程操作已完成，也不授予 push 或部署权限。
 
 ## 验证与保留限制
 

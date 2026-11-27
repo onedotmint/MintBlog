@@ -1,5 +1,3 @@
-
-
 Hi,there! I'm onedotmint.
 
 Now I focus on AI AGENT and open-source projects. This blog is a place where I share my projects, notes, ideas, and occasional reflections.
@@ -18,8 +16,3 @@ Contact me with hi@onedotmint.com.
   class="no-zoom"
   style="width: 512px; max-width: 100%; height: auto;"
 />
-
-
-
-
-

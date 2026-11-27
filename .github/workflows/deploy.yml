@@ -56,6 +56,9 @@ jobs:
       - name: Run ESLint
         run: pnpm lint
 
+      - name: Check formatting
+        run: pnpm format
+
       - name: Run tests
         run: pnpm test
 
@@ -103,12 +106,38 @@ jobs:
           tags: |
             type=sha,format=long,prefix=sha-
 
-      - name: Build and push image
+      - name: Build and load image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
-          push: true
+          load: true
+          provenance: false
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Smoke-test and publish the loaded image
+        shell: bash
+        env:
+          TAGGED_IMAGE: ${{ steps.metadata.outputs.tags }}
+        run: |
+          image_id=$(docker image inspect --format '{{.Id}}' "$TAGGED_IMAGE")
+          bash docker/smoke-test.sh "$image_id"
+          if [[ $(docker image inspect --format '{{.Id}}' "$TAGGED_IMAGE") != "$image_id" ]]; then
+            echo "Image tag changed after smoke test; refusing to push." >&2
+            exit 1
+          fi
+          push_log="$RUNNER_TEMP/mintblog-push.log"
+          docker image push "$TAGGED_IMAGE" | tee "$push_log"
+          digest=$(awk -v tag="${TAGGED_IMAGE##*:}:" '$1 == tag && $2 == "digest:" { print $3 }' "$push_log")
+          if [[ ! $digest =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "Could not confirm the pushed manifest digest." >&2
+            exit 1
+          fi
+          image="${TAGGED_IMAGE%:*}@$digest"
+          {
+            printf '### Published MintBlog image\n\n'
+            printf -- '- Commit: `%s`\n- Image: `%s`\n\n' "$GITHUB_SHA" "$image"
+            printf 'After deployment approval, run on the VPS:\n\n```bash\nbash deploy.sh %s\n```\n' "$image"
+          } >> "$GITHUB_STEP_SUMMARY"

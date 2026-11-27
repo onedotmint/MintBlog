@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -gt 1 || ( $# -eq 1 && ! "$1" =~ ^ghcr\.io/[a-z0-9][a-z0-9._/-]*:sha-[0-9a-f]{40}$ ) ]]; then
-  echo "Usage: bash deploy.sh [ghcr.io/owner/repository:sha-<full-commit-SHA>]" >&2
+if [[ $# -ne 1 || ! "${1:-}" =~ ^ghcr\.io/[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*@sha256:[0-9a-f]{64}$ ]]; then
+  echo 'Usage: bash deploy.sh ghcr.io/owner/repository@sha256:<64-lowercase-hex>' >&2
+  echo 'Pass the approved image digest from the successful GitHub Actions run summary (or the previously accepted digest for rollback). Nothing was deployed.' >&2
   exit 64
 fi
 if [[ ! -f compose.yaml && ! -f compose.yml && ! -f docker-compose.yaml && ! -f docker-compose.yml ]]; then
@@ -24,48 +25,12 @@ if [[ -L .env || ( -e .env && ! -f .env ) ]]; then
   exit 1
 fi
 
-image="${1:-}"
-if [[ $# -eq 0 ]]; then
-  for dependency in curl jq; do
-    if ! command -v "$dependency" >/dev/null; then
-      echo "Automatic deployment requires $dependency; install it once on the VPS." >&2
-      exit 1
-    fi
-  done
-  configured_image="$(docker compose config --images web)"
-  repository="${configured_image#ghcr.io/}"
-  repository="${repository%%:*}"
-  if [[ "$configured_image" != ghcr.io/* || ! "$repository" =~ ^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$ ]]; then
-    echo "Configure BLOG_IMAGE once with a lowercase ghcr.io/owner/repository image." >&2
-    exit 1
-  fi
-  api="https://api.github.com/repos/$repository/actions"
-  # shortcut: scans 100 successful runs; paginate if older publishing history must be searched.
-  release="$(curl --fail --silent --show-error --connect-timeout 10 --max-time 30 \
-    "$api/workflows/deploy.yml/runs?branch=main&status=success&per_page=100" | \
-    jq -er --arg repository "$repository" '
-      [.workflow_runs[] | select(
-        .head_branch == "main" and .status == "completed" and .conclusion == "success" and
-        (.event == "push" or .event == "workflow_dispatch") and
-        (.head_repository.full_name | ascii_downcase) == $repository
-      )] | first | if . == null then error("No successful main publishing run found")
-      else [.id, .head_sha] | @tsv end')"
-  IFS=$'\t' read -r run_id sha <<< "$release"
-  if [[ ! "$run_id" =~ ^[0-9]+$ || ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
-    echo "GitHub returned an invalid run ID or commit SHA." >&2
-    exit 1
-  fi
-  if ! curl --fail --silent --show-error --connect-timeout 10 --max-time 30 \
-    "$api/runs/$run_id/jobs?per_page=100" | \
-    jq -e 'any(.jobs[]; .name == "Build and publish image" and .status == "completed" and .conclusion == "success")' >/dev/null; then
-    echo "Could not confirm successful image publication; nothing was deployed." >&2
-    exit 1
-  fi
-  image="ghcr.io/$repository:sha-$sha"
-  echo "Selected successful release: https://github.com/$repository/actions/runs/$run_id"
-fi
-export BLOG_IMAGE="$image"
-if [[ "$(docker compose config --images web)" != "$BLOG_IMAGE" ]]; then
+export BLOG_IMAGE="$1"
+compose_uses_image() {
+  local resolved
+  resolved="$(BLOG_IMAGE="$1" docker compose config --images web)" && [[ "$resolved" == "$1" ]]
+}
+if ! compose_uses_image "$BLOG_IMAGE"; then
   echo 'The Compose web image must use ${BLOG_IMAGE}; no service or defaults were changed.' >&2
   exit 1
 fi
@@ -82,15 +47,34 @@ if [[ -f .env ]]; then
   done < .env > "$env_tmp"
 fi
 printf 'BLOG_IMAGE=%s\n' "$BLOG_IMAGE" >> "$env_tmp"
+image_id_pattern='^sha256:[0-9a-f]{64}$'
 previous_container="$(docker compose ps --all -q web)"
 previous_image=""
 if [[ -n "$previous_container" ]]; then
-  # A local image ID still identifies the old bytes if a remote tag is overwritten.
-  previous_image="$(docker inspect --format '{{.Image}}' "$previous_container")"
+  previous_image="$(docker inspect --type container --format '{{.Image}}' "$previous_container")"
+  if [[ ! "$previous_image" =~ $image_id_pattern ]] || ! compose_uses_image "$previous_image"; then
+    echo 'Cannot pin the previous container to its local image ID for rollback; nothing was deployed.' >&2
+    exit 1
+  fi
 fi
 
 # A failed pull must leave the running site untouched.
 docker compose pull web
+target_image="$(docker image inspect --format '{{.Id}}' "$BLOG_IMAGE")"
+if [[ ! "$target_image" =~ $image_id_pattern ]]; then
+  echo 'Could not identify the pulled image; nothing was deployed.' >&2
+  exit 1
+fi
+
+verify_running_image() {
+  local container actual
+  if ! container="$(docker compose ps -q web)" || [[ -z "$container" ]] ||
+     ! actual="$(docker inspect --type container --format '{{.Image}} {{if .State.Health}}{{.State.Health.Status}}{{end}}' "$container")" ||
+     [[ "$actual" != "$1 healthy" ]]; then
+    echo "Expected web to be healthy on image ID $1; found ${actual:-no running container}." >&2
+    return 1
+  fi
+}
 
 rollback() {
   trap - ERR INT TERM
@@ -98,7 +82,8 @@ rollback() {
   docker compose logs --tail=100 web >&2
   if [[ -n "$previous_image" ]]; then
     echo "Restoring previous image: $previous_image" >&2
-    if BLOG_IMAGE="$previous_image" docker compose up -d --wait --wait-timeout 120 --pull never web; then
+    if BLOG_IMAGE="$previous_image" docker compose up -d --wait --wait-timeout 120 --pull never web &&
+       verify_running_image "$previous_image"; then
       echo "Previous image is healthy; verify the public HTTPS site." >&2
     else
       echo "Rollback failed; inspect Docker logs and recover the site manually." >&2
@@ -112,9 +97,12 @@ rollback() {
 trap rollback ERR INT TERM
 
 docker compose up -d --wait --wait-timeout 120 --pull never web
-mv -f -- "$env_tmp" .env
+verify_running_image "$target_image"
+# Do not roll back in response to a signal between the atomic save and clearing the trap.
+trap '' INT TERM
+mv -fT -- "$env_tmp" .env
 trap - ERR INT TERM
 
-echo "Container is healthy: $BLOG_IMAGE"
+echo "Container is healthy: $BLOG_IMAGE (image ID: $target_image)"
 echo "Verify the public HTTPS site, routes and search before accepting this release."
 echo "Saved the running image in .env: $BLOG_IMAGE"

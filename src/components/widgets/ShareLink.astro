@@ -21,7 +21,7 @@ const SHARE_LINKS: Record<string, ShareLink> = {
     baseUrl: 'https://twitter.com/intent/tweet?text=',
     formatUrl: (url, cfg) =>
       `${SHARE_LINKS.twitter.baseUrl}${encodeURIComponent(
-        `Reading ${cfg?.[1] ? `${cfg[1]}'s ` : ''}${url}\n\nI think...`
+        `Reading ${cfg?.[1] ? `${cfg[1]}'s ` : ''}${url}\n\nI think...`,
       )}`,
     label: 'twitter',
     title: 'Tweet this post',
@@ -30,7 +30,7 @@ const SHARE_LINKS: Record<string, ShareLink> = {
     baseUrl: 'https://bsky.app/intent/compose?text=',
     formatUrl: (url, cfg) =>
       `${SHARE_LINKS.bluesky.baseUrl}${encodeURIComponent(
-        `Reading ${cfg?.[1] ? `${cfg[1]}'s ` : ''}${url}. I think...`
+        `Reading ${cfg?.[1] ? `${cfg[1]}'s ` : ''}${url}. I think...`,
       )}`,
     label: 'bluesky',
     title: 'Share this post on Bluesky',
@@ -39,7 +39,7 @@ const SHARE_LINKS: Record<string, ShareLink> = {
     baseUrl: 'https://elk.zone/intent/post?text=',
     formatUrl: (url, cfg) =>
       `${SHARE_LINKS.mastodon.baseUrl}${encodeURIComponent(
-        `Reading ${cfg?.[1] ? `${cfg[1]}'s ` : ''}${url}\n\nI think...`
+        `Reading ${cfg?.[1] ? `${cfg[1]}'s ` : ''}${url}\n\nI think...`,
       )}`,
     label: 'mastodon',
     title: 'Share this post on Mastodon',
@@ -95,15 +95,12 @@ const links = Object.entries(config)
 ---
 
 <span class="font-mono op-50">&gt; </span>
-<span class="op-50">share on</span>
-{' '}
-{
-  links.map((link, idx) => (
-    <>
-      <Link class="op-50!" href={link.url} title={link.title} external={true}>
-        {link.label}
-      </Link>
-      {idx < links.length - 1 && <span class="op-25"> / </span>}
-    </>
-  ))
-}
+<span class="op-50">share on</span>{' '}
+{links.map((link, idx) => (
+  <>
+    <Link class="op-50!" href={link.url} title={link.title} external={true}>
+      {link.label}
+    </Link>
+    {idx < links.length - 1 && <span class="op-25"> / </span>}
+  </>
+))}

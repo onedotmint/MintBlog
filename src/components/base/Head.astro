@@ -44,16 +44,16 @@ const ogImageURL = ogImagePathname
 const blogPostingData = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  'headline': pageTitle,
+  headline: pageTitle,
   ...(ogImageURL && { image: ogImageURL }),
-  'url': canonicalURL,
-  'datePublished': pubDate,
+  url: canonicalURL,
+  datePublished: pubDate,
   ...(lastModDate && { dateModified: lastModDate }),
   ...(description && { description: description }),
-  'author': {
+  author: {
     '@type': 'Person',
-    'name': SITE.author,
-    'url': SITE.website,
+    name: SITE.author,
+    url: SITE.website,
   },
 }
 
@@ -61,11 +61,11 @@ const blogPostingData = {
 const webPageData = {
   '@context': 'https://schema.org',
   '@type': 'webPage',
-  'name': `${title || SITE.title}`,
+  name: `${title || SITE.title}`,
   ...(description && { description: description }),
-  'publisher': {
+  publisher: {
     '@type': 'ProfilePage',
-    'name': `${SITE.author}'s Personal Website`,
+    name: `${SITE.author}'s Personal Website`,
   },
 }
 ---
@@ -95,7 +95,7 @@ const webPageData = {
   ;(() => {
     const storedTheme = localStorage.getItem('theme')
     const prefersDark = window.matchMedia(
-      '(prefers-color-scheme: dark)'
+      '(prefers-color-scheme: dark)',
     ).matches
     const theme = storedTheme || (prefersDark ? 'dark' : 'light')
     const themeColor = theme === 'dark' ? '#050505' : '#fff'
@@ -110,7 +110,7 @@ const webPageData = {
     const colorScheme = document.querySelector("meta[name='color-scheme']")
     colorScheme?.setAttribute(
       'content',
-      theme === 'dark' ? 'dark light' : 'light dark'
+      theme === 'dark' ? 'dark light' : 'light dark',
     )
 
     const themeColorMeta = document.querySelector("meta[name='theme-color']")
@@ -126,15 +126,13 @@ const webPageData = {
 {ogImageURL && <meta property="og:image" content={ogImageURL} />}
 <meta property="og:site_name" content={siteName} />
 <meta property="og:locale" content={SITE.ogLocale} />
-{
-  pubDate && (
-    <>
-      <meta property="article:author" content={SITE.author} />
-      <meta property="article:published_time" content={pubDate} />
-      <meta property="article:modified_time" content={lastModDate} />
-    </>
-  )
-}
+{pubDate && (
+  <>
+    <meta property="article:author" content={SITE.author} />
+    <meta property="article:published_time" content={pubDate} />
+    <meta property="article:modified_time" content={lastModDate} />
+  </>
+)}
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
@@ -166,21 +164,19 @@ const webPageData = {
 />
 
 <!-- Google JSON-LD Structured Data -->
-{
-  pubDate ? (
-    <script
-      is:inline
-      type="application/ld+json"
-      set:html={JSON.stringify(blogPostingData).replace(/</g, '\\u003c')}
-    />
-  ) : (
-    <script
-      is:inline
-      type="application/ld+json"
-      set:html={JSON.stringify(webPageData).replace(/</g, '\\u003c')}
-    />
-  )
-}
+{pubDate ? (
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify(blogPostingData).replace(/</g, '\\u003c')}
+  />
+) : (
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify(webPageData).replace(/</g, '\\u003c')}
+  />
+)}
 
 <!-- Router -->
 <ClientRouter />

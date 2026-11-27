@@ -1,18 +1,18 @@
-import js from "@eslint/js";
-import eslintConfigPrettier from "eslint-config-prettier";
-import eslintPluginAstro from "eslint-plugin-astro";
-import globals from "globals";
-import tseslint from "typescript-eslint";
+import js from '@eslint/js'
+import eslintConfigPrettier from 'eslint-config-prettier'
+import eslintPluginAstro from 'eslint-plugin-astro'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
 
 export default [
   {
-    ignores: [".astro/**", "dist/**", "node_modules/**", ".local/**"],
+    ignores: ['.astro/**', 'dist/**', 'node_modules/**', '.local/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...eslintPluginAstro.configs.recommended,
   {
-    files: ["**/*.{js,mjs,cjs,ts,tsx,mts,cts,astro}"],
+    files: ['**/*.{js,mjs,cjs,ts,tsx,mts,cts,astro}'],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -20,16 +20,16 @@ export default [
       },
     },
     rules: {
-      "@typescript-eslint/no-unused-expressions": "off",
-      "@typescript-eslint/no-unused-vars": [
-        "error",
+      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
         {
-          argsIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
         },
       ],
     },
   },
   eslintConfigPrettier,
-];
+]

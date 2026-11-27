@@ -39,6 +39,6 @@ if (existsSync(join(root, '.git'))) {
     renameSync(temporary, path)
   }
   console.log(
-    `Post dates: exported ${Object.keys(posts).length} entries for builds without Git.`
+    `Post dates: exported ${Object.keys(posts).length} entries for builds without Git.`,
   )
 }

@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
 import {
-  chmod,
   mkdtemp,
   readFile,
   readdir,
@@ -16,251 +15,228 @@ import { fileURLToPath } from 'node:url'
 import { test } from 'node:test'
 
 const script = fileURLToPath(new URL('../scripts/deploy.sh', import.meta.url))
-const target = `ghcr.io/owner/mintblog:sha-${'b'.repeat(40)}`
 const previous = `sha256:${'a'.repeat(64)}`
+const previousDigest = `ghcr.io/owner/mintblog@sha256:${'b'.repeat(64)}`
+const target = `ghcr.io/owner/mintblog@sha256:${'c'.repeat(64)}`
+const targetId = `sha256:${'d'.repeat(64)}`
 
-const mockDocker = `#!${process.execPath}
+const mockDocker = String.raw`#!${process.execPath}
 const fs = require('node:fs')
 const args = process.argv.slice(2)
 const scenario = process.env.DEPLOY_SCENARIO
-fs.appendFileSync(process.env.DOCKER_LOG, JSON.stringify({ args, image: process.env.BLOG_IMAGE }) + '\\n')
-if (args[0] === 'compose' && args[1] === 'config') console.log(scenario === 'invalid-repository' ? 'ghcr.io/owner/nested/repository:tag' : scenario === 'fixed-image' ? 'ghcr.io/owner/mintblog:fixed' : process.env.BLOG_IMAGE || 'ghcr.io/owner/mintblog:bootstrap')
-if (args[0] === 'inspect') console.log('${previous}')
-if (args[0] === 'compose' && args[1] === 'ps' && scenario !== 'first-failure') console.log('old-container')
-if (args[0] === 'compose' && args[1] === 'pull' && scenario === 'pull-failure') process.exit(1)
-if (args[0] === 'compose' && args[1] === 'up' && ['start-failure', 'first-failure', 'rollback-failure'].includes(scenario)) {
-  if (process.env.BLOG_IMAGE === '${target}' || scenario === 'rollback-failure') process.exit(1)
+const image = process.env.BLOG_IMAGE
+fs.appendFileSync('docker.log', JSON.stringify({ args, image }) + '\n')
+const [command, action] = args
+if (command === 'compose' && action === 'config') {
+  console.log(scenario === 'fixed-image' ? '${previousDigest}' : scenario === 'fixed-target' ? '${target}' : image)
+}
+if (command === 'compose' && action === 'ps') {
+  if (args.includes('--all')) {
+    if (!['first-failure', 'no-env'].includes(scenario)) console.log('old-container')
+  } else {
+    console.log(fs.readFileSync('running-container', 'utf8'))
+  }
+}
+if (command === 'compose' && action === 'pull' && scenario === 'pull-failure') process.exit(1)
+if (command === 'image' && action === 'inspect') {
+  if (scenario === 'missing-target-id') process.exit(1)
+  console.log('${targetId}')
+}
+if (command === 'compose' && action === 'up') {
+  const restoring = image === '${previous}'
+  if ((!restoring && ['start-failure', 'first-failure', 'rollback-failure', 'wrong-recovery-id'].includes(scenario)) ||
+      (restoring && scenario === 'rollback-failure')) process.exit(1)
+  fs.writeFileSync('running-container', restoring ? 'restored-container' : 'new-container')
+}
+if (command === 'inspect') {
+  switch (args.at(-1)) {
+    case 'old-container': console.log('${previous}'); break
+    case 'new-container': console.log((scenario === 'wrong-target-id' ? '${previous}' : '${targetId}') + (scenario === 'no-health' ? ' ' : ' healthy')); break
+    case 'restored-container': console.log((scenario === 'wrong-recovery-id' ? '${targetId}' : '${previous}') + ' healthy'); break
+    default: process.exit(1)
+  }
 }
 `
 
-const mockCurl =
-  `#!` +
-  process.execPath +
-  String.raw`
-const fs = require('node:fs')
-const scenario = process.env.DEPLOY_SCENARIO
-const url = process.argv.at(-1)
-fs.appendFileSync(process.env.CURL_LOG, url + '\n')
-if (scenario === 'api-failure') process.exit(22)
-if (url.includes('/jobs?')) {
-  console.log(JSON.stringify({ jobs: [{ name: 'Build and publish image', status: 'completed', conclusion: scenario === 'publish-skipped' ? 'skipped' : 'success' }] }))
-} else {
-  const run = { id: scenario === 'malformed-run' ? '../invalid' : 42, head_sha: scenario === 'malformed-sha' ? 'not-a-sha' : 'b'.repeat(40), head_branch: 'main', status: 'completed', conclusion: 'success', event: 'push', head_repository: { full_name: 'Owner/MintBlog' } }
-  console.log(JSON.stringify({ workflow_runs: scenario === 'empty-runs' ? [] : [
-    { ...run, event: 'pull_request', head_sha: 'c'.repeat(40) },
-    { ...run, head_branch: 'feature', head_sha: 'c'.repeat(40) },
-    { ...run, head_repository: { full_name: 'Other/MintBlog' }, head_sha: 'c'.repeat(40) },
-    { ...run, conclusion: 'failure', head_sha: 'c'.repeat(40) },
-    { ...run, event: 'workflow_dispatch' },
-  ] }))
-}
-`
-
-const selectionFailures = [
-  'api-failure',
-  'empty-runs',
-  'publish-skipped',
-  'malformed-sha',
-  'malformed-run',
-  'invalid-repository',
-  'fixed-image',
-]
+const oldEnv = `# Server settings\nBLOG_IMAGE=${previousDigest}\nMINTBLOG_PROXY_NETWORK=proxy\nOTHER="keep me"\nexport BLOG_IMAGE = duplicate-version\n`
 
 interface DockerCall {
   args: string[]
   image: string
 }
 
-for (const automatic of [false, true]) {
-  for (const scenario of [
-    'success',
-    'locked',
-    'pull-failure',
-    'start-failure',
-    'first-failure',
-    'rollback-failure',
-    'save-failure',
-  ...(!automatic ? ['fixed-image'] : []),
-    ...(automatic ? selectionFailures : []),
-  ]) {
-    test(`${automatic ? 'automatic' : 'pinned'} deployment handles ${scenario} without network or server access`, async () => {
-      const directory = await mkdtemp(join(tmpdir(), 'mintblog-deploy-'))
-      try {
-        await writeFile(join(directory, 'docker-compose.yml'), 'services: {}\n')
-        const envContents =
-          '# Server settings\nBLOG_IMAGE=previous-version\nMINTBLOG_PROXY_NETWORK=proxy\nOTHER="keep me"\nexport BLOG_IMAGE = duplicate-version\n'
-        await writeFile(join(directory, '.env'), envContents, { mode: 0o640 })
-        const docker = join(directory, 'docker')
-        await writeFile(docker, mockDocker)
-        await chmod(docker, 0o700)
-        const curl = join(directory, 'curl')
-        await writeFile(curl, mockCurl)
-        await chmod(curl, 0o700)
-        if (scenario === 'save-failure') {
-          const mv = join(directory, 'mv')
-          await writeFile(mv, '#!/bin/sh\nexit 1\n')
-          await chmod(mv, 0o700)
-        }
-        const curlLog = join(directory, 'curl.log')
-        const args = automatic ? [] : [target]
-        const log = join(directory, 'docker.log')
-        const result = spawnSync(
-          scenario === 'locked' ? 'flock' : 'bash',
-          scenario === 'locked'
-            ? ['.mintblog-deploy.lock', 'bash', script, ...args]
-            : [script, ...args],
-          {
-            cwd: directory,
-            encoding: 'utf8',
-            env: {
-              ...process.env,
-              PATH: `${directory}:${process.env.PATH}`,
-              DOCKER_LOG: log,
-              CURL_LOG: curlLog,
-              DEPLOY_SCENARIO: scenario,
-            },
-          },
-        )
-        if (scenario === 'success')
-          assert.equal(result.status, 0, result.stderr)
-        else assert.notEqual(result.status, 0, result.stderr)
-        assert.equal(
-          (await readdir(directory)).some((name) => name.startsWith('.env.')),
-          false,
-        )
-        assert.equal((await stat(join(directory, '.env'))).mode & 0o777, 0o640)
-        const savedEnv = await readFile(join(directory, '.env'), 'utf8')
-        assert.equal(
-          savedEnv,
-          scenario === 'success'
-            ? '# Server settings\nMINTBLOG_PROXY_NETWORK=proxy\nOTHER="keep me"\nBLOG_IMAGE=' +
-                target +
-                '\n'
-            : envContents,
-        )
-        if (scenario === 'locked') {
-          assert.match(result.stderr, /already running/)
-          await assert.rejects(readFile(log), { code: 'ENOENT' })
-          return
-        }
-        const calls: DockerCall[] = (await readFile(log, 'utf8'))
-          .trim()
-          .split('\n')
-          .map((line) => JSON.parse(line))
-        const starts = calls.filter(({ args }) => args[1] === 'up')
-        if (selectionFailures.includes(scenario)) {
-          assert.ok(calls.every(({ args }) => args[1] === 'config'))
-          return
-        }
-        if (automatic) {
-          const urls = (await readFile(curlLog, 'utf8')).trim().split('\n')
-          assert.equal(
-            urls[0],
-            'https://api.github.com/repos/owner/mintblog/actions/workflows/deploy.yml/runs?branch=main&status=success&per_page=100',
-          )
-          assert.equal(
-            urls[1],
-            'https://api.github.com/repos/owner/mintblog/actions/runs/42/jobs?per_page=100',
-          )
-        } else {
-          await assert.rejects(readFile(curlLog), { code: 'ENOENT' })
-        }
-        assert.ok(calls.some(({ args }) => args[1] === 'pull'))
-
-        if (scenario === 'pull-failure') {
-          assert.equal(starts.length, 0)
-          assert.ok(!calls.some(({ args }) => args[1] === 'stop'))
-          return
-        }
-        assert.equal(starts[0].image, target)
-        for (const { args } of starts) {
-          assert.ok(args.includes('--wait'))
-          assert.ok(args.includes('--pull') && args.includes('never'))
-        }
-        if (scenario === 'first-failure') {
-          assert.equal(starts.length, 1)
-          assert.ok(calls.some(({ args }) => args[1] === 'stop'))
-        } else if (scenario === 'success') {
-          assert.equal(starts.length, 1)
-          assert.match(result.stdout, /Saved the running image in .env/)
-        } else {
-          assert.equal(starts.length, 2)
-          assert.equal(starts[1].image, previous)
-          assert.match(
-            result.stderr,
-            scenario === 'rollback-failure'
-              ? /Rollback failed/
-              : /Previous image is healthy/,
-          )
-        }
-      } finally {
-        await rm(directory, { recursive: true, force: true })
+const scenarios = [
+  'success',
+  'no-env',
+  'symlink',
+  'locked',
+  'fixed-image',
+  'fixed-target',
+  'pull-failure',
+  'missing-target-id',
+  'start-failure',
+  'first-failure',
+  'wrong-target-id',
+  'no-health',
+  'rollback-failure',
+  'wrong-recovery-id',
+  'save-failure',
+]
+for (const scenario of scenarios) {
+  test(`digest deployment handles ${scenario} with mocked Docker`, async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'mintblog-deploy-'))
+    try {
+      const path = (name: string) => join(directory, name)
+      await writeFile(path('docker-compose.yml'), 'services: {}\n')
+      if (scenario === 'symlink') {
+        await writeFile(path('settings'), oldEnv)
+        await symlink('settings', path('.env'))
+      } else if (scenario !== 'no-env') {
+        await writeFile(path('.env'), oldEnv, { mode: 0o640 })
       }
-    })
-  }
-}
+      await writeFile(path('docker'), mockDocker, { mode: 0o700 })
+      if (scenario === 'save-failure') {
+        await writeFile(path('mv'), '#!/bin/sh\nexit 1\n', { mode: 0o700 })
+      }
 
-test('deployment refuses mutable, empty or malformed explicit versions before Docker', () => {
-  for (const args of [
-    [''],
-    ['ghcr.io/owner/mintblog:latest'],
-    ['not-an-image'],
-    [target, target],
-  ]) {
-    const result = spawnSync('bash', [script, ...args], { encoding: 'utf8' })
-    assert.equal(result.status, 64, result.stderr)
-    assert.match(result.stderr, /Usage:/)
-  }
-})
-
-for (const linked of [false, true]) {
-  test(
-    linked
-      ? 'deployment refuses a symlink .env before touching Docker'
-      : 'first pinned deployment creates private defaults without requiring .env',
-    async () => {
-      const directory = await mkdtemp(join(tmpdir(), 'mintblog-deploy-env-'))
-      try {
-        await writeFile(join(directory, 'compose.yaml'), 'services: {}\n')
-        const docker = join(directory, 'docker')
-        await writeFile(docker, mockDocker)
-        await chmod(docker, 0o700)
-        if (linked) {
-          await writeFile(join(directory, 'settings'), 'BLOG_IMAGE=original\n')
-          await symlink('settings', join(directory, '.env'))
-        }
-        const log = join(directory, 'docker.log')
-        const result = spawnSync('bash', [script, target], {
+      const result = spawnSync(
+        scenario === 'locked' ? 'flock' : 'bash',
+        scenario === 'locked'
+          ? ['.mintblog-deploy.lock', 'bash', script, target]
+          : [script, target],
+        {
           cwd: directory,
           encoding: 'utf8',
           env: {
             ...process.env,
-            PATH: directory + ':' + process.env.PATH,
-            DOCKER_LOG: log,
-            DEPLOY_SCENARIO: 'success',
+            PATH: `${directory}:${process.env.PATH}`,
+            DEPLOY_SCENARIO: scenario,
           },
-        })
-        assert.equal(result.status, linked ? 1 : 0, result.stderr)
-        if (linked) {
-          assert.match(result.stderr, /symlink/)
-          assert.equal(
-            await readFile(join(directory, 'settings'), 'utf8'),
-            'BLOG_IMAGE=original\n',
-          )
-          await assert.rejects(readFile(log), { code: 'ENOENT' })
-        } else {
-          assert.equal(
-            await readFile(join(directory, '.env'), 'utf8'),
-            'BLOG_IMAGE=' + target + '\n',
-          )
-          assert.equal(
-            (await stat(join(directory, '.env'))).mode & 0o777,
-            0o600,
+        },
+      )
+      const success = ['success', 'no-env'].includes(scenario)
+      assert.equal(result.status, success ? 0 : 1, result.stderr)
+      assert.equal(
+        (await readdir(directory)).some((name) => name.startsWith('.env.')),
+        false,
+      )
+      assert.equal(
+        await readFile(path('.env'), 'utf8'),
+        scenario === 'no-env'
+          ? `BLOG_IMAGE=${target}\n`
+          : success
+            ? `# Server settings\nMINTBLOG_PROXY_NETWORK=proxy\nOTHER="keep me"\nBLOG_IMAGE=${target}\n`
+            : oldEnv,
+      )
+      if (scenario === 'symlink' || scenario === 'locked') {
+        assert.match(
+          result.stderr,
+          scenario === 'symlink' ? /symlink/ : /already running/,
+        )
+        await assert.rejects(readFile(path('docker.log')), { code: 'ENOENT' })
+        return
+      }
+      assert.equal(
+        (await stat(path('.env'))).mode & 0o777,
+        scenario === 'no-env' ? 0o600 : 0o640,
+      )
+      const calls: DockerCall[] = (await readFile(path('docker.log'), 'utf8'))
+        .trim()
+        .split('\n')
+        .map((line) => JSON.parse(line))
+      const start = calls.filter(({ args }) => args[1] === 'up')
+      const pull = calls.findIndex(({ args }) => args[1] === 'pull')
+      if (scenario === 'fixed-image' || scenario === 'fixed-target') {
+        assert.equal(pull, -1)
+        assert.equal(start.length, 0)
+        return
+      }
+      assert.deepEqual(calls[pull], {
+        args: ['compose', 'pull', 'web'],
+        image: target,
+      })
+      if (scenario === 'pull-failure' || scenario === 'missing-target-id') {
+        assert.equal(start.length, 0)
+        assert.ok(!calls.some(({ args }) => args[1] === 'stop'))
+        return
+      }
+      const identify = calls.findIndex(
+        ({ args }) => args[0] === 'image' && args[1] === 'inspect',
+      )
+      assert.ok(pull < identify && identify < calls.indexOf(start[0]))
+      assert.equal(calls[identify].args.at(-1), target)
+      assert.equal(start[0].image, target)
+      for (const { args } of start) {
+        assert.ok(args.includes('--wait'))
+        assert.ok(args.includes('--pull') && args.includes('never'))
+      }
+      if (success) {
+        assert.equal(start.length, 1)
+        assert.ok(
+          calls.some(
+            ({ args }) =>
+              args[0] === 'inspect' && args.at(-1) === 'new-container',
+          ),
+        )
+        assert.ok(result.stdout.includes(targetId))
+        assert.match(result.stdout, /Saved the running image in .env/)
+      } else if (scenario === 'first-failure') {
+        assert.equal(start.length, 1)
+        assert.ok(calls.some(({ args }) => args[1] === 'stop'))
+      } else {
+        assert.equal(start.length, 2)
+        assert.equal(start[1].image, previous)
+        if (scenario !== 'rollback-failure') {
+          assert.ok(
+            calls.some(
+              ({ args }) =>
+                args[0] === 'inspect' && args.at(-1) === 'restored-container',
+            ),
           )
         }
-      } finally {
-        await rm(directory, { recursive: true, force: true })
+        if (['rollback-failure', 'wrong-recovery-id'].includes(scenario)) {
+          assert.match(result.stderr, /Rollback failed/)
+          assert.doesNotMatch(result.stderr, /Previous image is healthy/)
+        } else {
+          assert.match(result.stderr, /Previous image is healthy/)
+        }
       }
-    },
-  )
+    } finally {
+      await rm(directory, { recursive: true, force: true })
+    }
+  })
 }
+
+test('no argument and non-digest arguments refuse before any Docker or default changes', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'mintblog-no-deploy-'))
+  try {
+    await writeFile(join(directory, 'docker-compose.yml'), 'services: {}\n')
+    await writeFile(join(directory, 'docker'), mockDocker, { mode: 0o700 })
+    await writeFile(join(directory, '.env'), oldEnv)
+    for (const args of [
+      [],
+      [''],
+      ['ghcr.io/owner/mintblog:latest'],
+      [`ghcr.io/owner/mintblog:sha-${'f'.repeat(40)}`],
+      ['ghcr.io/owner/mintblog@sha256:abcd'],
+      [target.replace('mintblog@', 'mintblog:latest@')],
+      [target, target],
+    ]) {
+      const result = spawnSync('bash', [script, ...args], {
+        cwd: directory,
+        encoding: 'utf8',
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}` },
+      })
+      assert.equal(result.status, 64, result.stderr)
+      assert.match(result.stderr, /approved image digest/)
+    }
+    assert.deepEqual((await readdir(directory)).sort(), [
+      '.env',
+      'docker',
+      'docker-compose.yml',
+    ])
+    assert.equal(await readFile(join(directory, '.env'), 'utf8'), oldEnv)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})

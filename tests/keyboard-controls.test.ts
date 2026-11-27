@@ -4,7 +4,8 @@ import { stripTypeScriptTypes } from 'node:module'
 import { test } from 'node:test'
 import { runInNewContext } from 'node:vm'
 
-const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
+const read = (path: string) =>
+  readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 
 test('mobile-only controls are removed from desktop layout, not just transparent', () => {
   for (const file of ['toc/TocButton', 'tags/TagButton']) {
@@ -16,16 +17,28 @@ test('mobile-only controls are removed from desktop layout, not just transparent
 })
 
 test('sidebars reveal for keyboard focus and skip targets remain focusable', () => {
-  for (const [file, id] of [['toc/TocSidebar', 'skip-toc'], ['tags/TagSidebar', 'skip-tags']]) {
+  for (const [file, id] of [
+    ['toc/TocSidebar', 'skip-toc'],
+    ['tags/TagSidebar', 'skip-tags'],
+  ]) {
     const source = read(`src/components/${file}.astro`)
     assert.match(source, /focus-within:op-60/)
-    const target = source.match(new RegExp(`<div\\b[^>]*\\sid="${id}"[^>]*>`))?.[0]
+    const target = source.match(
+      new RegExp(`<div\\b[^>]*\\sid="${id}"[^>]*>`),
+    )?.[0]
     assert.ok(target)
     assert.match(target, /class="[^"]*\bsr-only\b[^"]*"/)
     assert.match(target, /tabindex="-1"/)
     assert.doesNotMatch(source, /top-1\.5 op-20/)
   }
   assert.doesNotMatch(read('src/layouts/BaseLayout.astro'), /top-1\.5 op-20/)
+})
+
+test('the search input has its own visible keyboard focus outline', () => {
+  assert.match(
+    read('src/components/widgets/SearchSwitch.astro'),
+    /#search-input:focus-visible\s*\{\s*outline: 2px solid currentColor;/,
+  )
 })
 
 test('return-to-top visibility is refreshed on navigation and resizing', () => {
@@ -66,5 +79,9 @@ test('return-to-top visibility is refreshed on navigation and resizing', () => {
   desktop = false
   win.scrollY = 0
   events.get('scroll')?.()
-  assert.equal(style.visibility, 'visible', 'mobile appearance stays controlled by responsive CSS')
+  assert.equal(
+    style.visibility,
+    'visible',
+    'mobile appearance stays controlled by responsive CSS',
+  )
 })

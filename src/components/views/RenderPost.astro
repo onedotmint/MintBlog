@@ -32,7 +32,7 @@ const { toc, share, giscus, search } = FEATURES
 const shortCollection =
   post.collection === 'shorts'
     ? (await getShortCollections()).find(
-        ({ id }) => id === getShortCollectionId(post.id)
+        ({ id }) => id === getShortCollectionId(post.id),
       )
     : undefined
 const collectionHref = shortCollection
@@ -46,13 +46,14 @@ const title = frontmatter.title
 const description = frontmatter.description
 const ogImage = frontmatter.ogImage
 const pubDate = frontmatter.pubDate.toISOString()
-const lastModDate =
-  (frontmatter.lastModDate || frontmatter.pubDate).toISOString()
+const lastModDate = (
+  frontmatter.lastModDate || frontmatter.pubDate
+).toISOString()
 const bgType = frontmatter.bgType
 const subtitle = frontmatter.subtitle
 const minutesRead = getMinutesRead(
   frontmatter.minutesRead,
-  remarkPluginFrontmatter.minutesRead as number
+  remarkPluginFrontmatter.minutesRead as number,
 )
 const tags = frontmatter.tags
 const isDraft = frontmatter.draft
@@ -93,13 +94,11 @@ of its override file in <code>src/content/short-collections/</code> to publish i
   {bgType}
   backHref={collectionHref}
 >
-  {
-    shortCollection && (
-      <nav class="mx-auto mb-6 max-w-65ch text-sm" aria-label="返回所属合集">
-        <Link href={collectionHref}>{`← ${shortCollection.title}`}</Link>
-      </nav>
-    )
-  }
+  {shortCollection && (
+    <nav class="mx-auto mb-6 max-w-65ch text-sm" aria-label="返回所属合集">
+      <Link href={collectionHref}>{`← ${shortCollection.title}`}</Link>
+    </nav>
+  )}
   <StandardLayout {title} {subtitle} {isSearchable} {searchFilter}>
     <Fragment slot="head">
       <PostMeta {pubDate} {lastModDate} {minutesRead} {tags} />
@@ -107,14 +106,12 @@ of its override file in <code>src/content/short-collections/</code> to publish i
     <Fragment slot="article">
       {isDraft && <Warning html={WARNING} />}
       {shortCollection?.draft && <Warning html={COLLECTION_WARNING} />}
-      {
-        haveHeadings && (
-          <>
-            <DesktopAside {headings} />
-            <MobileControl {headings} />
-          </>
-        )
-      }
+      {haveHeadings && (
+        <>
+          <DesktopAside {headings} />
+          <MobileControl {headings} />
+        </>
+      )}
       <PostCover {cover} {coverAlt} />
       <Content />
     </Fragment>
@@ -122,13 +119,11 @@ of its override file in <code>src/content/short-collections/</code> to publish i
   <Fragment slot="share">
     {shareEnabled && <ShareLink config={share[1]} />}
   </Fragment>
-  {
-    giscusEnabled && (
-      <div slot="giscus" class="prose mx-auto mt-8">
-        <hr />
-        <Giscus />
-      </div>
-    )
-  }
+  {giscusEnabled && (
+    <div slot="giscus" class="prose mx-auto mt-8">
+      <hr />
+      <Giscus />
+    </div>
+  )}
   <ImageViewer selector="article" options={{ title: 0, navbar: 0 }} />
 </BaseLayout>

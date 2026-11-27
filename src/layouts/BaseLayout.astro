@@ -75,15 +75,13 @@ if (hasCustomCursor) style['--external-link-cursor'] = cursorType
       <!-- Content -->
       <slot />
       <!-- Share -->
-      {
-        Astro.url.pathname !== withBasePath('/') && (
-          <footer class="slide-enter animate-delay-1000! prose mx-auto mt-8 print:hidden">
-            <slot name="share" />
-            <br />
-            <BackLink href={backHref} />
-          </footer>
-        )
-      }
+      {Astro.url.pathname !== withBasePath('/') && (
+        <footer class="slide-enter animate-delay-1000! prose mx-auto mt-8 print:hidden">
+          <slot name="share" />
+          <br />
+          <BackLink href={backHref} />
+        </footer>
+      )}
       <!-- Comments -->
       <slot name="giscus" />
     </main>

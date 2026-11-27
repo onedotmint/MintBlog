@@ -64,9 +64,19 @@ logger.info(`步骤1结束：选择背景变体 ${variant}`)
     <g class="signal-nodes">
       <circle class="signal-node signal-node--one" cx="340" cy="238" r="2.4" />
       <circle class="signal-node signal-node--two" cx="760" cy="352" r="1.8" />
-      <circle class="signal-node signal-node--three" cx="1130" cy="205" r="2.2" />
+      <circle
+        class="signal-node signal-node--three"
+        cx="1130"
+        cy="205"
+        r="2.2"
+      />
       <circle class="signal-node signal-node--four" cx="470" cy="648" r="1.8" />
-      <circle class="signal-node signal-node--five" cx="1010" cy="665" r="2.4" />
+      <circle
+        class="signal-node signal-node--five"
+        cx="1010"
+        cy="665"
+        r="2.4"
+      />
     </g>
     <!--
       /*
@@ -80,40 +90,38 @@ logger.info(`步骤1结束：选择背景变体 ${variant}`)
        * 2) 用低频透明度变化增加轻微动态。
        */
     -->
-    {
-      isPlus && (
-        <>
-          <g class="signal-plus-echoes">
-            <path
-              class="signal-plus-echo signal-plus-echo--one"
-              d="M-100 300C100 210 300 390 520 285S910 210 1160 320 1400 370 1540 270"
-            />
-            <path
-              class="signal-plus-echo signal-plus-echo--two"
-              d="M-120 560C120 450 320 640 560 540S900 460 1180 580 1420 620 1570 510"
-            />
-            <path
-              class="signal-plus-echo signal-plus-echo--three"
-              d="M300-90C460 80 420 260 620 360S900 520 1060 700 1200 850 1460 930"
-            />
-          </g>
-          <g class="signal-plus-markers">
-            <path
-              class="signal-plus-marker signal-plus-marker--one"
-              d="M198 120h24M210 108v24"
-            />
-            <path
-              class="signal-plus-marker signal-plus-marker--two"
-              d="M908 470h24M920 458v24"
-            />
-            <path
-              class="signal-plus-marker signal-plus-marker--three"
-              d="M1248 730h24M1260 718v24"
-            />
-          </g>
-        </>
-      )
-    }
+    {isPlus && (
+      <>
+        <g class="signal-plus-echoes">
+          <path
+            class="signal-plus-echo signal-plus-echo--one"
+            d="M-100 300C100 210 300 390 520 285S910 210 1160 320 1400 370 1540 270"
+          />
+          <path
+            class="signal-plus-echo signal-plus-echo--two"
+            d="M-120 560C120 450 320 640 560 540S900 460 1180 580 1420 620 1570 510"
+          />
+          <path
+            class="signal-plus-echo signal-plus-echo--three"
+            d="M300-90C460 80 420 260 620 360S900 520 1060 700 1200 850 1460 930"
+          />
+        </g>
+        <g class="signal-plus-markers">
+          <path
+            class="signal-plus-marker signal-plus-marker--one"
+            d="M198 120h24M210 108v24"
+          />
+          <path
+            class="signal-plus-marker signal-plus-marker--two"
+            d="M908 470h24M920 458v24"
+          />
+          <path
+            class="signal-plus-marker signal-plus-marker--three"
+            d="M1248 730h24M1260 718v24"
+          />
+        </g>
+      </>
+    )}
   </svg>
 </div>
 

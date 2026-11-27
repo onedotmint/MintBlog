@@ -2,8 +2,11 @@ import { glob, type Loader } from 'astro/loaders'
 import { fileURLToPath } from 'node:url'
 import { fillPostMetadata } from './post-metadata'
 
-export function postLoader(base: string): Loader {
-  const original = glob({ base, pattern: '**/[^_]*.{md,mdx}' })
+export function postLoader(
+  base: string,
+  generateId?: Parameters<typeof glob>[0]['generateId'],
+): Loader {
+  const original = glob({ base, pattern: '**/[^_]*.{md,mdx}', generateId })
   return {
     ...original,
     async load(context) {

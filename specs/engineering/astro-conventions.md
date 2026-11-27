@@ -17,18 +17,18 @@ tags:
 
 ## ENGA-001 Module boundaries
 
-| Path                    | Ownership                                                                                                                                                |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/pages/`            | File-based routes and route composition; Blog/Shorts keep `[...slug].astro`; current Collections uses `/shorts/`, not retired `/collections/`               |
-| `src/layouts/`          | `BaseLayout` (shell) and `StandardLayout` (page/article wrapper)                                                                                         |
-| `src/components/`       | Focused presentation units with typed props; never redefine collection schemas                                                                           |
-| `src/content/`          | Markdown/JSON collection data                                                                                                                            |
-| `src/content.config.ts` | Collection loaders and schema wiring                                                                                                                     |
-| `src/schema.ts`         | Shared page/post/JSON collection schemas                                                                                                                 |
-| `src/config.ts`         | `SITE`, `UI`, `FEATURES` configuration                                                                                                                   |
-| `src/types.ts`          | Shared configuration and UI types (`BgType`, ...)                                                                                                        |
-| `src/styles/`           | `main.css`, `prose.css`, `markdown.css`, integration styles                                                                                              |
-| `src/utils/`            | Build-time helpers: content data, paths, dates, TOC, misc                                                                                                |
+| Path                    | Ownership                                                                                                                                     |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/pages/`            | File-based routes and route composition; Blog/Shorts keep `[...slug].astro`; current Collections uses `/shorts/`, not retired `/collections/` |
+| `src/layouts/`          | `BaseLayout` (shell) and `StandardLayout` (page/article wrapper)                                                                              |
+| `src/components/`       | Focused presentation units with typed props; never redefine collection schemas                                                                |
+| `src/content/`          | Markdown/JSON collection data                                                                                                                 |
+| `src/content.config.ts` | Collection loaders and schema wiring                                                                                                          |
+| `src/schema.ts`         | Shared page/post/JSON collection schemas                                                                                                      |
+| `src/config.ts`         | `SITE`, `UI`, `FEATURES` configuration                                                                                                        |
+| `src/types.ts`          | Shared configuration and UI types (`BgType`, ...)                                                                                             |
+| `src/styles/`           | `main.css`, `prose.css`, `markdown.css`, integration styles                                                                                   |
+| `src/utils/`            | Build-time helpers: content data, paths, dates, TOC, misc                                                                                     |
 
 - `public/` contains files copied unchanged; generated build output never goes there.
 - Use PascalCase for reusable `.astro` components, lowercase route directories, camelCase TypeScript utilities, and kebab-case Markdown filenames.
