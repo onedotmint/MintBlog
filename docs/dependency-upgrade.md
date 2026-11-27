@@ -8,7 +8,7 @@
 | -------------------------- | ---------------- | --------------------------------------------------------------------------------- |
 | Astro / MDX                | 7.4.7 / 8.1.2    | 保留现有 unified Markdown processor 与插件链                                      |
 | TypeScript                 | 6.0.3            | 移除 `baseUrl`，保留相对 paths，显式加载 Node 类型                                |
-| p5                         | 2.3.4            | 使用内置类型，删除 `@types/p5`；背景等待异步初始化和销毁，避免快速导航遗留 canvas |
+| p5                         | 2.4.0            | 使用内置类型，删除 `@types/p5`；背景等待异步初始化和销毁，避免快速导航遗留 canvas |
 | Prettier Astro             | 1.1.2            | `.prettierrc.json` 显式加载插件并统一单引号/无分号，不对全仓历史文件自动重排      |
 | Satori                     | 0.63.2           | 修复旧 SVG 转义风险；生成器读取配置中的 WOFF2 字体，输出仍由 Sharp 转 PNG         |
 | ESLint / typescript-eslint | 10.14.0 / 8.72.1 | 保持现有规则和生产检查边界                                                        |
@@ -28,6 +28,7 @@ TypeScript 7 不在当前 `@astrojs/check` 和 typescript-eslint 的支持范围
 
 - Astro 最低版本提高到 `^7.4.7`，锁定解析为 7.4.7，修复 [GHSA-r3h5-4585-7x3w](https://github.com/advisories/GHSA-r3h5-4585-7x3w)。该公告涉及 Node 适配器图像端点；本站仍为静态构建，不因部署方式不同而忽略依赖审计。
 - 仅对 `@astrojs/rss>fast-xml-parser` 设置 5.12.0 override，修复 [GHSA-474x-hrwr-fgx4](https://github.com/advisories/GHSA-474x-hrwr-fgx4)。仍满足 RSS 的 `^5.5.7` 范围，不新增直接依赖；上游要求安全最低版本后再移除。回归测试覆盖真实 RSS 的中文、XML 转义与自定义字段。
+- p5 最低版本提高到 `^2.4.0`。该版本不再依赖 i18next，移除了触发 [GHSA-6jcc-5g8w-32mx](https://github.com/advisories/GHSA-6jcc-5g8w-32mx) 的依赖链；审计门禁不变。
 
 - 兼容性约束：仅使用 `@napi-rs/wasm-runtime@1.2.4>@emnapi/runtime` override 到稳定版 1.11.3，修复 Astro check 的 core 1.x 桥接因宽泛 peer 解析到 runtime 2.x 而出现的 `bridge.deleteEnv` 崩溃。不得全局覆盖 runtime：Rolldown 的可选 WASM 分支使用 core 2.0.0-beta.2，必须保留配套 runtime 2.0.0-beta.2。升级旧桥接后再评估移除此局部约束，不通过关闭 strict peer 或忽略检查掩盖。
 

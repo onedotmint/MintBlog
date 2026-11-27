@@ -52,7 +52,7 @@
     "lint-staged": "^17.6.0",
     "mdast-util-to-string": "^4.0.0",
     "nprogress": "^0.2.0",
-    "p5": "^2.3.4",
+    "p5": "^2.4.0",
     "pagefind": "^1.6.0",
     "prettier": "^3.9.10",
     "prettier-plugin-astro": "^1.1.2",
